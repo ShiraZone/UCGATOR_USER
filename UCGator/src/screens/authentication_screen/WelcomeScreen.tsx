@@ -36,7 +36,7 @@ const WelcomeScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                     </View>
                     <View>
                         <Text style={{ textAlign: 'center', paddingHorizontal: 15, fontWeight: 300, lineHeight: 19, letterSpacing: 1.5 }}>
-                            By continuing, you agree to UCGator’s Terms of Service & Privacy Policy.
+                            By  continuing, you agree to UCGator’s Terms of Service & Privacy Policy.
                         </Text>
                     </View>
                 </View>
