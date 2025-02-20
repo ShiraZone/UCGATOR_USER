@@ -2,6 +2,10 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import React from 'react';
 
 
+import { ImageBackground, Image, Text, View } from 'react-native'
+
+import styles from './Onboarding.Style'
+
 const ScreenPage2 = () => {
     return (
         <View style={styles.container}>
