@@ -23,18 +23,65 @@ type AuthScreenProps = NativeStackScreenProps<RootStackAuthList, 'Register'>;
 const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [email, setEmail] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [password, setPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     const registerScreenChange = () => {
         navigation.navigate('Login');
     };
 
-    // add functionality for input checking
-    // password must not exists whitespaces
-    // password must be secure and follows standard combination
-    // password must be 8 characters atleast
-    // email must be valid
+    // para email format validate
+    const isValidEmail = (email: string) => {
+        const emailRegexFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegexFormat.test(email);
+    };
 
-    // add animation
+    // para sa password validate
+    const isValidPassword = (password: string) => {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        return passwordRegex.test(password);
+    };
+
+    // email checker
+    const handleEmailChange = (text: string) => {
+        setEmail(text);
+        if (!isValidEmail(text)) {
+            setEmailError('- Invalid email format.');
+        } else {
+            setEmailError('');
+        }
+    };
+
+    // password checker
+    const handlePasswordChange = (text: string) => {
+        setPassword(text);
+        if (text.includes(' ')) {
+            setPasswordError('- Password must not contain spaces.');
+        } else if (!isValidPassword(text)) {
+            setPasswordError('- Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character.');
+        } else {
+            setPasswordError('');
+        }
+        if (confirmPassword && text !== confirmPassword) {
+            setConfirmPasswordError('- Passwords do not match.');
+        } else {
+            setConfirmPasswordError('');
+        }
+    };
+
+    // password match
+    const handleConfirmPasswordChange = (text: string) => {
+        setConfirmPassword(text);
+        if (text !== password) {
+            setConfirmPasswordError('- Passwords do not match.');
+        } else {
+            setConfirmPasswordError('');
+        }
+    };
 
     return (
         <SafeAreaProvider>
@@ -52,18 +99,36 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                         <View style={styles.inputWrapper}>
                             <View style={{ marginVertical: 10 }}>
                                 {/** Email Input */}
-                                <View style={[styles.inputArea, { marginBottom: 20 }]}>
-                                    <Text style={styles.inputText}>Email</Text>
-                                    <TextInput style={styles.input} placeholder='user@example.com' />
+                                <View style={[styles.inputArea, { marginBottom: 5 }]}>
+                                    <Text style={styles.inputText}>Email {/* Show email error message */}{emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}</Text>
+                                    <TextInput 
+                                        style={styles.input} 
+                                        placeholder='user@example.com'
+                                        value={email}
+                                        onChangeText={handleEmailChange}
+                                    />
                                 </View>
                                 {/** Password Input */}
-                                <View style={[styles.inputArea, { marginBottom: 20 }]}>
-                                    <Text style={styles.inputText}>Password</Text>
-                                    <TextInput style={styles.input} placeholder='password1234' secureTextEntry={!isPasswordVisible} />
+                                <View style={[styles.inputArea, { marginBottom: 5 }]}>
+                                    <Text style={styles.inputText}>Password {/* Show password error message */}{passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}</Text>
+                                    <TextInput 
+                                        style={styles.input} 
+                                        placeholder='password1234' 
+                                        secureTextEntry={!isPasswordVisible} 
+                                        value={password}
+                                        onChangeText={handlePasswordChange}
+                                    />
                                 </View>
+                                {/** Confirm Password Input */}
                                 <View style={styles.inputArea}>
-                                    <Text style={styles.inputText}>Confirm Password</Text>
-                                    <TextInput style={styles.input} placeholder='password1234' secureTextEntry={!isPasswordVisible} />
+                                    <Text style={styles.inputText}>Confirm Password {/* Show confirm password error message */}{confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}</Text>
+                                    <TextInput 
+                                        style={styles.input} 
+                                        placeholder='password1234' 
+                                        secureTextEntry={!isPasswordVisible} 
+                                        value={confirmPassword}
+                                        onChangeText={handleConfirmPasswordChange}
+                                    />
                                 </View>
                                 {/** Show Password */}
                                 <View style={styles.checkBox}>
@@ -81,9 +146,9 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                                     {/** Changeable Screen to Login */}
                                     {/** Register Button */}
                                     <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10, marginVertical: 30 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: 300 }}>Already have an account?</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '300' }}>Already have an account?</Text>
                                         <TouchableOpacity onPress={registerScreenChange}>
-                                            <Text style={{ fontSize: 18, fontWeight: 600, textDecorationLine: 'underline', color: '#183C5E' }}>Login here!</Text>
+                                            <Text style={{ fontSize: 18, fontWeight: '600', textDecorationLine: 'underline', color: '#183C5E' }}>Login here!</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -95,7 +160,6 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         </SafeAreaProvider>
     )
 }
-
 export default RegisterScreen
 
 const styles = StyleSheet.create({
@@ -129,7 +193,7 @@ const styles = StyleSheet.create({
     },
     titleSmall: {
         fontSize: 18,
-        fontWeight: 300,
+        fontWeight: '300',
         paddingVertical: 5
     },
     inputWrapper: {
@@ -144,7 +208,7 @@ const styles = StyleSheet.create({
     },
     inputText: {
         fontSize: 18,
-        fontWeight: 500
+        fontWeight: '500'
     },
     input: {
         height: 50,
@@ -161,7 +225,7 @@ const styles = StyleSheet.create({
     },
     checkboxText: {
         fontSize: 14,
-        fontWeight: 300,
+        fontWeight: '300',
         paddingVertical: 5,
     },
     submitButton: {
@@ -177,4 +241,10 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 3,
     },
+    errorText: {
+        color: 'red',
+        fontSize: 14,
+        marginTop: 5,
+        fontStyle: "italic",
+    }
 })
