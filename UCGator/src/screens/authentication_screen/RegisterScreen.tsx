@@ -23,65 +23,45 @@ type AuthScreenProps = NativeStackScreenProps<RootStackAuthList, 'Register'>;
 const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-    const [email, setEmail] = useState('');
-    const [emailError, setEmailError] = useState('');
-    const [password, setPassword] = useState('');
-    const [passwordError, setPasswordError] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [registerInfo, setRegisterInfo] = useState<{
+        email?: string,
+        password?: string,
+        confirmPassword?: string
+    }>({});
+    const [errors, setErrors] = useState<{
+        email?: string;
+        password?: string;
+        confirmPassword?: string
+    }>({});
 
-    const registerScreenChange = () => {
-        navigation.navigate('Login');
+    const registerScreenChange = () => navigation.navigate('Login'); // Navigate to login page.
+
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Validation for email checking
+    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password) // Validation for password checking.
+
+    const handleInputChange = (field: keyof typeof registerInfo, value: string) => {
+        setRegisterInfo((prev) => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
-    // para email format validate
-    const isValidEmail = (email: string) => {
-        const emailRegexFormat = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegexFormat.test(email);
-    };
+    const submitFormFunction = () => {
+        const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
 
-    // para sa password validate
-    const isValidPassword = (password: string) => {
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        return passwordRegex.test(password);
-    };
+        if (!isValidEmail(registerInfo.email || '')) newErrors.email = 'Invalid email format.';
+        if (!isValidPassword(registerInfo.password || '')) newErrors.password = 'Please provide a strong password.';
+        if (registerInfo.password != registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
 
-    // email checker
-    const handleEmailChange = (text: string) => {
-        setEmail(text);
-        if (!isValidEmail(text)) {
-            setEmailError('- Invalid email format.');
-        } else {
-            setEmailError('');
-        }
-    };
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors)
+            return;
+        };
 
-    // password checker
-    const handlePasswordChange = (text: string) => {
-        setPassword(text);
-        if (text.includes(' ')) {
-            setPasswordError('- Password must not contain spaces.');
-        } else if (!isValidPassword(text)) {
-            setPasswordError('- Password must be at least 8 characters long and include an uppercase letter, lowercase letter, number, and special character.');
-        } else {
-            setPasswordError('');
-        }
-        if (confirmPassword && text !== confirmPassword) {
-            setConfirmPasswordError('- Passwords do not match.');
-        } else {
-            setConfirmPasswordError('');
-        }
-    };
-
-    // password match
-    const handleConfirmPasswordChange = (text: string) => {
-        setConfirmPassword(text);
-        if (text !== password) {
-            setConfirmPasswordError('- Passwords do not match.');
-        } else {
-            setConfirmPasswordError('');
-        }
-    };
+        // Add API functionlaties in here.
+        // It should redirect to the OTP page before proceeding to the login screen.
+        registerScreenChange();
+    }
 
     return (
         <SafeAreaProvider>
@@ -100,34 +80,34 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                             <View style={{ marginVertical: 10 }}>
                                 {/** Email Input */}
                                 <View style={[styles.inputArea, { marginBottom: 5 }]}>
-                                    <Text style={styles.inputText}>Email {/* Show email error message */}{emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}</Text>
-                                    <TextInput 
-                                        style={styles.input} 
+                                    <Text style={styles.inputText}>Email {/* Show email error message */}{errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
                                         placeholder='user@example.com'
-                                        value={email}
-                                        onChangeText={handleEmailChange}
+                                        value={registerInfo.email || ''}
+                                        onChangeText={(text) => handleInputChange('email', text)}
                                     />
                                 </View>
                                 {/** Password Input */}
                                 <View style={[styles.inputArea, { marginBottom: 5 }]}>
-                                    <Text style={styles.inputText}>Password {/* Show password error message */}{passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}</Text>
-                                    <TextInput 
-                                        style={styles.input} 
-                                        placeholder='password1234' 
-                                        secureTextEntry={!isPasswordVisible} 
-                                        value={password}
-                                        onChangeText={handlePasswordChange}
+                                    <Text style={styles.inputText}>Password {/* Show password error message */}{errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='password1234'
+                                        secureTextEntry={!isPasswordVisible}
+                                        value={registerInfo.password || ''}
+                                        onChangeText={(text) => handleInputChange('password', text)}
                                     />
                                 </View>
                                 {/** Confirm Password Input */}
                                 <View style={styles.inputArea}>
-                                    <Text style={styles.inputText}>Confirm Password {/* Show confirm password error message */}{confirmPasswordError ? <Text style={styles.errorText}>{confirmPasswordError}</Text> : null}</Text>
-                                    <TextInput 
-                                        style={styles.input} 
-                                        placeholder='password1234' 
-                                        secureTextEntry={!isPasswordVisible} 
-                                        value={confirmPassword}
-                                        onChangeText={handleConfirmPasswordChange}
+                                    <Text style={styles.inputText}>Confirm Password {/* Show confirm password error message */}{errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='password1234'
+                                        secureTextEntry={!isPasswordVisible}
+                                        value={registerInfo.confirmPassword || ''}
+                                        onChangeText={(text) => handleInputChange('confirmPassword', text)}
                                     />
                                 </View>
                                 {/** Show Password */}
@@ -140,7 +120,7 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                             <View style={{ marginVertical: 10 }}>
                                 <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10 }}>
                                     {/** Submit Button Sign Up */}
-                                    <TouchableOpacity style={styles.submitButton}>
+                                    <TouchableOpacity style={styles.submitButton} onPress={submitFormFunction}>
                                         <Text style={styles.submitButtonText}>SUBMIT</Text>
                                     </TouchableOpacity>
                                     {/** Changeable Screen to Login */}
@@ -160,6 +140,7 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
         </SafeAreaProvider>
     )
 }
+
 export default RegisterScreen
 
 const styles = StyleSheet.create({
@@ -243,7 +224,8 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: 'red',
-        fontSize: 14,
+        fontSize: 12,
+        fontWeight: 300,
         marginTop: 5,
         fontStyle: "italic",
     }

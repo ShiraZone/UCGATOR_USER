@@ -9,6 +9,7 @@ import LoginScreen from './authentication_screen/LoginScreen';
 import RegisterScreen from './authentication_screen/RegisterScreen';
 import ForgotPassword from './authentication_screen/ForgotPassword';
 import WelcomeScreen from './authentication_screen/WelcomeScreen';
+import HomeScreen from './HomeScreen';
 
 type AuthenticationScreenProps = NativeStackScreenProps<RootStackParamList, 'Authentication'>;
 
@@ -17,6 +18,7 @@ export type RootStackAuthList = {
     Login: undefined;
     ForgotPassword: undefined;
     GetStarted: undefined;
+    Home: undefined;
 }
 
 const Stack = createNativeStackNavigator<RootStackAuthList>();
@@ -28,6 +30,7 @@ const AuthenticationScreen: React.FC<AuthenticationScreenProps> = ({ navigation 
             <Stack.Screen name='Login' component={LoginScreen} />
             <Stack.Screen name='Register' component={RegisterScreen} />
             <Stack.Screen name='ForgotPassword' component={ForgotPassword} />
+            <Stack.Screen name='Home' component={HomeScreen} />
         </Stack.Navigator>
     )
 }
