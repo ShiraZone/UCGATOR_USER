@@ -5,7 +5,6 @@ import {
     TextInput,
     TouchableOpacity,
     KeyboardAvoidingView,
-    Platform,
     ImageBackground,
     Image
 } from 'react-native';
@@ -22,8 +21,18 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
-    const registerScreenChange = () => {
-        navigation.navigate('Register');
+    const navigateRegister = () => navigation.navigate('Register');
+
+    const [loginInfo, setLoginInfo] = useState<{
+        email?: string,
+        password?: string,
+    }>({});
+
+    const handleSubmitForm = () => {
+        navigation.reset({
+            index: 0,
+            routes: [{ name: 'Home' }]
+        })
     };
 
     return (
@@ -69,14 +78,14 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                             <View style={{ marginVertical: 10 }}>
                                 <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10 }}>
                                     {/** Submit Button Sign In */}
-                                    <TouchableOpacity style={styles.submitButton}>
+                                    <TouchableOpacity style={styles.submitButton} onPress={handleSubmitForm}>
                                         <Text style={styles.submitButtonText}>SIGN IN</Text>
                                     </TouchableOpacity>
                                     {/** Changeable Screen to Register */}
                                     {/** Register Button */}
                                     <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10, marginVertical: 30 }}>
                                         <Text style={{ fontSize: 14, fontWeight: 300 }}>Don't have an account?</Text>
-                                        <TouchableOpacity onPress={registerScreenChange}>
+                                        <TouchableOpacity onPress={navigateRegister}>
                                             <Text style={{ fontSize: 18, fontWeight: 600, textDecorationLine: 'underline', color: '#183C5E' }}>Register here!</Text>
                                         </TouchableOpacity>
                                     </View>

@@ -23,18 +23,45 @@ type AuthScreenProps = NativeStackScreenProps<RootStackAuthList, 'Register'>;
 const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const [registerInfo, setRegisterInfo] = useState<{
+        email?: string,
+        password?: string,
+        confirmPassword?: string
+    }>({});
+    const [errors, setErrors] = useState<{
+        email?: string;
+        password?: string;
+        confirmPassword?: string
+    }>({});
 
-    const registerScreenChange = () => {
-        navigation.navigate('Login');
+    const registerScreenChange = () => navigation.navigate('Login'); // Navigate to login page.
+
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Validation for email checking
+    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password) // Validation for password checking.
+
+    const handleInputChange = (field: keyof typeof registerInfo, value: string) => {
+        setRegisterInfo((prev) => ({
+            ...prev,
+            [field]: value
+        }));
     };
 
-    // add functionality for input checking
-    // password must not exists whitespaces
-    // password must be secure and follows standard combination
-    // password must be 8 characters atleast
-    // email must be valid
+    const submitFormFunction = () => {
+        const newErrors: { email?: string; password?: string; confirmPassword?: string } = {};
 
-    // add animation
+        if (!isValidEmail(registerInfo.email || '')) newErrors.email = 'Invalid email format.';
+        if (!isValidPassword(registerInfo.password || '')) newErrors.password = 'Please provide a strong password.';
+        if (registerInfo.password != registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors)
+            return;
+        };
+
+        // Add API functionlaties in here.
+        // It should redirect to the OTP page before proceeding to the login screen.
+        registerScreenChange();
+    }
 
     return (
         <SafeAreaProvider>
@@ -52,18 +79,36 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                         <View style={styles.inputWrapper}>
                             <View style={{ marginVertical: 10 }}>
                                 {/** Email Input */}
-                                <View style={[styles.inputArea, { marginBottom: 20 }]}>
-                                    <Text style={styles.inputText}>Email</Text>
-                                    <TextInput style={styles.input} placeholder='user@example.com' />
+                                <View style={[styles.inputArea, { marginBottom: 5 }]}>
+                                    <Text style={styles.inputText}>Email {/* Show email error message */}{errors.email ? <Text style={styles.errorText}>{errors.email}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='user@example.com'
+                                        value={registerInfo.email || ''}
+                                        onChangeText={(text) => handleInputChange('email', text)}
+                                    />
                                 </View>
                                 {/** Password Input */}
-                                <View style={[styles.inputArea, { marginBottom: 20 }]}>
-                                    <Text style={styles.inputText}>Password</Text>
-                                    <TextInput style={styles.input} placeholder='password1234' secureTextEntry={!isPasswordVisible} />
+                                <View style={[styles.inputArea, { marginBottom: 5 }]}>
+                                    <Text style={styles.inputText}>Password {/* Show password error message */}{errors.password ? <Text style={styles.errorText}>{errors.password}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='password1234'
+                                        secureTextEntry={!isPasswordVisible}
+                                        value={registerInfo.password || ''}
+                                        onChangeText={(text) => handleInputChange('password', text)}
+                                    />
                                 </View>
+                                {/** Confirm Password Input */}
                                 <View style={styles.inputArea}>
-                                    <Text style={styles.inputText}>Confirm Password</Text>
-                                    <TextInput style={styles.input} placeholder='password1234' secureTextEntry={!isPasswordVisible} />
+                                    <Text style={styles.inputText}>Confirm Password {/* Show confirm password error message */}{errors.confirmPassword ? <Text style={styles.errorText}>{errors.confirmPassword}</Text> : null}</Text>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder='password1234'
+                                        secureTextEntry={!isPasswordVisible}
+                                        value={registerInfo.confirmPassword || ''}
+                                        onChangeText={(text) => handleInputChange('confirmPassword', text)}
+                                    />
                                 </View>
                                 {/** Show Password */}
                                 <View style={styles.checkBox}>
@@ -75,15 +120,15 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                             <View style={{ marginVertical: 10 }}>
                                 <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10 }}>
                                     {/** Submit Button Sign Up */}
-                                    <TouchableOpacity style={styles.submitButton}>
+                                    <TouchableOpacity style={styles.submitButton} onPress={submitFormFunction}>
                                         <Text style={styles.submitButtonText}>SUBMIT</Text>
                                     </TouchableOpacity>
                                     {/** Changeable Screen to Login */}
                                     {/** Register Button */}
                                     <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10, marginVertical: 30 }}>
-                                        <Text style={{ fontSize: 14, fontWeight: 300 }}>Already have an account?</Text>
+                                        <Text style={{ fontSize: 14, fontWeight: '300' }}>Already have an account?</Text>
                                         <TouchableOpacity onPress={registerScreenChange}>
-                                            <Text style={{ fontSize: 18, fontWeight: 600, textDecorationLine: 'underline', color: '#183C5E' }}>Login here!</Text>
+                                            <Text style={{ fontSize: 18, fontWeight: '600', textDecorationLine: 'underline', color: '#183C5E' }}>Login here!</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -129,7 +174,7 @@ const styles = StyleSheet.create({
     },
     titleSmall: {
         fontSize: 18,
-        fontWeight: 300,
+        fontWeight: '300',
         paddingVertical: 5
     },
     inputWrapper: {
@@ -144,7 +189,7 @@ const styles = StyleSheet.create({
     },
     inputText: {
         fontSize: 18,
-        fontWeight: 500
+        fontWeight: '500'
     },
     input: {
         height: 50,
@@ -161,7 +206,7 @@ const styles = StyleSheet.create({
     },
     checkboxText: {
         fontSize: 14,
-        fontWeight: 300,
+        fontWeight: '300',
         paddingVertical: 5,
     },
     submitButton: {
@@ -177,4 +222,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 3,
     },
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        fontWeight: 300,
+        marginTop: 5,
+        fontStyle: "italic",
+    }
 })
