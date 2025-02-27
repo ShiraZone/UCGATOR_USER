@@ -48,7 +48,7 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions ={{headerShown: false}}>
-        <Stack.Screen name='ScreenPage2' component={ScreenPage2} />
+        <Stack.Screen name='Onboarding' component={ScreenPage2} />
       </Stack.Navigator>
     </NavigationContainer>
   );
