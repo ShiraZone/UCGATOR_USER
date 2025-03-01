@@ -8,8 +8,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
-import ScreenPage2 from './src/screens/onboarding_screens/ScreenPage2';
+// Screens...
+import { OnboardingScreen } from './src/screens/main';
+import { AuthenticationScreen } from './src/screens/main';
+import { HomeScreen } from './src/screens/main';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -48,7 +50,9 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions ={{headerShown: false}}>
-        <Stack.Screen name='Onboarding' component={ScreenPage2} />
+        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        <Stack.Screen name="Authentication" component={AuthenticationScreen} />
+        <Stack.Screen name="Home" component={HomeScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

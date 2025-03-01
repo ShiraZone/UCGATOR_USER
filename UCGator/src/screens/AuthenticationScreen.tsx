@@ -7,7 +7,8 @@ import { RootStackParamList } from '../../App'
 
 import LoginScreen from './authentication_screen/LoginScreen';
 import RegisterScreen from './authentication_screen/RegisterScreen';
-import ForgotPassword from './authentication_screen/ForgotPassword';
+import ForgotPasswordScreen from './authentication_screen/ForgotPasswordScreen';
+import ChangePasswordScreen from './authentication_screen/ChangePasswordScreen';
 import WelcomeScreen from './authentication_screen/WelcomeScreen';
 import HomeScreen from './HomeScreen';
 
@@ -17,6 +18,7 @@ export type RootStackAuthList = {
     Register: undefined;
     Login: undefined;
     ForgotPassword: undefined;
+    ChangePassword: undefined;
     GetStarted: undefined;
     Home: undefined;
 }
@@ -29,7 +31,8 @@ const AuthenticationScreen: React.FC<AuthenticationScreenProps> = ({ navigation 
             <Stack.Screen name='GetStarted' component={WelcomeScreen} />
             <Stack.Screen name='Login' component={LoginScreen} />
             <Stack.Screen name='Register' component={RegisterScreen} />
-            <Stack.Screen name='ForgotPassword' component={ForgotPassword} />
+            <Stack.Screen name='ForgotPassword' component={ForgotPasswordScreen} />
+            <Stack.Screen name='ChangePassword' component={ChangePasswordScreen} />
             <Stack.Screen name='Home' component={HomeScreen} />
         </Stack.Navigator>
     )

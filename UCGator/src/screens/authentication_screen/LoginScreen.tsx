@@ -23,6 +23,8 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const navigateRegister = () => navigation.navigate('Register');
 
+    const forgotPasswordChangeScene = () => navigation.navigate('ForgotPassword'); // navigate to forgot password
+
     const [loginInfo, setLoginInfo] = useState<{
         email?: string,
         password?: string,
@@ -69,7 +71,7 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                                         <Text style={styles.checkboxText}>Show Password</Text>
                                     </View>
                                     {/** Forgot Password */}
-                                    <TouchableOpacity>
+                                    <TouchableOpacity onPress={forgotPasswordChangeScene}>
                                         <Text style={{ fontSize: 16, fontStyle: 'italic', color: '#183C5E', fontWeight: 500 }}>Forgot Password?</Text>
                                     </TouchableOpacity>
                                 </View>
