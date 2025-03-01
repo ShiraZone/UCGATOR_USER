@@ -31,10 +31,7 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
     }>({});
 
     const handleSubmitForm = () => {
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'Home' }]
-        })
+        navigation.navigate('Home');
     };
 
     return (
