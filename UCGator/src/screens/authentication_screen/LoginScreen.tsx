@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
     StyleSheet,
     Text, View,
@@ -19,19 +19,79 @@ type AuthScreenProps = NativeStackScreenProps<RootStackAuthList, 'Login'>;
 
 const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
-    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    /**
+     * Generates a random email string **DEBUG**
+     * @returns A random string of length between 15 and 20, in the format of "randomString@ucgator.com"
+     */
+    const generateRandomEmail = (): string => {
+        const randomString = Math.random().toString(36).substring(2, 15) + (Math.random() * 100000).toFixed(0);
+        return `${randomString}@ucgator.com`;
+    }
+    /**
+     * Generates a random password string **DEBUG**
+     * @returns A random string of length 8, in the format of "00000000"
+     */
+    const generateRandomPassword = (): string => {
+        const randomString = (Math.random() * 10000000).toFixed(0).substring(0, 8);
+        return randomString;
+    }
+
+    const forgotPasswordChangeScene = () => navigation.navigate('ForgotPassword');
 
     const navigateRegister = () => navigation.navigate('Register');
 
-    const forgotPasswordChangeScene = () => navigation.navigate('ForgotPassword'); // navigate to forgot password
+    const [randomEmail, setRandomEmail] = useState('');
+    const [randomPassword, setRandomPassword] = useState('');
+
+    useEffect(() => {
+        const email = generateRandomEmail();
+        const password = generateRandomPassword();
+        setRandomEmail(email);
+        setRandomPassword(password);
+        console.log('Random Email:', email);
+        console.log('Random Password:', password);
+    }, []);
+
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); 
+    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
 
     const [loginInfo, setLoginInfo] = useState<{
         email?: string,
         password?: string,
     }>({});
 
+    const [errors, setErrors] = useState<{ email?: string, password?: string }>({});
+
+    const handleInputChange = (field: keyof typeof loginInfo, value: string) => {
+        setLoginInfo((prev) => ({
+            ...prev,
+            [field]: value
+        }));
+    };
+
     const handleSubmitForm = () => {
-        navigation.navigate('Home');
+        const errorHandler: { email?: string, password?: string } = {};
+
+        if (!isValidEmail(loginInfo.email || '')) errorHandler.email = 'Invalid email format.';
+        if (!isValidPassword(loginInfo.password || '')) errorHandler.password = 'Incorrect password.';
+
+        if (Object.keys(errorHandler).length > 0) {
+            setErrors(errorHandler);
+            setTimeout(() => {
+                setErrors({});
+            }, 5000);
+            return;
+        };
+
+        if (loginInfo.email === randomEmail && loginInfo.password === randomPassword) {
+            navigation.navigate('Home');
+        } else {
+            setErrors({ email: 'Email or password is incorrect.' });
+            setTimeout(() => {
+                setErrors({});
+            }, 5000);
+        }
     };
 
     return (
@@ -52,40 +112,73 @@ const LoginScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                             <View style={{ marginVertical: 10 }}>
                                 {/** Email Input */}
                                 <View style={[styles.inputArea, { marginBottom: 20 }]}>
-                                    <Text style={styles.inputText}>Email</Text>
-                                    <TextInput style={styles.input} placeholder='user@example.com' />
+                                    <Text style={styles.inputText}>Email {errors.email && <Text style={[styles.errorText]}>{errors.email}</Text>}
+                                    </Text>
+                                    <TextInput style={styles.input} 
+                                    placeholder='user@example.com' 
+                                    onChangeText={(value) => handleInputChange('email', value)}
+                                    />
+                                    
                                 </View>
                                 {/** Password Input */}
                                 <View style={styles.inputArea}>
-                                    <Text style={styles.inputText}>Password</Text>
-                                    <TextInput style={styles.input} placeholder='password1234' secureTextEntry={!isPasswordVisible} />
+                                    <Text style={styles.inputText}>Password {errors.password && <Text style={[styles.errorText]}>{errors.password}</Text>}
+                                    </Text>
+                                    <TextInput style={styles.input} 
+                                    placeholder='password1234' 
+                                    secureTextEntry={!isPasswordVisible}
+                                    onChangeText={(value) => handleInputChange('password', value)}
+                                    />
+                                    
                                 </View>
                                 {/** Show Password checkbox and Forgot Password Button*/}
                                 <View style={{ justifyContent: 'space-between', flexDirection: 'row' }} >
                                     {/** Show Password */}
                                     <View style={styles.checkBox}>
-                                        <BouncyCheckbox fillColor="#183C5E" iconStyle={{ marginRight: -10 }} onPress={() => setIsPasswordVisible(!isPasswordVisible)} />
+                                        <BouncyCheckbox fillColor="#183C5E" 
+                                            iconStyle={{ marginRight: -10 }} 
+                                            onPress={() => setIsPasswordVisible(!isPasswordVisible)}/>
                                         <Text style={styles.checkboxText}>Show Password</Text>
                                     </View>
                                     {/** Forgot Password */}
                                     <TouchableOpacity onPress={forgotPasswordChangeScene}>
-                                        <Text style={{ fontSize: 16, fontStyle: 'italic', color: '#183C5E', fontWeight: 500 }}>Forgot Password?</Text>
+                                        <Text style={{ 
+                                            fontSize: 16, 
+                                            fontStyle: 'italic', 
+                                            color: '#183C5E', 
+                                            fontWeight: 500 
+                                            }}>Forgot Password?</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
                             {/** Submit Form and Changeable Elements */}
                             <View style={{ marginVertical: 10 }}>
-                                <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10 }}>
+                                <View style={{ 
+                                    justifyContent: 'center', 
+                                    alignItems: 'center', 
+                                    paddingVertical: 10 
+                                    }}>
                                     {/** Submit Button Sign In */}
                                     <TouchableOpacity style={styles.submitButton} onPress={handleSubmitForm}>
                                         <Text style={styles.submitButtonText}>SIGN IN</Text>
                                     </TouchableOpacity>
                                     {/** Changeable Screen to Register */}
                                     {/** Register Button */}
-                                    <View style={{ justifyContent: 'center', alignItems: 'center', paddingVertical: 10, marginVertical: 30 }}>
+                                    <View style={{ 
+                                        justifyContent: 'center', 
+                                        alignItems: 'center', 
+                                        paddingVertical: 10, 
+                                        marginVertical: 30 
+                                        }}>
                                         <Text style={{ fontSize: 14, fontWeight: 300 }}>Don't have an account?</Text>
                                         <TouchableOpacity onPress={navigateRegister}>
-                                            <Text style={{ fontSize: 18, fontWeight: 600, textDecorationLine: 'underline', color: '#183C5E' }}>Register here!</Text>
+                                            <Text style={{ 
+                                                fontSize: 18, 
+                                                fontWeight: 600, 
+                                                textDecorationLine: 
+                                                'underline', 
+                                                color: '#183C5E'
+                                                }}>Register here!</Text>
                                         </TouchableOpacity>
                                     </View>
                                 </View>
@@ -179,4 +272,11 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         letterSpacing: 3,
     },
-})
+    errorText: {
+        color: 'red',
+        fontSize: 12,
+        fontWeight: 300,
+        marginTop: 5,
+        fontStyle: "italic",
+    }
+});

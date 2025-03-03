@@ -19,18 +19,56 @@ type AuthScreenProps = NativeStackScreenProps<RootStackAuthList, 'ForgotPassword
 const ForgetPasswordScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
+    const [generatedOTP, setGeneratedOTP] = useState<string | null>(null);
     const [cooldown, setCooldown] = useState(0);
+    const [isOTPSent, setIsOTPSent] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [otpError, setOtpError] = useState('');
 
-    const navigateLogin = () => navigation.navigate('Login');
+    const navigateLogin = () => navigation.replace('Login');
 
-    const navigateChangePasswordScreen = () => navigation.navigate('ChangePassword');
+    const navigateChangePasswordScreen = () => navigation.replace('ChangePassword');
+
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    const handleInputChange = (field: 'email' | 'otp', value: string) => {
+        if (field === 'email') {
+            setEmail(value);
+            if (!isValidEmail(value)) {
+                setEmailError('Invalid email format');
+                setTimeout(() => {
+                    setEmailError('');
+                }, 5000);
+            } else {
+                setEmailError('');
+            }
+        }
+    }
+
+    // Function to generate random 6-digit OTP for debug, replace with proper OTP handler
+    const generateRandomOTP = () => {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
 
     const handleSendOTP = () => {
-        // Handle sending OTP logic here
+        // Simple Input validation logic
+        if (!isValidEmail(email)) {
+            setEmailError('Invalid email format');
+            setTimeout(() => {
+                setEmailError('');
+            }, 5000);
+            return;
+        }
+
         // 60 sec cooldown to prevent spam
         if (cooldown === 0) {
+
             console.log('Sending OTP to:', email);
+            setGeneratedOTP(generateRandomOTP());
+            console.log('Generated OTP:', generatedOTP);
+
             setCooldown(60);
+            setIsOTPSent(true);
             const interval = setInterval(() => {
                 setCooldown(prev => {
                     if (prev <= 1) {
@@ -45,12 +83,21 @@ const ForgetPasswordScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
     const handleSubmit = () => {
         console.log('Email:', email);
-        console.log('OTP:', otp);
+        console.log('Generated OTP:', generatedOTP);
+        console.log('Entered OTP:', otp);
 
+        if (otp !== generatedOTP) {
+            setOtpError('Incorrect OTP');
+            setTimeout(() => {
+                setOtpError('');
+            }, 5000);
+            return;
+        }
         // Add API functionalities in here.
         navigateChangePasswordScreen();
+        setGeneratedOTP(null); // Revert OTP to null after successful submission
+        setOtpError(''); // Clear OTP error after successful submission
     };
-
 
     return (
         <SafeAreaProvider>
@@ -73,7 +120,7 @@ const ForgetPasswordScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                                         style={styles.inputEmail}
                                         placeholder='Enter your email'
                                         value={email}
-                                        onChangeText={setEmail}
+                                        onChangeText={(text) => handleInputChange('email', text)}
                                         keyboardType='email-address'
                                         autoCapitalize='none'
                                     />
@@ -88,14 +135,17 @@ const ForgetPasswordScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
                                         </Text>
                                     </TouchableOpacity>
                                 </View>
+                                {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
                                 <TextInput
                                     style={styles.inputOTP}
-                                    placeholder='Enter OTP'
+                                    placeholder='Enter 6-digit OTP'
                                     value={otp}
                                     onChangeText={setOtp}
                                     keyboardType='numeric'
+                                    editable={isOTPSent}
                                 />
+                                {otpError ? <Text style={styles.errorText}>{otpError}</Text> : null}
                             </View>
 
                             <TouchableOpacity style={styles.Submitbutton} onPress={handleSubmit}>
@@ -184,7 +234,12 @@ const styles = StyleSheet.create({
         borderBottomWidth: 2,
         borderColor: '#183C5E',
         paddingHorizontal: 10,
-        marginBottom: 30,
+        marginBottom: 10,
+    },
+    errorText: {
+        position: 'absolute',
+        top: 120,
+        color: '#ff0000',
     },
     Submitbutton: {
         width: '80%',
@@ -192,6 +247,7 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         padding: 15,
         alignItems: 'center',
+        marginTop: 20,
         marginBottom: 10,
     },
     SubmitbuttonText: {
@@ -207,4 +263,4 @@ const styles = StyleSheet.create({
         fontSize: 16,
         textDecorationLine: 'underline',
     }
-}); 
+});

@@ -37,7 +37,7 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
     const registerScreenChange = () => navigation.navigate('Login'); // Navigate to login page.
 
     const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Validation for email checking
-    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password) // Validation for password checking.
+    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password); // Validation for password checking.
 
     const handleInputChange = (field: keyof typeof registerInfo, value: string) => {
         setRegisterInfo((prev) => ({
@@ -51,14 +51,14 @@ const RegisterScreen: React.FC<AuthScreenProps> = ({ navigation }) => {
 
         if (!isValidEmail(registerInfo.email || '')) newErrors.email = 'Invalid email format.';
         if (!isValidPassword(registerInfo.password || '')) newErrors.password = 'Please provide a strong password.';
-        if (registerInfo.password != registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
+        if (registerInfo.password !== registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors)
             return;
         };
 
-        // Add API functionlaties in here.
+        // Add API functionalities in here.
         // It should redirect to the OTP page before proceeding to the login screen.
         registerScreenChange();
     }
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     errorText: {
         color: 'red',
         fontSize: 12,
-        fontWeight: 300,
+        fontWeight: '300',
         marginTop: 5,
         fontStyle: "italic",
     }
