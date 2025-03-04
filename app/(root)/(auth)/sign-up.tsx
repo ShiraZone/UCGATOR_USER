@@ -1,0 +1,206 @@
+// DEPENDENCIES
+import React from 'react';
+
+// COMPONENTS
+import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Link, useRouter } from 'expo-router';
+import { Checkbox } from 'expo-checkbox';
+
+// ICONS
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faUser } from '@fortawesome/free-solid-svg-icons';
+
+// HOOKS
+import { useState, useCallback } from 'react';
+import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
+
+// UTILS
+
+
+const SignUp = () => {
+
+    const router = useRouter();
+    const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
+    const [registerInfo, setRegisterInfo] = useState<{ email?: string, password?: string, confirmPassword?: string }>({}); // Register information state.
+    const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({}); // Error state for validation.
+
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Validation for email checking
+    const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password) // Validation for password checking.
+    const handleInputChange = (field: keyof typeof registerInfo, value: string) => { setRegisterInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
+
+    const submitForm = useCallback(async () => {
+        const newErrors: {
+            name?: string;
+            email?: string;
+            password?: string;
+            confirmPassword?: string;
+        } = {};
+
+        if (!isValidEmail(registerInfo.email || '')) newErrors.email = 'Please enter a valid email address.';
+        if (!isValidPassword(registerInfo.password || '')) newErrors.password = 'Please provide a strong password.';
+        if (registerInfo.password != registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors)
+            return;
+        };
+
+        try {
+
+        } catch (error: any) {
+            if (error.response) {
+                alert(`Fail to register: ${error.response.data.message}`)
+            } else if (error.request) {
+                alert('Network error. Please check your connection.');
+            } else {
+                alert('An error occurred during registration. Please try again later.');
+            }
+            console.error('Registration error: ', error);
+        }
+    }, [registerInfo, isValidEmail, isValidPassword])
+
+    return (
+        <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
+                        <View style={styles.topWrapper}>
+                            <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                            <View>
+                                <Text style={styles.title}>REGISTER</Text>
+                                <Text style={styles.subtitle}>Soul Society!</Text>
+                            </View>
+                        </View>
+                        <View style={styles.formWrapper}>
+                            {/* FORM */}
+                            <View>
+                                {/* Name */}
+                                <View style={styles.textInputWrapper}>
+                                    <FontAwesomeIcon icon={faUser} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                    <TextInput style={styles.textInputField} placeholder='Enter your name' />
+                                </View>
+                                {/* EMAIL */}
+                                <View style={styles.textInputWrapper}>
+                                    <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                    <TextInput style={styles.textInputField} placeholder='Enter your email' onChangeText={(text) => handleInputChange('email', text)} />
+                                </View>
+                                {/* PASSWORD */}
+                                <View style={styles.textInputWrapper}>
+                                    <FontAwesomeIcon icon={faLock} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                    <TextInput style={styles.textInputField} placeholder='Enter your password' secureTextEntry={!isPasswordVisible} onChangeText={(text) => handleInputChange('password', text)} />
+                                </View>
+                                {/* CONFIRM PASSWORD */}
+                                <View style={styles.textInputWrapper}>
+                                    <FontAwesomeIcon icon={faLock} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                    <TextInput style={styles.textInputField} placeholder='Confirm your password' secureTextEntry={!isPasswordVisible} onChangeText={(text) => handleInputChange('confirmPassword', text)} />
+                                </View>
+                                {/* OTHER FUNCTIONS */}
+                                <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: 3 }}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Checkbox value={isPasswordVisible} onValueChange={setPasswordVisibility} />
+                                        <Text style={[styles.sublimeText, { marginLeft: 8 }]}>See Password</Text>
+                                    </View>
+                                </View>
+                                {/* SUBMIT FUNCTIONS */}
+                                <TouchableOpacity style={styles.button}>
+                                    <Text style={styles.buttonText}> SIGN UP </Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        {/* REDIRECT TO REGISTER */}
+                        <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text>Already have an account?</Text>
+                            <Link href='/sign-in' onPress={(e) => { e.preventDefault(); router.push('/sign-in'); }}>Log in Here!</Link>
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    )
+}
+
+export default SignUp
+
+const styles = StyleSheet.create({
+    topWrapper: {
+        height: 'auto',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        padding: 10,
+    },
+    logo: {
+        width: 'auto',
+        minWidth: '50%',
+        maxHeight: 100,
+        minHeight: 60,
+        marginRight: 10
+    },
+    title: {
+        fontFamily: 'Montserrat-Regular',
+    },
+    subtitle: {
+        fontFamily: 'Montserrat-Bold',
+        fontSize: 20,
+    },
+
+    // FORM WRAPPER
+    formWrapper: {
+        flex: 0.6,
+        borderRadius: 15,
+        marginBottom: 20,
+        marginTop: 10,
+        paddingVertical: 15,
+        marginHorizontal: 20,
+        paddingHorizontal: 25,
+        backgroundColor: COLORS.accent.accent1,
+        justifyContent: "center",
+
+    },
+
+    // TEXTINPUT WRAPPER
+    textInputWrapper: {
+        padding: 5,
+        backgroundColor: COLORS.white.white1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 8,
+        marginBottom: 25,
+    },
+    textInputIcon: {
+        margin: 5,
+    },
+    textInputField: {
+        width: '100%'
+    },
+
+    // EXTRA
+    sublimeText: {
+        fontFamily: "MontSerrat-SemiBold",
+        color: COLORS.white.white1
+    },
+
+    // BUTTOM
+    button: {
+        height: 50,
+        width: '100%',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.primary.primaryColor1,
+        borderRadius: 25,
+        marginTop: 35,
+        borderWidth: 1,
+        borderColor: COLORS.accent.accent2
+    },
+    buttonText: {
+        textAlign: 'center',
+        fontSize: 16,
+        fontFamily: 'Montserrat-Bold',
+        color: COLORS.white.white1
+    }
+})

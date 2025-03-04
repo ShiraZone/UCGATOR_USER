@@ -1,0 +1,181 @@
+// DEPENDENCIES
+import React from 'react';
+
+// COMPONENTS
+import { Alert, Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { Link, Redirect } from 'expo-router';
+import { Checkbox } from 'expo-checkbox';
+
+// ICONS
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { faLock } from '@fortawesome/free-solid-svg-icons';
+
+// HOOKS
+import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
+import { useState } from 'react';
+import { useGlobalContext } from '@/app/lib/global-provider';
+import { login } from '@/app/lib/config';
+
+// UTILS
+import * as Linking from 'expo-linking'
+
+const SignIn = () => {
+
+    const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
+
+    const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
+    const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
+
+
+    // INCOMPLETE
+    const handleLogin = async () => {
+        if (loginInfo === null) {
+            alert('Email and password must be provided.');
+            return;
+        }
+
+        const result = await login(loginInfo.email!, loginInfo.password!)
+
+        if (result) {
+            alert('Login Successfully');
+        }
+    }
+
+    return (
+        <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
+                        <View style={styles.topWrapper}>
+                            <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                            <View>
+                                <Text style={styles.title}>LOGIN</Text>
+                                <Text style={styles.subtitle}>Welcome Back!</Text>
+                            </View>
+                        </View>
+                        <View style={styles.formWrapper}>
+                            {/* FORM */}
+                            <View>
+                                {/* EMAIL */}
+                                <View>
+                                    <View style={styles.textInputWrapper}>
+                                        <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                        <TextInput style={styles.textInputField} placeholder='Enter your email' onChangeText={(text) => handleInputChange('email', text)} />
+                                    </View>
+                                </View>
+                                {/* PASSWORD */}
+                                <View style={styles.textInputWrapper}>
+                                    <FontAwesomeIcon icon={faLock} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                    <TextInput style={styles.textInputField} placeholder='Enter your password' secureTextEntry={!isPasswordVisible} onChangeText={(text) => handleInputChange('password', text)} />
+                                </View>
+                                {/* OTHER FUNCTIONS */}
+                                <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: 3 }}>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <Checkbox value={isPasswordVisible} onValueChange={setPasswordVisibility} />
+                                        <Text style={[styles.sublimeText, { marginLeft: 8 }]}>See Password</Text>
+                                    </View>
+                                    <Link href='/forgot-password' style={styles.sublimeText}>Forgot Password?</Link>
+                                </View>
+                                {/* SUBMIT FUNCTIONS */}
+                                <TouchableOpacity style={styles.button} onPress={handleLogin}>
+                                    <Text style={styles.buttonText}> LOG IN </Text>
+                                </TouchableOpacity>
+
+                            </View>
+                        </View>
+                        {/* REDIRECT TO REGISTER */}
+                        <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
+                            <Text>Do not have an account?</Text>
+                            <Link href='/sign-up'>Register Here! </Link>
+                        </View>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    )
+}
+
+export default SignIn
+
+const styles = StyleSheet.create({
+    topWrapper: {
+        height: 'auto',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        padding: 10,
+    },
+    logo: {
+        width: 'auto',
+        minWidth: '50%',
+        maxHeight: 100,
+        minHeight: 60,
+        marginRight: 10
+    },
+    title: {
+        fontFamily: 'Montserrat-Regular',
+    },
+    subtitle: {
+        fontFamily: 'Montserrat-Bold',
+        fontSize: 20,
+    },
+
+    // FORM WRAPPER
+    formWrapper: {
+        flex: 0.6,
+        borderRadius: 15,
+        marginBottom: 20,
+        marginTop: 10,
+        paddingVertical: 15,
+        marginHorizontal: 20,
+        paddingHorizontal: 25,
+        backgroundColor: COLORS.accent.accent1,
+        justifyContent: "center",
+
+    },
+
+    // TEXTINPUT WRAPPER
+    textInputWrapper: {
+        padding: 5,
+        backgroundColor: COLORS.white.white1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 8,
+        marginBottom: 25,
+    },
+    textInputIcon: {
+        margin: 5,
+    },
+    textInputField: {
+        width: '100%'
+    },
+
+    // EXTRA
+    sublimeText: {
+        fontFamily: "MontSerrat-SemiBold",
+        color: COLORS.white.white1
+    },
+
+    // BUTTOM
+    button: {
+        height: 50,
+        width: '100%',
+        alignSelf: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.primary.primaryColor1,
+        borderRadius: 25,
+        marginTop: 35,
+        borderWidth: 1,
+        borderColor: COLORS.accent.accent2
+    },
+    buttonText: {
+        textAlign: 'center',
+        fontSize: 16,
+        fontFamily: 'Montserrat-Bold',
+        color: COLORS.white.white1
+    }
+})
