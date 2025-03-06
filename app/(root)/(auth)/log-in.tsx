@@ -83,7 +83,7 @@ const SignIn = () => {
                                     </Link>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
-                                <TouchableOpacity style={styles.button} onPress={() => router.push('/home_screen')}>
+                                <TouchableOpacity style={styles.button} onPress={() => router.push('/')}>
                                     <Text style={styles.buttonText}>Log In</Text>
                                 </TouchableOpacity>
                             </View>
