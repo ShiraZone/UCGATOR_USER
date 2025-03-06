@@ -5,7 +5,7 @@ import React from 'react';
 import { Alert, Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { Link, Redirect } from 'expo-router';
+import { Link, Redirect, useRouter, withLayoutContext } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
 
 // ICONS
@@ -21,6 +21,7 @@ import { login } from '@/app/lib/config';
 
 // UTILS
 import * as Linking from 'expo-linking'
+import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 const SignIn = () => {
 
@@ -28,7 +29,7 @@ const SignIn = () => {
 
     const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
     const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
-
+    const router = useRouter();
 
     // INCOMPLETE
     const handleLogin = async () => {
@@ -51,12 +52,10 @@ const SignIn = () => {
                     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
-                            <View>
-                                <Text style={styles.title}>LOGIN</Text>
-                                <Text style={styles.subtitle}>Welcome Back!</Text>
-                            </View>
                         </View>
                         <View style={styles.formWrapper}>
+                            <Text style={styles.title}>LOGIN</Text>
+                            <Text style={styles.subtitle}>Hello, Welcome Back!</Text>
                             {/* FORM */}
                             <View>
                                 {/* EMAIL */}
@@ -77,19 +76,26 @@ const SignIn = () => {
                                         <Checkbox value={isPasswordVisible} onValueChange={setPasswordVisibility} />
                                         <Text style={[styles.sublimeText, { marginLeft: 8 }]}>See Password</Text>
                                     </View>
-                                    <Link href='/forgot-password' style={styles.sublimeText}>Forgot Password?</Link>
+                                    <Link href='/forgot-password' style={styles.sublimeText}>
+                                        <Text style= {{color: "#FFFFFF",    textDecorationLine: 'underline'}}>
+                                            Forgot Password?
+                                        </Text>
+                                    </Link>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
-                                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                                    <Text style={styles.buttonText}> LOG IN </Text>
+                                <TouchableOpacity style={styles.button} onPress={() => router.push('/home_screen')}>
+                                    <Text style={styles.buttonText}>Log In</Text>
                                 </TouchableOpacity>
-
                             </View>
                         </View>
                         {/* REDIRECT TO REGISTER */}
                         <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
                             <Text>Do not have an account?</Text>
-                            <Link href='/sign-up'>Register Here! </Link>
+                            <Link href='/sign-up'>
+                                <Text style = {{color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold"}}>
+                                    Register Here!
+                                </Text>
+                            </Link>
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
@@ -118,10 +124,17 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'Montserrat-Regular',
+        color: COLORS.white.white1,
+        position: 'absolute',
+        top: 20,
+        alignSelf: 'center',
+        fontSize: 18
     },
     subtitle: {
         fontFamily: 'Montserrat-Bold',
         fontSize: 20,
+        color: COLORS.white.white2,
+        top: -10,
     },
 
     // FORM WRAPPER
