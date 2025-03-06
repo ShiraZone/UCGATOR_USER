@@ -20,7 +20,6 @@ import IMAGES from '@/app/constants/images';
 
 // UTILS
 
-
 const SignUp = () => {
 
     const router = useRouter();
@@ -70,12 +69,10 @@ const SignUp = () => {
                     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
-                            <View>
-                                <Text style={styles.title}>REGISTER</Text>
-                                <Text style={styles.subtitle}>Soul Society!</Text>
-                            </View>
                         </View>
                         <View style={styles.formWrapper}>
+                            <Text style={styles.title}>REGISTER</Text>
+                            <Text style={styles.subtitle}>Input the following details :) </Text>
                             {/* FORM */}
                             <View>
                                 {/* Name */}
@@ -106,15 +103,19 @@ const SignUp = () => {
                                     </View>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
-                                <TouchableOpacity style={styles.button}>
-                                    <Text style={styles.buttonText}> SIGN UP </Text>
+                                <TouchableOpacity style={styles.button} onPress={() => router.push('/log-in')}>
+                                    <Text style={styles.buttonText}>SIGN UP</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                         {/* REDIRECT TO REGISTER */}
                         <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
                             <Text>Already have an account?</Text>
-                            <Link href='/sign-in' onPress={(e) => { e.preventDefault(); router.push('/sign-in'); }}>Log in Here!</Link>
+                            <Link href='/log-in' onPress={(e) => { e.preventDefault(); router.push('/log-in'); }}>
+                                <Text style = {{color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold"}}>
+                                    Log in Here!
+                                </Text>
+                            </Link>
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
@@ -143,10 +144,17 @@ const styles = StyleSheet.create({
     },
     title: {
         fontFamily: 'Montserrat-Regular',
+        color: COLORS.white.white1,
+        position: 'absolute',
+        top: 10,
+        alignSelf: 'center',
+        fontSize: 18
     },
     subtitle: {
         fontFamily: 'Montserrat-Bold',
         fontSize: 20,
+        color: COLORS.white.white2,
+        top: -10
     },
 
     // FORM WRAPPER

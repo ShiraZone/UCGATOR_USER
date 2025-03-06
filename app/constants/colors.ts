@@ -8,10 +8,10 @@ const COLORS = {
         DEFAULT: '#000000',
     },
     accent: {
-        accent1: '#183C5E',
-        accent2: '#D9D9D95A',
-        accent3: '#5FBFF9',
-        accent4: '#5FBFF95A',
+        accent1: '#183C5E', //Dark Blue
+        accent2: '#D9D9D95A', //Light Gray
+        accent3: '#5FBFF9', //Vivid Sky blue
+        accent4: '#5FBFF95A', //Light Sky blue
     },
     white: {
         white1: '#FFFFFF',
