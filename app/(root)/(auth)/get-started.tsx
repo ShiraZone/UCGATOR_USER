@@ -12,7 +12,6 @@ import IMAGES from '@/app/constants/images';
 
 // HOOKS
 
-
 const GetStarted = () => {
     const router = useRouter();
 
@@ -32,13 +31,19 @@ const GetStarted = () => {
                 </View>
             </ImageBackground>
         </SafeAreaView>
-    )
+    );
 }
 
-export default GetStarted
+export default GetStarted;
 
 const styles = StyleSheet.create({
+    backgroundImage: {
+        flex: 1,
+        width: '100%',
+        height: '150%',
+    },
     firstContainer: {
+        position: "fixed",
         width: '100%',
         flex: 1,
         justifyContent: 'flex-start',
@@ -58,11 +63,11 @@ const styles = StyleSheet.create({
     },
     logo: {
         width: '100%',
-        height: 150,
+        height: 130,
         padding: 10
     },
     title: {
-        marginTop: 10,
+        marginTop: 3,
         textAlign: 'center',
         fontSize: 24,
         fontFamily: 'Montserrat-Bold',
@@ -76,18 +81,26 @@ const styles = StyleSheet.create({
         letterSpacing: 2
     },
     button: {
+        position: 'fixed',
         height: 50,
         width: '80%',
         alignSelf: 'center',
         justifyContent: 'center',
-        backgroundColor: COLORS.primary.primaryColor1,
+        backgroundColor: '#5FBFF9',
         borderRadius: 25,
-        marginTop: 30
+        marginTop: 20,
+        marginBottom: 15
     },
     buttonText: {
         textAlign: 'center',
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
         color: COLORS.white.white1
+    },
+    privacy: {
+        color:COLORS.white.white1,
+        textAlign: 'center',
+        fontSize: 14,
+        fontFamily: 'Montserrat-Regular',
     }
-})
+});
