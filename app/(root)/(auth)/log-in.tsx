@@ -28,11 +28,11 @@ const SignIn = () => {
     const router = useRouter();
 
     const handleLogin = async () => {
-        if (loginInfo === null) {
+        if (loginInfo.email?.length === 0 || loginInfo.password?.length === 0) {
             alert('Email and password must be provided.');
             return;
         }
-
+        
         await login(loginInfo.email!, loginInfo.password!)
     }
 
@@ -74,7 +74,7 @@ const SignIn = () => {
                                     </Link>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
-                                <TouchableOpacity style={styles.button} onPress={() => router.push('/')}>
+                                <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
                                     <Text style={styles.buttonText}>Log In</Text>
                                 </TouchableOpacity>
                             </View>

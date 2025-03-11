@@ -90,25 +90,6 @@ export default function Index() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      {/* Gesture Detector: Pan + Pinch Combined */}
-      <GestureDetector gesture={gesture}>
-        <Animated.View style={[styles.imageContainer, animatedStyle]}>
-          <Image source={floorImages[currentFloor]} style={styles.image} resizeMode="contain" />
-          {markersData[currentFloor]?.map((marker) => (
-            <Marker key={marker.id} marker={marker} scale={scale} rotation={rotation} onPress={() => handlePOIInteraction(marker)} />
-          ))}
-        </Animated.View>
-      </GestureDetector>
-
-      {/* Floor Selector */}
-      <View style={styles.floorSelector}>
-        <Link href={'/get-started'}>Get Started</Link>
-        {Object.keys(floorImages).map((floor) => (
-          <TouchableOpacity key={floor} style={[styles.floorButton, currentFloor === Number(floor) && styles.activeButton]} onPress={() => handleFloorChange(Number(floor) as keyof typeof floorImages)}>
-            <Text style={styles.buttonText}>Floor {floor}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
       <View style={styles.exploreContainer}>
         {/* Header Section */}
         <View style={styles.headerSection}>
@@ -124,11 +105,24 @@ export default function Index() {
             />
           </View>
         </View>
+      </View>
+      {/* Gesture Detector: Pan + Pinch Combined */}
+      <GestureDetector gesture={gesture}>
+        <Animated.View style={[styles.imageContainer, animatedStyle]}>
+          <Image source={floorImages[currentFloor]} style={styles.image} resizeMode="contain" />
+          {markersData[currentFloor]?.map((marker) => (
+            <Marker key={marker.id} marker={marker} scale={scale} rotation={rotation} onPress={() => handlePOIInteraction(marker)} />
+          ))}
+        </Animated.View>
+      </GestureDetector>
 
-        {/* Placeholder for Map */}
-        <View>
-          <Text>Insert Map here : this code is in line 22 (home_screen.tsx)</Text>
-        </View>
+      {/* Floor Selector */}
+      <View style={styles.floorSelector}>
+        {Object.keys(floorImages).map((floor) => (
+          <TouchableOpacity key={floor} style={[styles.floorButton, currentFloor === Number(floor) && styles.activeButton]} onPress={() => handleFloorChange(Number(floor) as keyof typeof floorImages)}>
+            <Text style={styles.buttonText}>Floor {floor}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
     </GestureHandlerRootView>
   );

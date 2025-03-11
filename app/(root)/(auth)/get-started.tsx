@@ -25,7 +25,7 @@ const GetStarted = () => {
                 <View style={styles.secondContainer}>
                     <Text style={styles.subtitle}>WELCOME TO UCGATOR</Text>
                     <Text style={styles.title}>Explore The University {"\n"} With Confidence</Text>
-                    <TouchableOpacity style={styles.button} onPress={() => router.push('./sign-in')}>
+                    <TouchableOpacity style={styles.button} onPress={() => router.push('/(root)/(auth)/log-in')}>
                         <Text style={styles.buttonText}>Get Started</Text>
                     </TouchableOpacity>
                 </View>
