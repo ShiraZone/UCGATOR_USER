@@ -1,7 +1,7 @@
 import React, { memo, useContext } from "react";
 import { useState } from "react";
 import { Link } from "expo-router";
-import { View, StyleSheet, Image, TouchableOpacity, Text } from "react-native";
+import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput } from "react-native";
 import { GestureHandlerRootView, PinchGestureHandler, PanGestureHandler, GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
@@ -30,6 +30,9 @@ const markersData = {
     { id: "office", x: 700, y: 500, label: "Office", type: "office" },
   ]
 }
+
+//COMPONENTS USED
+import { FontAwesome } from '@expo/vector-icons';
 
 export default function Index() {
   const [currentFloor, setCurrentFloor] = useState<keyof typeof floorImages>(1.5);
@@ -96,7 +99,7 @@ export default function Index() {
           ))}
         </Animated.View>
       </GestureDetector>
-    
+
       {/* Floor Selector */}
       <View style={styles.floorSelector}>
         <Link href={'/get-started'}>Get Started</Link>
@@ -105,6 +108,27 @@ export default function Index() {
             <Text style={styles.buttonText}>Floor {floor}</Text>
           </TouchableOpacity>
         ))}
+      </View>
+      <View style={styles.exploreContainer}>
+        {/* Header Section */}
+        <View style={styles.headerSection}>
+          <Text style={styles.headerText}>Where to go?</Text>
+
+          {/* Search Bar with TextInput */}
+          <View style={styles.searchBar}>
+            <FontAwesome name="search" size={20} color="#FFFFFF" style={{ marginLeft: 10 }} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search for places..."
+              placeholderTextColor="#FFFFFF"
+            />
+          </View>
+        </View>
+
+        {/* Placeholder for Map */}
+        <View>
+          <Text>Insert Map here : this code is in line 22 (home_screen.tsx)</Text>
+        </View>
       </View>
     </GestureHandlerRootView>
   );
@@ -169,5 +193,54 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "blue",
     textAlign: "right",
+  },
+  tabBar: {
+    backgroundColor: '#0D2841',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: 80,
+    paddingBottom: 10,
+  },
+  screen: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  exploreContainer: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 20,
+    paddingTop: 130,
+  },
+  headerSection: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#0D2841',
+    paddingTop: 10,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#D9D9D95A',
+    paddingVertical: 3,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    color: '#FFFFFF',
+    fontSize: 16,
   },
 });
