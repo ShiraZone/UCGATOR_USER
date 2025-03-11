@@ -13,35 +13,27 @@ import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
 import { faLock } from '@fortawesome/free-solid-svg-icons';
 
 // HOOKS
-import COLORS from '@/app/constants/colors';
-import IMAGES from '@/app/constants/images';
 import { useState } from 'react';
-import { useGlobalContext } from '@/app/lib/global-provider';
-import { login } from '@/app/lib/config';
+import { useAuth } from '@/app/lib/auth-context';
 
 // UTILS
-import * as Linking from 'expo-linking'
+import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
 
 const SignIn = () => {
-
+    const { login } = useAuth();
     const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
-
     const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
     const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
 
 
-    // INCOMPLETE
     const handleLogin = async () => {
         if (loginInfo === null) {
             alert('Email and password must be provided.');
             return;
         }
 
-        const result = await login(loginInfo.email!, loginInfo.password!)
-
-        if (result) {
-            alert('Login Successfully');
-        }
+        await login(loginInfo.email!, loginInfo.password!)
     }
 
     return (

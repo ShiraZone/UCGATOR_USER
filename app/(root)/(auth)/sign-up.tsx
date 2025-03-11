@@ -17,6 +17,7 @@ import { faUser } from '@fortawesome/free-solid-svg-icons';
 import { useState, useCallback } from 'react';
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
+import axios from 'axios';
 
 // UTILS
 
@@ -50,7 +51,7 @@ const SignUp = () => {
         };
 
         try {
-
+            
         } catch (error: any) {
             if (error.response) {
                 alert(`Fail to register: ${error.response.data.message}`)

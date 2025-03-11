@@ -3,6 +3,7 @@ import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import COLORS from '@/app/constants/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
+import { useAuth } from '@/app/lib/auth-context'
 
 interface SettingsItemProps {
     icon: any,
@@ -22,6 +23,8 @@ const SettingsItem = ({ icon, title, onPress, textStyle, showArrow }: SettingsIt
 }
 
 const Profile = () => {
+    const { logout } = useAuth();
+
     return (
         <SafeAreaView style={{ height: '100%', backgroundColor: COLORS.white.white1 }}>
             <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 10 }}>
@@ -35,6 +38,9 @@ const Profile = () => {
                 <View style={{ flexDirection: 'column', alignItems: 'center', flex: 1, }}>
 
                 </View>
+                <TouchableOpacity onPress={() => {logout()}}>
+                    <Text>LOGOUT</Text>
+                </TouchableOpacity>
             </ScrollView>
         </SafeAreaView>
     )

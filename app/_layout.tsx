@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import GlobalProvider from "./lib/global-provider";
 import { AuthProvider } from "./lib/auth-context";
+import { testConnection } from "./lib/config";
 
 export default function RootLayout() {
 
@@ -31,6 +31,8 @@ export default function RootLayout() {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
     }
+
+    testConnection();
   }, [fontsLoaded]);
 
   if (!fontsLoaded) return null;

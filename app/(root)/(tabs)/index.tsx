@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useContext } from "react";
 import { useState } from "react";
 import { Link } from "expo-router";
 import { View, StyleSheet, Image, TouchableOpacity, Text } from "react-native";

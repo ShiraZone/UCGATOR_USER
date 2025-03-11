@@ -4,7 +4,7 @@ import React from 'react';
 // ELEMENTS
 import { Link, useRouter } from "expo-router";
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ScrollView, StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground, StatusBar } from 'react-native';
 
 // CONSTANTS
 import COLORS from '@/app/constants/colors';
@@ -18,16 +18,19 @@ const GetStarted = () => {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white.white1 }}>
-            <ScrollView style={{ flex: 1, padding: 10 }}>
+            <StatusBar barStyle="dark-content" />
+            <ImageBackground source={IMAGES.uc_building} resizeMode='cover' style={{ flex: 1}}>
                 <View style={styles.firstContainer}>
                     <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                </View>
+                <View style={styles.secondContainer}>
                     <Text style={styles.subtitle}>WELCOME TO UCGATOR</Text>
                     <Text style={styles.title}>Explore The University {"\n"} With Confidence</Text>
+                    <TouchableOpacity style={styles.button} onPress={() => router.push('./sign-in')}>
+                        <Text style={styles.buttonText}>Get Started</Text>
+                    </TouchableOpacity>
                 </View>
-                <TouchableOpacity style={styles.button} onPress={() => router.push('/sign-in')}>
-                    <Text style={styles.buttonText}>Get Started</Text>
-                </TouchableOpacity>
-            </ScrollView>
+            </ImageBackground>
         </SafeAreaView>
     )
 }
@@ -37,11 +40,21 @@ export default GetStarted
 const styles = StyleSheet.create({
     firstContainer: {
         width: '100%',
-        height: '200%',
-        borderRadius: 20,
-        alignItems: 'center',
+        flex: 1,
+        justifyContent: 'flex-start',
+        backgroundColor: COLORS.background.bg_color1,
+        paddingTop: 75
+    },
+    secondContainer: {
+        height: '35%',
+        backgroundColor: COLORS.white.white1,
+        paddingVertical: 25,
         justifyContent: 'center',
-        backgroundColor: COLORS.accent.accent4,
+        borderTopRightRadius: 25,
+        borderTopLeftRadius: 25,
+        position: 'absolute',
+        width: '100%',
+        bottom: 0
     },
     logo: {
         width: '100%',

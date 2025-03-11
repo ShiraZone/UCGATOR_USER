@@ -4,16 +4,31 @@ const TOKEN_KEY: string = 'authToken';
 const ID_KEY: string = '_id';
 const SESSION_KEY: string = 'sessionID';
 
-export async function saveToken(token: string): Promise<void> {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+export async function saveToken(token: string): Promise<void> { 
+    try {
+        await SecureStore.setItemAsync(TOKEN_KEY, token);
+        console.log('Token saved successfully.');
+    } catch (error) {
+        console.error('Failed to get token: ', error);
+    }
 }
 
 export async function getToken(): Promise<string | null> {
-    return await SecureStore.getItemAsync(TOKEN_KEY);
+    try {
+        return await SecureStore.getItemAsync(TOKEN_KEY);
+    } catch (error) {
+        console.error('Failed to get token: ', error);
+        return null;
+    }
 }
 
 export async function deleteToken(): Promise<void> {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    try {
+        await SecureStore.deleteItemAsync(TOKEN_KEY);
+        console.log('Token deleted successfully');
+    } catch (error) {
+        console.error('Failed to delete the token:', error);
+    }
 }
 
 export async function saveUserId(_id: string): Promise<void> {
