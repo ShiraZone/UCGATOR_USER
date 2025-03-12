@@ -1,14 +1,7 @@
-// CONSTANT IMPORT FOR ICONS
-// HOWEVER SINCE WE ARE USING FONTAWESOME ICONS,
-// THIS FILE WILL SERVE AS A LIBRARY
+import profile_user from '../../assets/icons/profile_icon.png';
 
-import { library } from '@fortawesome/fontawesome-svg-core';
+const ICONS = {
+    profile_user
+};
 
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
-
-// Add the icons you want to use here
-library.add(
-    faEnvelope
-);
-
-export default library;
+export default ICONS;

@@ -1,7 +1,7 @@
 import React, { memo, useContext } from "react";
 import { useState } from "react";
 import { Link } from "expo-router";
-import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput } from "react-native";
+import { View, StyleSheet, Image, TouchableOpacity, Text, TextInput, StatusBar } from "react-native";
 import { GestureHandlerRootView, PinchGestureHandler, PanGestureHandler, GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
@@ -90,6 +90,7 @@ export default function Index() {
 
   return (
     <GestureHandlerRootView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <View style={styles.exploreContainer}>
         {/* Header Section */}
         <View style={styles.headerSection}>
@@ -115,7 +116,6 @@ export default function Index() {
           ))}
         </Animated.View>
       </GestureDetector>
-
       {/* Floor Selector */}
       <View style={styles.floorSelector}>
         {Object.keys(floorImages).map((floor) => (
