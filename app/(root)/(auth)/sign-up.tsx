@@ -2,7 +2,7 @@
 import React from 'react';
 
 // COMPONENTS
-import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Link, useRouter } from 'expo-router';
@@ -22,7 +22,6 @@ import axios from 'axios';
 // UTILS
 
 const SignUp = () => {
-
     const router = useRouter();
     const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
     const [registerInfo, setRegisterInfo] = useState<{ email?: string, password?: string, confirmPassword?: string }>({}); // Register information state.
@@ -50,7 +49,7 @@ const SignUp = () => {
         };
 
         try {
-            
+
         } catch (error: any) {
             if (error.response) {
                 alert(`Fail to register: ${error.response.data.message}`)
@@ -65,22 +64,16 @@ const SignUp = () => {
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1}} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                            <Text style={{ fontSize: 24, fontFamily: 'Montserrat-Bold' }}>Register</Text>
                         </View>
-                        <View style={styles.formWrapper}>
-                            <Text style={styles.title}>REGISTER</Text>
-                            <Text style={styles.subtitle}>Input the following details :) </Text>
-                            {/* FORM */}
-                            <View>
-                                {/* Name */}
-                                <View style={styles.textInputWrapper}>
-                                    <FontAwesomeIcon icon={faUser} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
-                                    <TextInput style={styles.textInputField} placeholder='Enter your name' />
-                                </View>
+                        <View>
+                            <View style={styles.formWrapper}>
+                                {/* FORM */}
                                 {/* EMAIL */}
                                 <View style={styles.textInputWrapper}>
                                     <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
@@ -108,15 +101,15 @@ const SignUp = () => {
                                     <Text style={styles.buttonText}>SIGN UP</Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
-                        {/* REDIRECT TO REGISTER */}
-                        <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text>Already have an account?</Text>
-                            <Link href='/log-in' onPress={(e) => { e.preventDefault(); router.push('/log-in'); }}>
-                                <Text style = {{color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold"}}>
-                                    Log in Here!
-                                </Text>
-                            </Link>
+                            {/* REDIRECT TO REGISTER */}
+                            <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
+                                <Text>Already have an account?</Text>
+                                <Link href='/log-in' onPress={(e) => { e.preventDefault(); router.push('/log-in'); }}>
+                                    <Text style={{ color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold" }}>
+                                        Log in Here!
+                                    </Text>
+                                </Link>
+                            </View>
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
@@ -134,7 +127,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        padding: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 40
     },
     logo: {
         width: 'auto',
@@ -160,16 +154,14 @@ const styles = StyleSheet.create({
 
     // FORM WRAPPER
     formWrapper: {
-        flex: 0.6,
         borderRadius: 15,
         marginBottom: 20,
         marginTop: 10,
-        paddingVertical: 15,
+        paddingVertical: 45,
         marginHorizontal: 20,
         paddingHorizontal: 25,
         backgroundColor: COLORS.accent.accent1,
         justifyContent: "center",
-
     },
 
     // TEXTINPUT WRAPPER

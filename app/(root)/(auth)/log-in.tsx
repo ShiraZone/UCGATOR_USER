@@ -32,23 +32,22 @@ const SignIn = () => {
             alert('Email and password must be provided.');
             return;
         }
-        
+
         await login(loginInfo.email!, loginInfo.password!)
     }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled">
+                <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1}} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                            <Text style={{ fontSize: 24, fontFamily: 'Montserrat-Bold' }}>Login</Text>
                         </View>
-                        <View style={styles.formWrapper}>
-                            <Text style={styles.title}>LOGIN</Text>
-                            <Text style={styles.subtitle}>Hello, Welcome Back!</Text>
-                            {/* FORM */}
-                            <View>
+                        <View>
+                            <View style={styles.formWrapper}>
+                                {/* FORM */}
                                 {/* EMAIL */}
                                 <View>
                                     <View style={styles.textInputWrapper}>
@@ -68,7 +67,7 @@ const SignIn = () => {
                                         <Text style={[styles.sublimeText, { marginLeft: 8 }]}>See Password</Text>
                                     </View>
                                     <Link href='/forgot-password' style={styles.sublimeText}>
-                                        <Text style= {{color: "#FFFFFF",    textDecorationLine: 'underline'}}>
+                                        <Text style={{ color: "#FFFFFF", textDecorationLine: 'underline' }}>
                                             Forgot Password?
                                         </Text>
                                     </Link>
@@ -78,15 +77,15 @@ const SignIn = () => {
                                     <Text style={styles.buttonText}>Log In</Text>
                                 </TouchableOpacity>
                             </View>
-                        </View>
-                        {/* REDIRECT TO REGISTER */}
-                        <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
-                            <Text>Do not have an account?</Text>
-                            <Link href='/sign-up'>
-                                <Text style = {{color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold"}}>
-                                    Register Here!
-                                </Text>
-                            </Link>
+                            {/* REDIRECT TO REGISTER */}
+                            <View style={{ paddingHorizontal: 25, justifyContent: 'center', alignItems: 'center' }}>
+                                <Text>Do not have an account?</Text>
+                                <Link href='/sign-up'>
+                                    <Text style={{ color: "#183C5E", textDecorationLine: "underline", fontWeight: "bold" }}>
+                                        Register Here!
+                                    </Text>
+                                </Link>
+                            </View>
                         </View>
                     </ScrollView>
                 </TouchableWithoutFeedback>
@@ -104,7 +103,8 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flexDirection: 'row',
-        padding: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 40
     },
     logo: {
         width: 'auto',
@@ -130,16 +130,14 @@ const styles = StyleSheet.create({
 
     // FORM WRAPPER
     formWrapper: {
-        flex: 0.6,
         borderRadius: 15,
         marginBottom: 20,
         marginTop: 10,
-        paddingVertical: 15,
+        paddingVertical: 45,
         marginHorizontal: 20,
         paddingHorizontal: 25,
         backgroundColor: COLORS.accent.accent1,
         justifyContent: "center",
-
     },
 
     // TEXTINPUT WRAPPER

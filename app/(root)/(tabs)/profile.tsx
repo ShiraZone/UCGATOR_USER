@@ -67,7 +67,7 @@ const Profile = () => {
             case 'Settings':
                 router.push('/(root)/menu/settings');
                 break;
-            case 'FAQs':
+            case 'Help':
                 router.push('/(root)/menu/faq-section');
                 break;
             case 'Share the App':
@@ -100,7 +100,7 @@ const Profile = () => {
                 <SettingsItem icon={faHeartPulse} title='First Aid' subtitle='Learn first aid tips' onPress={() => handlePress('First Aid')} />
                 <SettingsItem icon={faWarning} title='Emergency' subtitle='Emergency contact details' onPress={() => handlePress('Emergency')} />
                 <SettingsItem icon={faGear} title='Settings' subtitle='App settings and preferences' onPress={() => handlePress('Settings')} />
-                <SettingsItem icon={faQuestionCircle} title='FAQs' subtitle='Frequently asked questions' onPress={() => handlePress('FAQs')} />
+                <SettingsItem icon={faQuestionCircle} title='Help Center' subtitle='Frequently asked questions and help center' onPress={() => handlePress('Help')} />
                 <SettingsItem icon={faShare} title='Share the App' subtitle='Invite friends to use the app' onPress={() => handlePress('Share the App')} />
                 <SettingsItem icon={faDoorOpen} title='Logout' subtitle='Logout your account' onPress={() => { logout() }} />
             </View>
