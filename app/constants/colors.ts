@@ -18,7 +18,7 @@ const COLORS = {
         white2: '#F5F5F5',
     },
     background: {
-        bg_color1: 'rgba(95, 191, 249, 0.50)'
+        bg_color1: 'rgba(95, 191, 249, 0.5)'
     },
 
     // KANI MAOY SAKTO
