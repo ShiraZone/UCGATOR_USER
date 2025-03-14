@@ -19,6 +19,42 @@ const COLORS = {
     },
     background: {
         bg_color1: 'rgba(95, 191, 249, 0.50)'
+    },
+
+    // KANI MAOY SAKTO
+    bg: {
+        bgprimary: '#FFFFFF',
+        bgsecondary: '#F6F6F6',
+        bgtertiary: '#2B4F6E',
+    },
+    def: {
+        white: '#FFFFFF',
+        black: '#000000',
+    },
+    btn: {
+        btnprimary: '#122E48',
+    },
+    text: {
+        textheadB: '#000000',
+        textsubB: 'gray',
+        textheadW: '#FFFFFF',
+        textsubW: 'gray',
+    },
+    icon: {
+        white: '#FFFFFF',
+        black: '#000000',
+        skyblue: '#5FBFF9',
+    },
+
+    // PINAKA LEGIT NA JUD NI
+    pmy: {
+        white: '#FFF',      // default white
+        black: '#000',      // default black
+        blue1:'#2B4F6E',    // icons and foreground
+        blue2: '#122E48',   // button background color
+    },
+    sdy: {
+        gray1: '#F6F6F6',
     }
 }
 

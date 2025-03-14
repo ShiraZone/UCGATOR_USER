@@ -14,7 +14,7 @@ interface TabIcon {
 
 const TabIcon = ({ title, icon, focused }: TabIcon) => (
     <View style={styles.tabButton}>
-        <FontAwesomeIcon icon={icon} size={24} color={COLORS.white.white1} />
+        <FontAwesomeIcon icon={icon} size={22} color={COLORS.white.white1} />
         <Text style={styles.tabButtonText}>{title}</Text>
     </View>
 )
@@ -25,11 +25,8 @@ const TabsLayout = () => {
             tabBarShowLabel: false,
             tabBarStyle: {
                 backgroundColor: COLORS.accent.accent1,
-                position: 'absolute',
                 borderTopColor: COLORS.primary.primaryColor1,
                 borderTopWidth: 1,
-                minHeight: 70,
-                paddingTop: 20
             }
         }}>
             <Tabs.Screen name='index' options={{
@@ -62,9 +59,7 @@ export default TabsLayout
 const styles = StyleSheet.create({
     tabButton: {
         flex: 1,
-        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center'
     },
     tabButtonText: {
         color: COLORS.white.white1,
