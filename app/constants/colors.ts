@@ -54,7 +54,7 @@ const COLORS = {
         blue2: '#122E48',   // button background color
     },
     sdy: {
-        gray1: '#F6F6F6',
+        gray1: '#F6F6F6',   // foreground gray1
     }
 }
 
