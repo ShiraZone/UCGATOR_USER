@@ -49,7 +49,7 @@ const SignUp = () => {
         };
 
         try {
-
+            
         } catch (error: any) {
             if (error.response) {
                 alert(`Fail to register: ${error.response.data.message}`)

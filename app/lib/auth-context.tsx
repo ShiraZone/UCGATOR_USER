@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // Router instance for navigation
     const router = useRouter();
     // API endpoint from config
-    const endpoint = config.endpoint;
+    const activeEndpoint = config.endpoint;
 
 
     // function for initializing route sequence for the application
@@ -65,7 +65,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         setLoading(true); // sets loading to true
         try {
             // await response from end API
-            const response = await axios.post(`${endpoint}/auth/sign-in`, {
+            const response = await axios.post(`${activeEndpoint}/auth/sign-in`, {
                 email,
                 password
             });
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             }
 
             // await API response with header authorization bearer
-            const response = await axios.get(`${endpoint}/user/get-user`, {
+            const response = await axios.get(`${activeEndpoint}/user/get-user`, {
                 headers: {
                     Authorization: `Bearer ${user?.token}`
                 }
