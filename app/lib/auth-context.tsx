@@ -3,6 +3,7 @@ import { deleteToken, deleteUserSession, getToken, saveToken, saveUserSession } 
 import { config } from "./config";
 import { useRouter } from "expo-router";
 import axios from "axios";
+import Toast from "react-native-toast-message";
 
 interface User {
     token: string;
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     const router = useRouter();
     // API endpoint from config
     const activeEndpoint = config.endpoint;
+    // State to store error messages
 
 
     // function for initializing route sequence for the application
@@ -73,7 +75,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             // validate if the response is not success
             // throw error
             if (!response.data.success) throw new Error('Login failed. Please try again.');
-
+            
             // otherwise continue
             const token = response.data.value.token;
             const sessionID = response.data.value.sessionID;
@@ -85,8 +87,18 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             setIsLoggedIn(true);
 
             router.replace('/'); // replace screen with index screen
-        } catch (error) {
-            console.error(error); // if error, log error
+        } catch (error: any) {
+            // if error is axios error and response status is 404
+            // show toast message with error message in incorrect login data
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+                Toast.show({
+                    type: 'error',
+                    text1: 'Error',
+                    text2: 'Incorrect email or password.',
+                    visibilityTime: 3000,
+                    autoHide: true,
+                })
+            }
         } finally {
             setLoading(false); // set loading to false
         }

@@ -1,12 +1,14 @@
 // DEPENDENCIES
 import React from 'react';
 
+
 // COMPONENTS
 import { Alert, Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Link, Redirect, useRouter, withLayoutContext } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
+import Toast from 'react-native-toast-message';
 
 // ICONS
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -19,20 +21,42 @@ import { useAuth } from '@/app/lib/auth-context';
 // UTILS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
+import { KeyboardState } from 'react-native-reanimated';
 
 const SignIn = () => {
     const { login } = useAuth();
     const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
     const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
+    const validEmailFormat = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Check if email is valid.
+
+
     const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
     const router = useRouter();
 
     const handleLogin = async () => {
         if (loginInfo.email?.length === 0 || loginInfo.password?.length === 0) {
-            alert('Email and password must be provided.');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Email and password must be provided',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
             return;
         }
 
+        if (!validEmailFormat(loginInfo.email!)) {
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Invalid email format',
+                visibilityTime: 3000,
+                autoHide: true,
+            });
+            return;
+        }
+        
+        // return an alert if email and password are not present in the database 
         await login(loginInfo.email!, loginInfo.password!)
     }
 
@@ -52,7 +76,7 @@ const SignIn = () => {
                                 <View>
                                     <View style={styles.textInputWrapper}>
                                         <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
-                                        <TextInput style={styles.textInputField} placeholder='Enter your email' onChangeText={(text) => handleInputChange('email', text)} />
+                                        <TextInput style={styles.textInputField} placeholder='Enter your email' keyboardType='email-address' onChangeText={(text) => handleInputChange('email', text)} />
                                     </View>
                                 </View>
                                 {/* PASSWORD */}
@@ -90,6 +114,7 @@ const SignIn = () => {
                     </ScrollView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
+            <Toast />
         </SafeAreaView>
     )
 }
