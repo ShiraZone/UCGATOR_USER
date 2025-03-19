@@ -1,0 +1,10 @@
+Components:
+  - 'components/**'
+Root:
+  - '/'
+Constants:
+  - 'constant/**'
+Library:
+  - 'lib/**'
+Others:
+  - 'src/others/**'

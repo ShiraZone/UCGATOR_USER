@@ -129,7 +129,7 @@ const ForgotPassword = () => {
                                 <Link href='/change-password' style={styles.ContinebuttonText}>CONTINUE</Link>
                             </TouchableOpacity>
 
-                            <TouchableOpacity  onPress={() => {}}>
+                            <TouchableOpacity  onPress={() => {router.back()}}>
                                 <Text style={styles.cancelText}>CANCEL</Text>
                             </TouchableOpacity>
                         </View>

@@ -15,17 +15,17 @@ import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 // HOOKS
 import { useState, useCallback } from 'react';
-import COLORS from '@/app/constants/colors';
-import IMAGES from '@/app/constants/images';
-import axios from 'axios';
+import { useAuth } from '@/app/lib/auth-context';
 
 // UTILS
+import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
 
 const SignUp = () => {
     const router = useRouter();
+    const { signUp } = useAuth();
     const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
     const [registerInfo, setRegisterInfo] = useState<{ email?: string, password?: string, confirmPassword?: string }>({}); // Register information state.
-    const [errors, setErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({}); // Error state for validation.
 
     const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Validation for email checking
     const isValidPassword = (password: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password) // Validation for password checking.
@@ -33,7 +33,6 @@ const SignUp = () => {
 
     const submitForm = useCallback(async () => {
         const newErrors: {
-            name?: string;
             email?: string;
             password?: string;
             confirmPassword?: string;
@@ -41,23 +40,21 @@ const SignUp = () => {
 
         if (!isValidEmail(registerInfo.email || '')) newErrors.email = 'Please enter a valid email address.';
         if (!isValidPassword(registerInfo.password || '')) newErrors.password = 'Please provide a strong password.';
-        if (registerInfo.password != registerInfo.confirmPassword) newErrors.confirmPassword = 'Password does not match.';
+        if(!registerInfo.confirmPassword) {
+            newErrors.confirmPassword = 'Please confirm your password.';
+        } else if (registerInfo.password != registerInfo.confirmPassword) {
+            newErrors.confirmPassword = 'Password does not match.';
+        }
 
         if (Object.keys(newErrors).length > 0) {
-            setErrors(newErrors)
+            alert(Object.values(newErrors).join('\n'));
             return;
         };
 
         try {
-            
+            const targetUri = '/(root)/(auth)/one-time-password';
+            await signUp(registerInfo.email!, registerInfo.password!, targetUri);
         } catch (error: any) {
-            if (error.response) {
-                alert(`Fail to register: ${error.response.data.message}`)
-            } else if (error.request) {
-                alert('Network error. Please check your connection.');
-            } else {
-                alert('An error occurred during registration. Please try again later.');
-            }
             console.error('Registration error: ', error);
         }
     }, [registerInfo, isValidEmail, isValidPassword])
@@ -97,7 +94,7 @@ const SignUp = () => {
                                     </View>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
-                                <TouchableOpacity style={styles.button} onPress={() => router.push('/log-in')}>
+                                <TouchableOpacity style={styles.button} onPress={() => submitForm()}>
                                     <Text style={styles.buttonText}>SIGN UP</Text>
                                 </TouchableOpacity>
                             </View>
