@@ -4,16 +4,14 @@ import { config } from "./config";
 import { useRouter } from "expo-router";
 import axios from "axios";
 
-interface User {
-    token: string;
-}
-
 interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
+    signUp: (email: string, password: string, linkUri: any) => Promise<void>;
     logout: () => Promise<boolean>;
     getUserInfo: () => Promise<any>;
-    user: User | null;
+    user: string | null;
     isLoggedIn: boolean;
+    loading: boolean;
 }
 
 interface AuthContextProps {
@@ -24,7 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: AuthContextProps) => {
     // State to store user information
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState(null);
     // State to track if the user is logged in
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     // State to track loading status
@@ -59,7 +57,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // requires parameters email and password of type stirng
     // set loadings to true when this function is called
     // await api response
-    // if success initiate saving login infor
+    // if success initiate saving login information
     // replace login screen with index screen
     const login = async (email: string, password: string) => {
         setLoading(true); // sets loading to true
@@ -72,7 +70,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             // validate if the response is not success
             // throw error
-            if (!response.data.success) throw new Error('Login failed. Please try again.');
+            // if (!response.data.success) throw new Error('Login failed. Please try again.');
 
             // otherwise continue
             const token = response.data.value.token;
@@ -85,10 +83,46 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             setIsLoggedIn(true);
 
             router.replace('/'); // replace screen with index screen
-        } catch (error) {
-            console.error(error); // if error, log error
+        } catch (error: any) {
+            // Handle backend errors
+            console.log("Error response data:", error.response.data.error);
         } finally {
             setLoading(false); // set loading to false
+        }
+    }
+
+    // function for sign up system for the application
+    // requires paramters email and password of type string
+    // set loadings to true when this function is called
+    // await api response
+    // is success save login information
+    // replace signup screen with personal information screen input
+    const signUp = async (email: string, password: string, linkUri: any) => {
+        setLoading(true);
+        try {
+            const response = await axios.post(`${config.endpoint}/auth/sign-up`, {
+                email,
+                password
+            });
+
+            if (!response.data.success) throw new Error('Register failed. Please try again later.');
+
+            const token = response.data.value.token;
+            const sessionID = response.data.value.sessionID;
+
+            await saveToken(token);
+            await saveUserSession(sessionID);
+            setUser(token);
+            setIsLoggedIn(true);
+
+            router.replace({
+                pathname: linkUri,
+                params: { email }
+            });
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -124,14 +158,14 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     const getUserInfo = async () => {
         try {
             // check if a user is loggedin
-            if(user === null && !isLoggedIn) {
+            if (user === null && !isLoggedIn) {
                 return null;
             }
 
             // await API response with header authorization bearer
             const response = await axios.get(`${activeEndpoint}/user/get-user`, {
                 headers: {
-                    Authorization: `Bearer ${user?.token}`
+                    Authorization: `Bearer ${user}`
                 }
             });
 
@@ -151,7 +185,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{login, logout, getUserInfo, user, isLoggedIn}}>
+        <AuthContext.Provider value={{ login, signUp, logout, getUserInfo, user, isLoggedIn, loading }}>
             {children}
         </AuthContext.Provider>
     )

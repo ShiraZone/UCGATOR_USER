@@ -28,19 +28,19 @@ const SignIn = () => {
     const router = useRouter();
 
     const handleLogin = async () => {
-        if (loginInfo.email?.length === 0 || loginInfo.password?.length === 0) {
-            alert('Email and password must be provided.');
+        if (!loginInfo.email || !loginInfo.password) {
+            Alert.alert('Error', 'Email and Password must be provided.');
             return;
         }
 
-        await login(loginInfo.email!, loginInfo.password!)
+        await login(loginInfo.email, loginInfo.password)
     }
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1}} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
                             <Text style={{ fontSize: 24, fontFamily: 'Montserrat-Bold' }}>Login</Text>
@@ -66,11 +66,11 @@ const SignIn = () => {
                                         <Checkbox value={isPasswordVisible} onValueChange={setPasswordVisibility} />
                                         <Text style={[styles.sublimeText, { marginLeft: 8 }]}>See Password</Text>
                                     </View>
-                                    <Link href='/forgot-password' style={styles.sublimeText}>
+                                    <TouchableOpacity onPress={() => router.push('./forgot-password')}>
                                         <Text style={{ color: "#FFFFFF", textDecorationLine: 'underline' }}>
                                             Forgot Password?
                                         </Text>
-                                    </Link>
+                                    </TouchableOpacity>
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
                                 <TouchableOpacity style={styles.button} onPress={() => handleLogin()}>
