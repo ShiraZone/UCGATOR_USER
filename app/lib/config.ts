@@ -9,7 +9,7 @@ export const testConnection = async () => {
     try {
         const response = await axios.get(`${config.endpoint}/`);
         console.log('Connection successful:', response.data);
-    } catch (error) {
-        console.error('Connection failed:', error);
+    } catch (error: any) {
+        console.error('Connection failed:', error.response?.data?.error);
     }
 };

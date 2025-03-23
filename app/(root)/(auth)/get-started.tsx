@@ -1,14 +1,19 @@
-// DEPENDENCIES
+// REACT
 import React from 'react';
 
-// ELEMENTS
-import { Link, useRouter } from "expo-router";
+// EXPO ROUTER
+import { useRouter } from "expo-router";
+
+// REACT NATIVE
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ScrollView, StyleSheet, Text, View, Image, TouchableOpacity, ImageBackground, StatusBar } from 'react-native';
 
 // CONSTANTS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
+
+// HOOKS
+import { useAuth } from '@/app/lib/auth-context';
 
 // HOOKS
 
