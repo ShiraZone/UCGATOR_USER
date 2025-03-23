@@ -22,12 +22,23 @@ import { faDoorOpen } from '@fortawesome/free-solid-svg-icons';
 import { faHeadset } from '@fortawesome/free-solid-svg-icons';
 import { faShare } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'expo-router';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 interface SettingsItemProps {
     icon: any,
     title: string,
     subtitle: string | null
     onPress: () => void,
+}
+
+interface User {
+    id: string;
+    email: string;
+    avatar: string;
+    firstName: string;
+    middleName: string;
+    lastName: string;
+    verified: boolean;
 }
 
 const SettingsItem = ({ icon, title, subtitle, onPress }: SettingsItemProps) => {

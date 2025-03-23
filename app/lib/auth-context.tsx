@@ -5,7 +5,6 @@ import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
 import axios from "axios";
 import Toast from "react-native-toast-message";
-import { combineTransition } from "react-native-reanimated";
 import { getRegistrationStatus, saveRegistrationStatus } from "./async-store";
 
 interface User {
@@ -69,9 +68,10 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         if (registrationStep === 'profile_pending' || registrationStep === 'pending') {
             router.replace('/(root)/onboarding/name-input' )
             setIsLoggedIn(true);
+        } else {
+            setIsLoggedIn(true);
+            await getUserInfo();
         }
-
-        getUserInfo();
 
         setLoading(false); // set loading to false
     }
@@ -83,7 +83,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // if success initiate saving login information
     // replace login screen with index screen
     const login = async (email: string, password: string) => {
-        setLoading(true); // sets loading to true
+        setLoading(true); // sets loading to truee
         try {
             // await response from end API
             const response = await axios.post(`${activeEndpoint}/auth/sign-in`, {
@@ -91,41 +91,26 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 password
             });
 
-            // validate if the response is not success
-            // throw error
+            const token = response.data.value.token; // pass the token
+            const sessionID = response.data.value.sessionID; // pass the sessionID
 
-            if (response.data.success) {
-                const token = response.data.value.token;
-                const sessionID = response.data.value.sessionID;
-
-                await saveToken(token);
-                await saveUserSession(sessionID);
-                getUserInfo();
-                setIsLoggedIn(true);
-
-                router.replace('/');
-            }
-
-            // otherwise continue
-
-
-            // save user token and user sessionID
+            await saveToken(token); // save the token to secure store
+            await saveUserSession(sessionID); // save the user session to secure stores
+            
+            setIsLoggedIn(true); // set user logged in to true
+            await getUserInfo(); // get user information
 
             // replace screen with index screen
+            router.replace('/');  
         } catch (error: any) {
-            const status = error.response?.status;
-            const errorResponse = error.response?.data?.error;
             // show proper error message in a toast message
             Toast.show({
                 type: 'error',
                 text1: 'Error',
-                text2: errorResponse,
+                text2: error.response?.data?.error,
                 visibilityTime: 1500,
                 autoHide: true
             })
-            // Handle backend errors
-            const message = error.response?.data?.error || error.message;
-            alert(message);
         } finally {
             setLoading(false); // set loading to false
         }
@@ -198,21 +183,17 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // pass user data to global request
     const getUserInfo = async () => {
         try {
-            // check if a user is loggedin
-            if (!isLoggedIn) {
-                return null;
-            }
-
             // await API response with header authorization bearer
             const response = await axios.get(`${activeEndpoint}/user/user-information`, {
                 headers: {
                     Authorization: `Bearer ${await getToken()}`
                 }
             });
-
+            
             // assuming that the response remain success and is success
             // return data
             const data = response.data.user;
+            
             setUser({
                 id: data.userID,
                 email: data.email,
@@ -222,9 +203,10 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 middleName: data.personalInformation.middleName,
                 lastName: data.personalInformation.lastName,
             })
+
+            
         } catch (error) {
             console.error(error); // log errors
-            return null; // return no user data
         }
     }
 
