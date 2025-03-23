@@ -4,6 +4,8 @@ import { config } from "./config";
 import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
 import axios from "axios";
+import Toast from "react-native-toast-message";
+import { combineTransition } from "react-native-reanimated";
 import { getRegistrationStatus, saveRegistrationStatus } from "./async-store";
 
 interface User {
@@ -41,6 +43,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     const router = useRouter();
     // API endpoint from config
     const activeEndpoint = config.endpoint;
+    // State to store error messages
 
 
     // function for initializing route sequence for the application
@@ -110,6 +113,16 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             // replace screen with index screen
         } catch (error: any) {
+            const status = error.response?.status;
+            const errorResponse = error.response?.data?.error;
+            // show proper error message in a toast message
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: errorResponse,
+                visibilityTime: 1500,
+                autoHide: true
+            })
             // Handle backend errors
             const message = error.response?.data?.error || error.message;
             alert(message);
