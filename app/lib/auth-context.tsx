@@ -4,6 +4,7 @@ import { config } from "./config";
 import { useRouter } from "expo-router";
 import axios from "axios";
 import Toast from "react-native-toast-message";
+import { combineTransition } from "react-native-reanimated";
 
 interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
@@ -86,8 +87,24 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             router.replace('/'); // replace screen with index screen
         } catch (error: any) {
-            // Handle backend errors
-            console.log("Error response data:", error.response.data.error);
+            // console.error("Login error",error); // log error
+
+            const status = error.response?.status;
+            const errorResponse = error.response?.data?.error;
+
+            // DEBUGGING LOG
+            // console.log("Is axios reponse: ",axios.isAxiosError(error));
+            // console.log("Error response: ",status);
+            // console.log("Error response: ",errorResponse);
+            
+            // show proper error message in a toast message
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: errorResponse,
+                visibilityTime: 1500,
+                autoHide: true
+            })
         } finally {
             setLoading(false); // set loading to false
         }

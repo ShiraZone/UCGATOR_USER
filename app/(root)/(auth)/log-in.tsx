@@ -35,7 +35,13 @@ const SignIn = () => {
 
     const handleLogin = async () => {
         if (!loginInfo.email || !loginInfo.password) {
-            Alert.alert('Error', 'Email and Password must be provided.');
+            Toast.show({
+                type: 'error',
+                text1: 'Error',
+                text2: 'Please fill in all fields.',
+                visibilityTime: 1500,
+                autoHide: true
+            })
             return;
         }
 
