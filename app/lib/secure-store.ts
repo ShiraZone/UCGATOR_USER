@@ -7,7 +7,7 @@ const SESSION_KEY: string = 'sessionID';
 export async function saveToken(token: string): Promise<void> { 
     try {
         await SecureStore.setItemAsync(TOKEN_KEY, token);
-        console.log('Token saved successfully.');
+        console.log('Token saved successfully.', token);
     } catch (error) {
         console.error('Failed to get token: ', error);
     }

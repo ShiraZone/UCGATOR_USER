@@ -1,88 +1,100 @@
-// DEPENDENCIES
-import React, { useEffect } from 'react';
+// REACT
+import React, { useEffect, useState, useCallback } from 'react';
 
-// COMPONENTS
-import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Keyboard } from 'react-native';
+// REACT NATIVE
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+    TextInput,
+    TouchableWithoutFeedback,
+    TouchableOpacity,
+    KeyboardAvoidingView,
+    Keyboard
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { Link, useRouter } from 'expo-router';
-import { Checkbox } from 'expo-checkbox';
-
-// ICONS
-import { faLock } from '@fortawesome/free-solid-svg-icons';
-import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 // HOOKS
-import { useState, useCallback } from 'react';
-import { useAuth } from '@/app/lib/auth-context';
+import { useLoading } from '@/app/lib/load-context';
+import { useSearchParams } from 'expo-router/build/hooks';
 
-// UTILS
+// CONSTANTS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
-import { useSearchParams } from 'expo-router/build/hooks';
+
+// UTILS
 import axios from 'axios';
 import { config } from '@/app/lib/config';
+import { router } from 'expo-router';
+import { getToken } from '@/app/lib/secure-store';
 
 const OneTimePassword = () => {
+    // HOOKS
     const searchParams = useSearchParams();
-    const email = searchParams.get('email');
-    const { user } = useAuth();
+    const { setLoading } = useLoading();
 
+    // VARIABLES
+    const email = searchParams.get('email');
+
+    // STATES
     const [timer, setTimer] = useState(300);
-    const [otp, setOtp] = useState<string[]>(Array(6).fill(''));
+    const [otpCode, setOtp] = useState<string[]>(Array(6).fill(''));
+
+    // REFS
     const otpInputRefs = Array.from({ length: 6 }, () => React.createRef<TextInput>());
 
     const sendMail = async () => {
-
-        if(!email) {
-            console.log('WHERES YA EMAIL BITCH.');
-            throw new Error('WHERES YA EMAIL BITCH.');
-        }
-
+        const token = await getToken();
         try {
             const response = await axios.post(`${config.endpoint}/otp/send-otp`, { email }, {
                 headers: {
-                    Authorization: `Bearer ${user}`
+                    Authorization: `Bearer ${token}`
                 }
             });
 
-            if (!response.data.success) throw new Error('Failed to send OTP.');
-
-            startCountdown(300);
+            if (response.data.success) {
+                startCountdown(300);
+            }
+            
         } catch (error) {
             console.error(error);
+            // Optionally, you can rethrow the error if you want the middleware to handle it
+            throw error;
         }
     }
 
     const validateOTP = async () => {
-        const otpCode = otp.join('');
-
-        if(!otpCode) {
+        const otp = otpCode.join('');
+        const token = await getToken();
+        if (!otp || otp.length < 6) {
+            // TODO: Add a toast message to notify that the user needs to input the otp.
+            //       Properly ends this function.
             throw new Error('Please provide the OTP code below.');
         }
 
-        try {    
-            const response = await axios.post(`${config.endpoint}/otp/verify-otp`, { email, otpCode }, {
+        setLoading(true);
+        try {
+            const response = await axios.post(`${config.endpoint}/otp/verify-otp`, { email, otp }, {
                 headers: {
-                    Authorization: `Bearer ${user}`
+                    Authorization: `Bearer ${token}`
                 }
             });
-            
-            console.log(response);
 
-            if (!response.data.success || response.status === 400) {
-                throw new Error(response.data.message);
+            if (response.data.success) {
+                router.push('/(root)/onboarding/name-input');
             }
-
-            alert(response.data.message);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            // TODO: Add a toast message to notify the user about any OTP validation errors.
+            console.error(error.response.data.error);
+        } finally {
+            setLoading(false);
         }
     }
 
     const handleOtpChange = (text: string, index: number) => {
-        const updatedOtp = [...otp];
+        const updatedOtp = [...otpCode];
         updatedOtp[index] = text;
         setOtp(updatedOtp);
 
@@ -123,27 +135,11 @@ const OneTimePassword = () => {
                         <View>
                             <View style={styles.formWrapper}>
                                 {/* FORM */}
-                                <Text style={{ color: COLORS.pmy.white, textAlign: 'center', lineHeight: 25, fontSize: 16 }}> A <Text style={{ fontWeight: 'bold' }}>6-digit OTP</Text> code was sent to your registered email. The code is only valid within 15 minutes. You may request for a new code after <Text style={{ fontWeight: 'bold'}}>{timer}</Text> seconds</Text>
+                                <Text style={{ color: COLORS.pmy.white, textAlign: 'center', lineHeight: 25, fontSize: 16 }}> A <Text style={{ fontWeight: 'bold' }}>6-digit OTP</Text> code was sent to your registered email. The code is only valid within 15 minutes. You may request for a new code after <Text style={{ fontWeight: 'bold' }}>{timer}</Text> seconds</Text>
                                 {/* INPUT STYLE */}
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
                                     {Array.from({ length: 6 }).map((_, index) => (
-                                        <TextInput
-                                            key={index}
-                                            style={{
-                                                width: 40,
-                                                height: 50,
-                                                borderWidth: 1,
-                                                borderColor: COLORS.white.white1,
-                                                borderRadius: 5,
-                                                textAlign: 'center',
-                                                fontSize: 18,
-                                                backgroundColor: COLORS.white.white1,
-                                            }}
-                                            keyboardType="number-pad"
-                                            maxLength={1}
-                                            onChangeText={(text) => handleOtpChange(text, index)}
-                                            ref={otpInputRefs[index]}
-                                        />
+                                        <TextInput key={index} style={styles.textInput} keyboardType="number-pad" maxLength={1} onChangeText={(text) => handleOtpChange(text, index)} ref={otpInputRefs[index]} />
                                     ))}
                                 </View>
                                 {/* SUBMIT FUNCTIONS */}
@@ -151,7 +147,6 @@ const OneTimePassword = () => {
                                     style={styles.button}
                                     onPress={() => {
                                         if (timer === 0) {
-                                            startCountdown(300); // Restart the timer after resending
                                             sendMail();
                                         }
                                     }}
@@ -257,5 +252,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontFamily: 'Montserrat-Bold',
         color: COLORS.white.white1
+    },
+
+    // OTP BOX
+    textInput: {
+        width: 40,
+        height: 50,
+        borderWidth: 1,
+        borderColor: COLORS.white.white1,
+        borderRadius: 5,
+        textAlign: 'center',
+        fontSize: 18,
+        backgroundColor: COLORS.white.white1,
     }
 })

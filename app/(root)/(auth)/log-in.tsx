@@ -33,7 +33,7 @@ const SignIn = () => {
             return;
         }
 
-        await login(loginInfo.email, loginInfo.password)
+        await login(loginInfo.email, loginInfo.password);
     }
 
     return (
