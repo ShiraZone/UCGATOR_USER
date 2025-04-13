@@ -54,6 +54,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         setLoading(true);
         // get token from secureStorage
         const userToken = await getToken();
+        console.log(userToken);
         // If token is null
         // replace screen with rout get started or the onboarding screen.
         if (!userToken) {

@@ -13,7 +13,7 @@ import React from 'react'
 //      >> Email Address
 //      >> Password
 
-const ProfileInfo = () => {
+const Favorites = () => {
   return (
     <View>
       <Text>ProfileInfo</Text>
@@ -21,7 +21,7 @@ const ProfileInfo = () => {
   )
 }
 
-export default ProfileInfo
+export default Favorites
 
 const styles = StyleSheet.create({
 
