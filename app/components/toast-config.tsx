@@ -4,20 +4,22 @@
  * Toast Utils
  * 
  * This file contains utility functions for displaying Toast messages.
-
+ * idk ang gibutang man kay i-initialize ang toast sa app.tsx, fak et
  */
 
-// Core Components
-import { config } from "@fortawesome/fontawesome-svg-core";
-import Toast from "react-native-toast-message";
+// CORE COMPONENTS
+import React from 'react';
+import Toast, { BaseToast,SuccessToast, ErrorToast } from "react-native-toast-message";
 
-// Constants
+// UTILS
 import COLORS from "../constants/colors";
 
-// Error Toast Style Config
-const ErrorToastConfig = {
+// Constants
+const TOAST_DURATION = 3000;
+
+const toastWrapper = {
     error: (props: any) => (
-        <Toast
+        <ErrorToast
             {...props}
             style={{
                 borderLeftColor: COLORS.alert.error,      // Customize the border color
@@ -38,12 +40,8 @@ const ErrorToastConfig = {
             }}
         />
     ),
-};
-
-// Success Toast Style Config
-const SuccessToastConfig = {
-    error: (props: any) => (
-        <Toast
+    success: (props: any) => (
+        <SuccessToast
             {...props}
             style={{
                 borderLeftColor: COLORS.alert.success,      // Customize the border color
@@ -53,23 +51,19 @@ const SuccessToastConfig = {
             }}
             text1Style={{
                 font: 'Montserrat-Bold',
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: 'bold',
                 color: COLORS.sdy.gray1,
             }}
             text2Style={{
                 font: 'Montserrat-Regular',
-                fontSize: 14,
+                fontSize: 16,
                 color: COLORS.sdy.gray1,
             }}
         />
     ),
-};
-
-// Warning Toast Style Config
-const WarningToastConfig = {
-    error: (props: any) => (
-        <Toast
+    Info: (props: any) => (
+        <BaseToast
             {...props}
             style={{
                 borderLeftColor: COLORS.alert.warning,      // Customize the border color
@@ -89,7 +83,7 @@ const WarningToastConfig = {
                 color: COLORS.sdy.gray1,
             }}
         />
-    ),
+    )
 };
 
 // Function to show an error toast
@@ -98,15 +92,9 @@ export const showErrorToast = (message: string, title: string = "Error") => {
         type: "error",
         text1: title,
         text2: message,
-        visibilityTime: 3000,
+        visibilityTime: TOAST_DURATION,
         autoHide: true,
     });
-    return (
-        <>
-            {/* Your app components */}
-            <Toast config={ErrorToastConfig} />
-        </>
-    );
 };
 
 // Function to show a success toast
@@ -115,15 +103,9 @@ export const showSuccessToast = (message: string, title: string = "Success") => 
         type: "success",
         text1: title,
         text2: message,
-        visibilityTime: 3000,
+        visibilityTime: TOAST_DURATION,
         autoHide: true,
     });
-    return (
-        <>
-            {/* Your app components */}
-            <Toast config={SuccessToastConfig} />
-        </>
-    );
 };
 
 // Function to show an info toast
@@ -132,13 +114,17 @@ export const showInfoToast = (message: string, title: string = "Info") => {
         type: "info",
         text1: title,
         text2: message,
-        visibilityTime: 3000,
+        visibilityTime: TOAST_DURATION,
         autoHide: true,
     });
+};
+
+// Component Export
+export default function App(props: any) {
     return (
         <>
             {/* Your app components */}
-            <Toast config={WarningToastConfig} />
+            <Toast config={toastWrapper} />
         </>
-    );
+    )
 };

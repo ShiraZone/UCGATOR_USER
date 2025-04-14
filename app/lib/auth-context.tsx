@@ -1,11 +1,16 @@
+// 
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { deleteToken, deleteUserSession, getToken, saveToken, saveUserSession } from "./secure-store";
 import { config } from "./config";
+import axios from "axios";
+
+// router
 import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
-import axios from "axios";
-import Toast from "react-native-toast-message";
+
+// async storage
 import { getRegistrationStatus, saveRegistrationStatus } from "./async-store";
+import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
 
 interface User {
     id: string;
@@ -104,14 +109,11 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             // replace screen with index screen
             router.replace('/');  
         } catch (error: any) {
+            console.log("error: ",error.response?.data?.status);
+            console.log("error response: ",error.response?.data?.error);
+
             // show proper error message in a toast message
-            Toast.show({
-                type: 'error',
-                text1: 'Error',
-                text2: error.response?.data?.error,
-                visibilityTime: 1500,
-                autoHide: true
-            })
+            showErrorToast(error.response?.data?.error, 'Error');
         } finally {
             setLoading(false); // set loading to false
         }
@@ -147,8 +149,8 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 pathname: linkUri,
                 params: { email }
             });
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            showErrorToast(error.response?.data?.error, 'Error');
         } finally {
             setLoading(false);
         }
@@ -206,8 +208,8 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             })
 
             
-        } catch (error) {
-            console.error(error); // log errors
+        } catch (error: any) {
+            showErrorToast('Error getting user information', 'Error');
         }
     }
 

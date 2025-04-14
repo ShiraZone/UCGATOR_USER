@@ -10,11 +10,14 @@ import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reani
 import { StyleSheet, StatusBar, Image, View, Text, TouchableOpacity } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { GestureHandlerRootView, PinchGestureHandler, PanGestureHandler, GestureDetector, Gesture } from "react-native-gesture-handler";
+import { showErrorToast } from '@/app/components/toast-config';
+
 // ICONS
 import { faMagnifyingGlass, faMicrophone, faPlus, faMinus, faArrowUp, faAlignCenter, faCloud } from '@fortawesome/free-solid-svg-icons';
 
 // CONSTANT
 import COLORS from '@/app/constants/colors';
+import Toast from 'react-native-toast-message';
 
 // AXIOS
 import axios from 'axios';
