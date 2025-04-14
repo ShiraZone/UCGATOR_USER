@@ -3,12 +3,14 @@ import React from 'react-native';
 // COMPONENTS
 import { StyleSheet, View, Text, StatusBar } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { showErrorToast } from '@/app/components/toast-config';
 
 // ICONS
 import { faMagnifyingGlass, faMicrophone, faPlus, faMinus, faArrowUp, faAlignCenter, faCloud } from '@fortawesome/free-solid-svg-icons';
 
 // CONSTANT
 import COLORS from '@/app/constants/colors';
+import Toast from 'react-native-toast-message';
 
 export default function Index() {
 

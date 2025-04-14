@@ -22,6 +22,7 @@ import { useAuth } from '@/app/lib/auth-context';
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
 import { KeyboardState } from 'react-native-reanimated';
+import { ToastConfig } from 'react-native-toast-message';
 
 const SignIn = () => {
     const { login } = useAuth();
@@ -35,12 +36,12 @@ const SignIn = () => {
 
     const handleLogin = async () => {
         if (!loginInfo.email || !loginInfo.password) {
+            // Show error message
             Toast.show({
                 type: 'error',
-                text1: 'Error',
-                text2: 'Please fill in all fields.',
+                text1: 'Empty Fields',
+                text2: 'Please provide an email and password.',
                 visibilityTime: 1500,
-                autoHide: true
             })
             return;
         }

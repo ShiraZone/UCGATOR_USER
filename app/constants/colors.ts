@@ -54,6 +54,7 @@ const COLORS = {
         black: '#000000',      // default black, rgb(0, 0, 0)
         blue1:'#2B4F6E',    // icons and foreground, rgb(43, 79, 110)
         blue2: '#122E48',   // button background color, rgb(18, 46, 72)
+        transparent: '#00000000', // transparent, rgb(0, 0, 0, 0)
     },
     sdy: {
         gray1: '#F6F6F6',   // foreground gray1, rgb(246, 246, 246)
