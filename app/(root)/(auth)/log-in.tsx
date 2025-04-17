@@ -1,5 +1,5 @@
 // DEPENDENCIES
-import React from 'react';
+import React, { useEffect } from 'react';
 
 
 // COMPONENTS
@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { Link, Redirect, useRouter, withLayoutContext } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
 import Toast from 'react-native-toast-message';
+import { testConnection } from '@/app/lib/config';
 
 // ICONS
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -25,15 +26,15 @@ import { KeyboardState } from 'react-native-reanimated';
 import { ToastConfig } from 'react-native-toast-message';
 
 const SignIn = () => {
+    const router = useRouter();
+
     const { login } = useAuth();
     const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
     const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
     const validEmailFormat = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Check if email is valid.
 
-
     const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
-    const router = useRouter();
-
+    
     const handleLogin = async () => {
         if (!loginInfo.email || !loginInfo.password) {
             // Show error message
