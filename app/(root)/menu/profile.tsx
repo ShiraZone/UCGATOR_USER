@@ -1,20 +1,7 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 
 // COMPONENTS
-import { 
-    Image, 
-    ScrollView,
-    StyleSheet, 
-    Text, 
-    View, 
-    TouchableWithoutFeedback,
-    TouchableOpacity,
-    ImageBackground, 
-    KeyboardAvoidingView,
-    Keyboard,
-    StatusBar,
-    Dimensions,
-} from 'react-native';
+import {  Image, ScrollView, StyleSheet, Text, View, TouchableWithoutFeedback, TouchableOpacity, ImageBackground, Keyboard, StatusBar, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, useRouter } from 'expo-router';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -31,102 +18,95 @@ import { faCircleUser } from '@fortawesome/free-solid-svg-icons';
 import { faPencil } from '@fortawesome/free-solid-svg-icons';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
-// Basic Information
-interface User {
-    id: string;
-    email: string;
-    avatar: string;
-    firstName: string;
-    middleName: string;
-    lastName: string;
-    verified: boolean;
-}
-
-const ProfileInformation = {
-    "name": "Jane Doe",
-    "type": "student",
-    "date_of_birth": "2000-01-01",
-    "gender": "female",
-    "contact_number": "09123456789",
-    "address": "ZZZ",
-    "email_address": "rat_fucker@gmail.com",
-    "password": "janedoeisarat",
-    "Bio": "*sqeak*"
-}
+// Debug Function
+const generateRandomTimestamp = (): Date => {
+    const now = new Date();
+    const randomTime = Math.floor(Math.random() * now.getTime());
+    return new Date(randomTime);
+};
 
 const ProfileInfoWindow = () => {
     const { user } = useAuth();
     const router = useRouter();
+    generateRandomTimestamp();
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
             <StatusBar backgroundColor={COLORS.pmy.blue1} barStyle="light-content" />
-            {/* Profile Header */}
-            <ImageBackground style={styles.profileHeaderContainer} source={IMAGES.menu_image_cover} resizeMode='stretch'>
-                <Text style={{ fontSize: 22, textAlign: 'left', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.white}}>Profile</Text>
-                <View style={styles.profileHeader}>
-
-                    {user?.avatar ? (
-                        <Image source={{ uri: user?.avatar }} style={styles.avatar} />
-                    ) : (
-                        <FontAwesomeIcon icon={faCircleUser} size={65} color={COLORS.pmy.white} style={{ marginRight: 8}}/>
-                    )}
-
-                    {/* Profile Name and Email */}
-                    <View>
-                        <Text style={{ color: COLORS.pmy.white, fontSize: 18, fontFamily: 'Montserrat-Bold',}}>{user?.lastName}, {user?.firstName} {user?.middleName}</Text>
-                        <Text style={{ color: '#d0e0f0', fontFamily: 'Montserrat-Regular',}}>{user?.email}</Text>
-                    </View>
-
-                    {/* Edit Profile Icon */}
-                    <TouchableOpacity style={styles.editProfile} onPress={() => router.push('./edit-profile')}>   
-                        <FontAwesomeIcon icon={faPencil} size={15} color={COLORS.pmy.white} />
-                    </TouchableOpacity>
-                </View>
-            </ImageBackground>
-            
-            {/* Scrollable Content */}
-            <KeyboardAvoidingView style={{ flex: 1 }} enabled>
                 <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 175 }} > 
+                    <ScrollView style={styles.container}>
+
+                        {/* Profile Header */}
+                        <ImageBackground style={styles.profileHeaderContainer} source={IMAGES.menu_image_cover} resizeMode='stretch'>   
+                            <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', position: 'absolute', left: 15 }} onPress={() => router.back()}>
+                                <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
+                                </TouchableOpacity>
+                                <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.white }}>First Aid</Text>
+                            </View>
+                            
+                            <View>
+                                <View style={styles.profileHeader}>
+                                    {user?.avatar ? (
+                                        <Image source={{ uri: user?.avatar }} style={styles.avatar} />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faCircleUser} size={65} color={COLORS.pmy.white} style={{ marginRight: 8}}/>
+                                    )}
+
+                                    {/* Profile Name and Email */}
+                                    <View>
+                                        <Text style={{ color: COLORS.pmy.white, fontSize: 18, fontFamily: 'Montserrat-Bold',}}>{user?.lastName}, {user?.firstName} {user?.middleName}</Text>
+                                        <Text style={{ color: '#d0e0f0', fontFamily: 'Montserrat-Regular',}}>{user?.email}</Text>
+                                    </View>
+
+                                    {/* Edit Profile Icon */}
+                                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 8, borderRadius: 5, position: 'absolute', right: 10 }} onPress={() => router.push('./edit-profile')}>   
+                                        <FontAwesomeIcon icon={faPencil} size={15} color={COLORS.pmy.white} />
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                            
+                        </ImageBackground>
 
                         {/* About Me Section */}
-                        <View style={styles.section}>
+                        <View style={{ backgroundColor: '#BCD4E6', marginHorizontal: 10, marginBottom: 5, borderRadius: 10, padding: 15}}>
                             <Text style={styles.sectionTitle}>About Me</Text>
-                            <Text style={styles.sectionContent}>{ProfileInformation.Bio}</Text>
+                            <Text style={styles.sectionContent}>{}</Text>
                         </View>
 
                         {/* Timeline Section */}
-                        <View style={styles.section}>
+                        <View style={{ backgroundColor: '#BCD4E6', marginHorizontal: 10, marginBottom: 5, borderRadius: 10, padding: 15 }}>
                             <Text style={styles.sectionTitle}>Timeline</Text>
                             <Text style={styles.sectionContent}>Student</Text>
                         </View>
 
                         {/* Images Section FAK ET*/}
                         {[1, 2, 3, 4, 5].map((index) => (
-                            <View key={index} style={styles.postContainer}>
-                                {/* Combined Post Header and Content */}
+                        <View key={index} style={{ marginVertical: 10, alignItems: 'center' }}>
+                            <View style={{ backgroundColor: '#BCD4E6', borderRadius: 10, width: '95%' }}>
+
+                            {/* Combined Post Header and Content */}
                                 <View style={{ padding: 10 }}>
-                                    <View style={styles.postHeader}>
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 10 }}>
                                         
                                     {user?.avatar ? (
                                         <Image source={{ uri: user?.avatar }} style={styles.avatar_post} />
                                     ) : (
                                         <FontAwesomeIcon icon={faCircleUser} size={35} color={COLORS.pmy.white} style={{ marginRight: 8}}/>
                                     )}
-
-                                        <Text style={styles.postUsername}>{ProfileInformation.name}</Text>
+                                        <View style={{ flex: 1 }}>
+                                            <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 16, }}>{user?.lastName}, {user?.firstName}</Text>
+                                            <Text style ={{ color: '#000000', fontFamily: 'Montserrat-Regular', }}>{generateRandomTimestamp().toLocaleString()}</Text>
+                                        </View>
                                     </View>
-                                    <Image
-                                        source={require('@/assets/images/uc-building-image.jpg')}
-                                        style={styles.postImage}
-                                    />
+                                    
+                                    <Image source={require('@/assets/images/uc-building-image.jpg')} style={styles.postImage} />
                                 </View>
                             </View>
+                        </View>
                         ))}
                     </ScrollView>
                 </TouchableWithoutFeedback>
-            </KeyboardAvoidingView>
         </SafeAreaView>
     );
 };
@@ -144,11 +124,6 @@ const styles = StyleSheet.create({
     profileHeaderContainer: {
         height: 175,
         padding: 15,
-        position: 'absolute',  
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1,
     },
     profileHeader: {
         width: '100%', 
@@ -156,7 +131,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8, 
         flexDirection: 'row', 
         alignItems: 'center', 
-        marginBottom: 50,
     },
     avatar: {
         width: 65, 
@@ -180,17 +154,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
     },
     editProfile: {
-        backgroundColor: COLORS.pmy.blue2, 
-        padding: 8, 
-        borderRadius: 5, 
-        position: 'absolute', 
-        right: 0 
-    },
-    section: {
-        backgroundColor: '#BCD4E6',
-        margin: 10,
-        borderRadius: 10,
-        padding: 15,
     },
     sectionTitle: {
         marginBottom: 5,
@@ -200,22 +163,6 @@ const styles = StyleSheet.create({
         color: '#333333',
         fontFamily: 'Montserrat-Regular',
     },
-    postContainer: {
-        marginVertical: 10,
-        backgroundColor: '#BCD4E6',
-        borderRadius: 10,
-        overflow: 'hidden',
-        shadowColor: '#000000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
-        elevation: 3,
-    },
-    postHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
     postAvatar: {
         width: 40,
         height: 40,
@@ -224,19 +171,11 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     postUsername: {
-        fontFamily: 'Montserrat-Bold',
-        fontSize: 16,
+        
     },
     postImage: {
         alignSelf: 'center',
         width: screenWidth,
         height: imageHeight,
-    },
-    imageBackground: {
-        marginHorizontal: 5,
-        marginBottom: 10,
-        padding: 5,   
-        borderRadius: 10,
-        backgroundColor: COLORS.pmy.white,
     },
 });

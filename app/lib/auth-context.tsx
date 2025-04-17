@@ -12,14 +12,25 @@ import { useLoading } from "./load-context";
 import { getRegistrationStatus, saveRegistrationStatus } from "./async-store";
 import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
 
+// (root)/lib/auth-context.tsx
 interface User {
     id: string;
-    email: string;
     avatar: string;
     firstName: string;
     middleName: string;
     lastName: string;
+    profileType: string;
+    gender: string;
+    email: string;
+    emergencyContact: emergencyContact[];
+    bio: string;
     verified: boolean;
+}
+
+interface emergencyContact {
+    name: string;
+    relationship: string;
+    phonenum: string;
 }
 
 interface AuthContextType {
@@ -59,7 +70,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         setLoading(true);
         // get token from secureStorage
         const userToken = await getToken();
-        console.log(userToken);
+        console.log('userToken: ',userToken);
         // If token is null
         // replace screen with rout get started or the onboarding screen.
         if (!userToken) {
@@ -199,12 +210,16 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             
             setUser({
                 id: data.userID,
-                email: data.email,
-                verified: data.verified,
                 avatar: data.personalInformation.avatar,
                 firstName: data.personalInformation.firstName,
                 middleName: data.personalInformation.middleName,
                 lastName: data.personalInformation.lastName,
+                profileType: data.profileType,
+                gender: data.personalInformation.gender,
+                emergencyContact: data.personalInformation.emergencyContact,
+                email: data.email,
+                bio: data.personalInformation.bio,
+                verified: data.verified,
             })
 
             
