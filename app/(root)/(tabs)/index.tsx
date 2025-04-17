@@ -1,17 +1,47 @@
 // REACT
-import React, { useMemo } from 'react';
-import { useState, useEffect } from 'react';
+import React from 'react';
+import {
+  useState,
+  useEffect,
+  useMemo
+} from 'react';
 
 // REACT NATIVE
 import Animated from 'react-native-reanimated';
-import { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import {
+  withTiming,
+  useSharedValue,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 
 // COMPONENTS
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { GestureHandlerRootView, PinchGestureHandler, PanGestureHandler, GestureDetector, Gesture } from "react-native-gesture-handler";
+import {
+  GestureHandlerRootView,
+  GestureDetector,
+  Gesture
+} from "react-native-gesture-handler";
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TextInput,
+  StatusBar,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform
+} from 'react-native';
+import {
+  faMicrophone,
+  faLocationArrow,
+  faExpand,
+  faCompress,
+  faChevronUp,
+  faChevronDown,
+  faSearch
+} from '@fortawesome/free-solid-svg-icons';
 import { showErrorToast } from '@/app/components/toast-config';
-import { StyleSheet, View, Text, Image, TextInput, StatusBar, TouchableOpacity, Modal, FlatList } from 'react-native';
-import { faMagnifyingGlass, faMicrophone, faMapMarkerAlt, faCloud, faUser, faComment, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'expo-router';
 
 // CONSTANTS
@@ -32,7 +62,7 @@ import axios from 'axios';
 import { config } from '@/app/lib/config';
 import { useLoading } from '@/app/lib/load-context';
 import { getToken } from '@/app/lib/secure-store';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 /**
  * Index Component
  * 
@@ -67,31 +97,20 @@ import { getToken } from '@/app/lib/secure-store';
  *
  * @returns {React.ReactElement} The rendered Index component
  */
-export default function Index() {
-  const [isFloorMenuVisible, setFloorMenuVisible] = useState(false);
-  const [selectedFloor, setSelectedFloor] = useState("Floor 1");
-  const floors = ["Floor 1", "Floor 2", "Floor 3", "Floor 4", "Floor 5"];
 
-  /**
-   * Updates the selected floor and closes the floor menu
-   * @param {string} floor - The floor identifier to select
-   */
-  const selectFloor = (floor: string) => {
-    setSelectedFloor(floor);
-    setFloorMenuVisible(false);
-  };
+export default function Index(): JSX.Element {
+  const [searchQuery, setSearchQuery] = useState('');
 
-  /**
-   * Handles microphone button press for voice input
-   * @todo Implement voice input functionality
-   */
-  const handleMicrophonePress = () => {
-    //add function for mic
-  };
+  const [isFloorMenuVisible, setFloorMenuVisible] = useState<boolean>(false);
+  const [selectedFloor, setSelectedFloor] = useState<string>("");
+  const [currentFloor, setCurrentFloor] = useState(1);
 
   const { setLoading } = useLoading();
-  const [currentImage, setCurrentImage] = useState(null);
-  const [currentFloor, setCurrentFloor] = useState(0);
+
+  const [currentImage, setCurrentImage] = useState<string | null>(null);
+  const [pois, setPois] = useState<any[]>([]);
+  const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
+  const [naturalImageSize, setNaturalImageSize] = useState({ width: 0, height: 0 });
 
   // Gesture shared values
   const scale = useSharedValue(1);
@@ -114,167 +133,255 @@ export default function Index() {
     ],
   }));
 
-  /**
-   * Fetches map data for a specific floor
-   * @param {number} floor - The floor number to fetch
-   */
-  const getMapData = async (floor: number) => {
+  const [buildingName, setBuildingName] = useState<string>();
+  const [floorData, setFloorData] = useState<any[]>([]);
+
+  const getMapData = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${config.endpoint}/map/get-map?name=old_building&floor=${floor}`, {
+      const response = await axios.get(`${config.endpoint}/map/user/building/load`, {
         headers: {
           Authorization: `Bearer ${await getToken()}`
         }
       });
 
-      if (!response.data.success) return;
-      setCurrentImage(response.data.mapImage);
+      if (!response.data.success) {
+        console.error('Failed to load building data.');
+        return;
+      }
+
+      const buildings = response.data.buildings;
+
+      if (buildings && buildings.length > 0) {
+        const currentBuilding = buildings[0];
+        const { buildingID, buildingName, floors } = currentBuilding;
+        setBuildingName(buildingName);
+        setFloorData(floors);
+
+        // Only set initial floor if no floor is currently selected
+        if (!selectedFloor && floors && floors.length > 0) {
+          setSelectedFloor(floors[0].floorName);
+          setCurrentFloor(floors[0].floorNumber);
+          await loadFloorData(floors[0].floorID);
+        }
+      }
     } catch (error: any) {
-      console.error(error.response?.data?.message);
+      console.error(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }
   }
 
-  // Gesture Handlers
-  const pinchGesture = Gesture.Pinch()
-    .onStart(() => {
-      offsetX.value = translateX.value;
-      offsetY.value = translateY.value;
-    })
-    .onUpdate((event) => {
-      scale.value = Math.max(0.1, Math.min(event.scale, 3));
-    });
+  const loadFloorData = async (floorID: string) => {
+    try {
+      const response = await axios.get(`${config.endpoint}/map/user/building/${floorID}`, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`
+        }
+      });
 
-  const panGesture = Gesture.Pan()
-    .onStart(() => {
-      scale.value = withSpring(1);
-    })
-    .onUpdate((event) => {
-      translateX.value = offsetX.value + event.translationX;
-      translateY.value = offsetY.value + event.translationY;
-    })
-    .onEnd(() => {
-      offsetX.value = translateX.value;
-      offsetY.value = translateY.value;
-    });
+      if (response.data.success) {
+        const { floorImage, pois } = response.data.floor;
+        setCurrentImage(floorImage);
+        setPois(pois);
+      }
+    } catch (error: any) {
+      console.error(error.response?.data?.message || error.message);
+    }
+  };
+
+  // Pinch Gesture (Zoom)
+  const pinchGesture = Gesture.Pinch().onUpdate((event) => {
+    scale.value = Math.max(0.1, Math.min(event.scale, 3));
+  });
+
+  // Pan Gesture (Drag)
+  const panGesture = Gesture.Pan().onUpdate((event) => {
+    translateX.value = offsetX.value + event.translationX;
+    translateY.value = offsetY.value + event.translationY;
+  }).onEnd(() => {
+    offsetX.value = translateX.value;
+    offsetY.value = translateY.value;
+  });
 
   const rotateGesture = Gesture.Rotation()
     .onUpdate((event) => {
       rotation.value = event.rotation;
     });
 
-  const gesture = useMemo(() => Gesture.Simultaneous(pinchGesture, panGesture, rotateGesture), [pinchGesture, panGesture, rotateGesture]);
+  const gesture = Gesture.Simultaneous(pinchGesture, panGesture, rotateGesture);
 
-  /**
-   * Handles floor change and resets map transformations
-   * @param {number} floor - The floor number to switch to
-   */
-  const handleFloorChange = (floor: number) => {
-    setCurrentFloor(floor);
-    scale.value = withSpring(1);
-    translateX.value = withSpring(0);
-    translateY.value = withSpring(0);
-    rotation.value = 0;
-    getMapData(floor);
+  // Handle Floor Change & Reset Zoom/Pan
+  const handleFloorChange = async (floorNumber: number) => {
+    setCurrentFloor(floorNumber);
+    scale.value = withTiming(1);
+    translateX.value = withTiming(0);
+    translateY.value = withTiming(0);
+    rotation.value = withTiming(0);
+
+    // Find the floor ID for the selected floor number
+    const selectedFloorData = floorData.find(floor => floor.floorNumber === floorNumber);
+    if (selectedFloorData) {
+      await loadFloorData(selectedFloorData.floorID);
+    }
   };
 
   useEffect(() => {
-    getMapData(1);
+    getMapData();
   }, []);
 
-  const router = useRouter();
+  // Update floor selection when floorData changes
+  useEffect(() => {
+    if (floorData.length > 0 && !selectedFloor) {
+      setSelectedFloor(floorData[0].floorName);
+      setCurrentFloor(floorData[0].floorNumber);
+      loadFloorData(floorData[0].floorID);
+    }
+  }, [floorData]);
+
+  const onImageLayout = (event: any) => {
+    const { width, height } = event.nativeEvent.layout;
+    setImageDimensions({ width, height });
+  };
+
+  useEffect(() => {
+    if (currentImage) {
+      Image.getSize(currentImage, (width, height) => {
+        setNaturalImageSize({ width, height });
+      });
+    }
+  }, [currentImage]);
+
+  const getDisplayedImageLayout = () => {
+    const { width: cW, height: cH } = imageDimensions;
+    const { width: iW, height: iH } = naturalImageSize;
+    if (!cW || !cH || !iW || !iH) return { x: 0, y: 0, width: 0, height: 0 };
+
+    const scale = Math.min(cW / iW, cH / iH);
+    const displayedWidth = iW * scale;
+    const displayedHeight = iH * scale;
+    const offsetX = (cW - displayedWidth) / 2;
+    const offsetY = (cH - displayedHeight) / 2;
+    return { x: offsetX, y: offsetY, width: displayedWidth, height: displayedHeight };
+  };
+
+  const calculatePoiPosition = (xPercent: number, yPercent: number) => {
+    const { x, y, width, height } = getDisplayedImageLayout();
+    return {
+      x: x + (xPercent / 100) * width,
+      y: y + (yPercent / 100) * height,
+    };
+  };
+
+  // Animated style for keeping POI labels upright
+  const labelAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      { rotate: `${-rotation.value}rad` }, // Counter-rotate to stay upright
+    ],
+  }));
+
+  // Zoom limits
+  const MIN_ZOOM = 0.5;
+  const MAX_ZOOM = 3;
+
+  // Navigation control functions
+  const handleZoomIn = () => {
+    scale.value = withTiming(Math.min(scale.value * 1.2, MAX_ZOOM));
+  };
+
+  const handleZoomOut = () => {
+    scale.value = withTiming(Math.max(scale.value / 1.2, MIN_ZOOM));
+  };
+
+  const handleCenter = () => {
+    translateX.value = withTiming(0);
+    translateY.value = withTiming(0);
+  };
 
   return (
-    <>
-          <GestureHandlerRootView style={{ flex: 1 }} >
-      <StatusBar barStyle="dark-content" backgroundColor={'#F0F0F0'} />
-      <GestureDetector gesture={gesture}>
-        <Animated.View style={[animatedStyle]}>
-          <Image source={{ uri: currentImage! }} style={{ height: '100%', width: '100%' }} resizeMode="contain" />
-        </Animated.View>
-      </GestureDetector>
-      <View style={styles.floorSelector}>
-        <TouchableOpacity style={[styles.floorButton]} onPress={() => handleFloorChange(1)}>
-          <Text style={styles.buttonText}>Floor 1</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.floorButton]} onPress={() => handleFloorChange(1.5)}>
-          <Text style={styles.buttonText}>Floor 1.5</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={[styles.floorButton]} onPress={() => handleFloorChange(2)}>
-          <Text style={styles.buttonText}>Floor 2</Text>
-        </TouchableOpacity>
-      </View>
-    </GestureHandlerRootView>
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-
-      {/** SEARCH BAR */}
-<TouchableOpacity 
-  style={styles.searchContainer} 
-  onPress={() => { router.push('/(root)/maps/searchbox-function-screen'); }}
->
-  <View style={styles.searchBar}>
-    <FontAwesomeIcon icon={faMagnifyingGlass} size={16} color="white" />
-    <Text style={[styles.searchInput, { fontFamily: 'Montserrat-Regular', color: 'white' }]}>
-      Try searching for a room
-    </Text>
-    <TouchableOpacity onPress={handleMicrophonePress}>
-      <FontAwesomeIcon icon={faMicrophone} size={16} color="white" />
-    </TouchableOpacity>
-  </View>
-</TouchableOpacity>
-      {/** BUILDING NAME */}
-      <Text style={styles.buildingName}>Old Building</Text>
-
-      {/** LOCATION BUTTONS */}
-      <View style={styles.mapControls}>
-        <TouchableOpacity style={styles.controlButton}>
-          <FontAwesomeIcon icon={faExpand} size={18} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton}>
-          <FontAwesomeIcon icon={faLocationArrow} size={18} color="white" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.controlButton}>
-          <FontAwesomeIcon icon={faCompress} size={18} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      {/** FLOOR SELECTOR - DROPDOWN MENU */}
-      <TouchableOpacity 
-        style={styles.floorButton} 
-        onPress={() => setFloorMenuVisible(!isFloorMenuVisible)}
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor={COLORS.pmy.white} />
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 100}
       >
-        <Text style={styles.floorText}>
-          {selectedFloor} <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronDown : faChevronUp} size={14} color="white" />
-        </Text>
-      </TouchableOpacity>
-
-      {/** FLOOR DROPDOWN MODAL */}
-      <Modal
-        transparent
-        visible={isFloorMenuVisible}
-        animationType="fade"
-        onRequestClose={() => setFloorMenuVisible(false)}
-      >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          onPress={() => setFloorMenuVisible(false)}
-        />
-        <View style={styles.floorMenu}>
-          <FlatList
-            data={floors}
-            keyExtractor={(item) => item}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.floorOption} onPress={() => selectFloor(item)}>
-                <Text style={styles.floorOptionText}>{item}</Text>
+        <View style={styles.mainContainer}>
+          <View style={styles.contentContainer}>
+            {/* Search Bar */}
+            <View style={styles.searchBarContainer}>
+              <FontAwesomeIcon icon={faSearch} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+              <TextInput style={styles.searchInput} placeholder='Try searching for a room...' placeholderTextColor={COLORS.pmy.white} value={searchQuery} />
+              <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+            </View>
+            {/* Building Name */}
+            <Text style={styles.buildingTitle}>{buildingName}</Text>
+            {/* Map Area with Gesture Handlers */}
+            <GestureHandlerRootView style={styles.mapContainer}>
+              <GestureDetector gesture={gesture}>
+                <Animated.View style={[animatedStyle]}>
+                  {currentImage && (
+                    <>
+                      <Image source={{ uri: currentImage }} style={{ height: '100%', width: '100%' }} resizeMode='contain' onLayout={onImageLayout} />
+                      {pois.map((poi) => {
+                        const position = calculatePoiPosition(poi.coordinates.x, poi.coordinates.y);
+                        return (
+                          <View key={poi._id} style={[ styles.poiContainer, { left: position.x, top: position.y, }]}>
+                            <View style={styles.poiMarker} />
+                            <Animated.View style={[styles.poiLabelContainer, labelAnimatedStyle]}>
+                              <Text style={styles.poiLabel} numberOfLines={2}>{poi.details.pinName}</Text>
+                            </Animated.View>
+                          </View>
+                        );
+                      })}
+                    </>
+                  )}
+                </Animated.View>
+              </GestureDetector>
+            </GestureHandlerRootView>
+            {/* Navigation Controls */}
+            <View style={styles.navigationControls}>
+              <TouchableOpacity style={styles.controlButton} onPress={handleZoomIn}>
+                <FontAwesomeIcon icon={faExpand} color={COLORS.pmy.white} />
               </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={handleCenter}>
+                <FontAwesomeIcon icon={faLocationArrow} color={COLORS.pmy.white} />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.controlButton} onPress={handleZoomOut}>
+                <FontAwesomeIcon icon={faCompress} color={COLORS.pmy.white} />
+              </TouchableOpacity>
+            </View>
+            {/* Floor Selector */}
+            <TouchableOpacity style={styles.floorSelector} onPress={() => setFloorMenuVisible(!isFloorMenuVisible)}>
+              <Text style={styles.floorText}>{selectedFloor} <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} /></Text>
+            </TouchableOpacity>
+            {/* Floor Dropdown */}
+            {isFloorMenuVisible && (
+              <View style={styles.dropdownContainer}>
+                <View style={styles.dropdownContent}>
+                  {floorData.map((floor) => (
+                    <TouchableOpacity
+                      key={floor.floorID}
+                      style={[styles.floorOption, selectedFloor === floor.floorName && styles.selectedFloorOption]}
+                      onPress={() => {
+                        setFloorMenuVisible(false);
+                        setSelectedFloor(floor.floorName);
+                        setCurrentFloor(floor.floorNumber);
+                        handleFloorChange(floor.floorNumber);
+                      }}
+                    >
+                      <Text style={[styles.floorOptionText, selectedFloor === floor.floorName && styles.selectedFloorOptionText]}>
+                        {floor.floorName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
             )}
-          />
+          </View>
         </View>
-      </Modal>
-    </View>
-    </>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -300,108 +407,151 @@ export default function Index() {
  * @property {Object} floorOptionText - Floor option text styling
  */
 const styles = StyleSheet.create({
-  floorSelector: {
-    position: "absolute",
-    top: 30,
-    flexDirection: "row",
-    justifyContent: "center",
-    width: "100%",
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
   },
-
-  activeButton: {
-    backgroundColor: "#005BBB",
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
   },
-  buttonText: {
-    color: "#fff",
-    fontSize: 16,
+  contentContainer: {
+    flex: 1,
+    position: 'relative',
   },
-  container: { 
-    flex: 1, 
-    backgroundColor: COLORS.pmy.white 
-  },
-
-  searchContainer: { 
-    position: 'absolute', 
-    top: 10, 
-    left: 10, 
-    right: 10, 
-    zIndex: 1
-  },
-
-  searchBar: { 
-    backgroundColor: COLORS.pmy.blue1, 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    padding: 10, 
-    borderRadius: 20
-  },
-
-  searchInput: { 
-    flex: 1, 
-    color: 'white', 
-    marginLeft: 10 
-  },
-
-  buildingName: { 
-    fontSize: 18, 
-    fontFamily: 'Montserrat-Bold',
-    marginLeft: 10, 
-    marginTop: 80, 
-    color: COLORS.pmy.blue1 
-  },
-
-  mapControls: { 
-    position: 'absolute', 
-    right: 10, 
-    top: '45%', 
-    zIndex: 1 
-  },
-
-  controlButton: { 
-    backgroundColor: COLORS.pmy.blue1, 
-    padding: 10, 
-    borderRadius: 8, 
-    marginVertical: 5 
-  },
-
-  floorButton: { 
+  searchBarContainer: {
     position: 'absolute',
-    bottom: 0, 
-    right: 10, 
-    backgroundColor: COLORS.pmy.blue1, 
-    padding: 10, 
-    borderRadius: 8,
+    top: 10,
+    left: 10,
+    right: 10,
+    height: 50,
+    backgroundColor: '#2B4F6E',
+    borderRadius: 25,
     flexDirection: 'row',
     alignItems: 'center',
+    paddingHorizontal: 15,
+    zIndex: 10,
   },
-
-  floorText: { 
-    color: 'white', 
-    fontFamily: 'Montserrat-Bold',
+  searchIcon: {
+    marginRight: 10,
   },
-
-  modalOverlay: {
+  searchInput: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    height: 40,
+    color: '#FFFFFF',
+    fontFamily: 'System',
   },
-
-  floorMenu: {
+  buildingTitle: {
     position: 'absolute',
-    bottom: 100,
+    top: 70,
+    left: 10,
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2B4F6E',
+    zIndex: 5,
+  },
+  mapContainer: {
+    flex: 1,
+    marginTop: 100,
+  },
+  mapContent: {
+    flex: 1,
+  },
+  placeholderMap: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
+  navigationControls: {
+    position: 'absolute',
     right: 10,
-    backgroundColor: 'white',
+    top: '40%',
+    alignItems: 'center',
+    zIndex: 5,
+  },
+  floorSelector: {
+    position: 'absolute',
+    right: 10,
+    bottom: 70,
+    backgroundColor: '#2B4F6E',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 8,
-    padding: 10,
+    zIndex: 5,
+  },
+  floorText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+  },
+  controlButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#2B4F6E',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  dropdownContainer: {
+    position: 'absolute',
+    right: 10,
+    bottom: 120,
+    width: '40%',
+    zIndex: 10,
+  },
+  dropdownContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
     elevation: 5,
   },
-
   floorOption: {
-    padding: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
   },
-
+  selectedFloorOption: {
+    backgroundColor: '#2B4F6E',
+  },
   floorOptionText: {
     fontSize: 16,
-    color: COLORS.pmy.blue1,
-    fontFamily: 'Montserrat-Bold',
+    color: '#333333',
+  },
+  selectedFloorOptionText: {
+    color: '#FFFFFF',
+  },
+  poiContainer: {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'yellow',
+  },
+  poiLabelContainer: {
+    backgroundColor: '#2B4F6E',
+    borderRadius: 4,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    position: 'absolute',
+    top: 5, // Position at top of container
+  },
+  poiLabel: {
+    color: '#FFFFFF',
+    fontSize: 8,
+    textAlign: 'center',
+    flexShrink: 1, // Allow text to shrink if needed
+    flexWrap: 'wrap', // Allow text to wrap
+  },
+  poiMarker: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'red',
+    position: 'absolute', // Position in center of container
   },
 });
