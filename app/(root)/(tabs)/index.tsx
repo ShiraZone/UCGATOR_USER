@@ -12,6 +12,7 @@ import { GestureHandlerRootView, PinchGestureHandler, PanGestureHandler, Gesture
 import { showErrorToast } from '@/app/components/toast-config';
 import { StyleSheet, View, Text, Image, TextInput, StatusBar, TouchableOpacity, Modal, FlatList } from 'react-native';
 import { faMagnifyingGlass, faMicrophone, faMapMarkerAlt, faCloud, faUser, faComment, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { useRouter } from 'expo-router';
 
 // CONSTANTS
 const COLORS = {
@@ -22,7 +23,6 @@ const COLORS = {
 };
 
 // CONSTANT
-//import COLORS from '@/app/constants/colors';
 import Toast from 'react-native-toast-message';
 
 // AXIOS
@@ -32,47 +32,68 @@ import axios from 'axios';
 import { config } from '@/app/lib/config';
 import { useLoading } from '@/app/lib/load-context';
 import { getToken } from '@/app/lib/secure-store';
+
 /**
- * Index screen component for a building navigation view.
- * Includes a search bar, map control buttons, and a dropdown to switch between building floors.
- *
+ * Index Component
+ * 
  * @component
- * @returns {JSX.Element} The rendered index screen layout.
+ * @description Main map view interface for building navigation with interactive floor plans.
+ * Features gesture controls for map manipulation, floor selection, and location search.
  *
  * @features
- * - Search bar with microphone icon (functionality can be expanded).
- * - Map control buttons: Expand, Locate, and Compress.
- * - Floor selector with modal-based dropdown.
- * - Responsive layout using absolute positioning and FlatList.
+ * - Interactive map with gesture controls:
+ *   - Pinch to zoom (scale: 0.1 to 3x)
+ *   - Pan to move
+ *   - Two-finger rotation
+ * - Floor selection system:
+ *   - Quick floor switching
+ *   - Modal-based floor picker
+ *   - Automatic map data fetching
+ * - Search interface:
+ *   - Search bar with voice input option
+ *   - Building name display
+ * - Map controls:
+ *   - Expand/Compress buttons
+ *   - Location arrow for navigation
  *
- * @example
- * // Include in a navigator screen
- * <Index />
+ * @gestures
+ * - Pinch: Zoom in/out with scale limits
+ * - Pan: Drag the map with position memory
+ * - Rotate: Two-finger rotation with radian calculation
  *
- * @note
- * FontAwesome icons and custom Montserrat fonts are used for styling consistency.
+ * @api
+ * - Fetches map data from server using authenticated requests
+ * - Handles floor-specific map images
+ *
+ * @returns {React.ReactElement} The rendered Index component
  */
-
 export default function Index() {
   const [isFloorMenuVisible, setFloorMenuVisible] = useState(false);
   const [selectedFloor, setSelectedFloor] = useState("Floor 1");
-
   const floors = ["Floor 1", "Floor 2", "Floor 3", "Floor 4", "Floor 5"];
 
+  /**
+   * Updates the selected floor and closes the floor menu
+   * @param {string} floor - The floor identifier to select
+   */
   const selectFloor = (floor: string) => {
     setSelectedFloor(floor);
     setFloorMenuVisible(false);
   };
 
+  /**
+   * Handles microphone button press for voice input
+   * @todo Implement voice input functionality
+   */
   const handleMicrophonePress = () => {
     //add function for mic
   };
 
   const { setLoading } = useLoading();
-
   const [currentImage, setCurrentImage] = useState(null);
   const [currentFloor, setCurrentFloor] = useState(0);
 
+  // Gesture shared values
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -80,15 +101,23 @@ export default function Index() {
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
 
+  /**
+   * Animated style for map transformations
+   * Combines scale, translation, and rotation
+   */
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: scale.value },
       { translateX: translateX.value },
       { translateY: translateY.value },
-      { rotate: `${rotation.value}rad` }, // Rotation in radians
+      { rotate: `${rotation.value}rad` },
     ],
   }));
 
+  /**
+   * Fetches map data for a specific floor
+   * @param {number} floor - The floor number to fetch
+   */
   const getMapData = async (floor: number) => {
     setLoading(true);
     try {
@@ -99,7 +128,6 @@ export default function Index() {
       });
 
       if (!response.data.success) return;
-
       setCurrentImage(response.data.mapImage);
     } catch (error: any) {
       console.error(error.response?.data?.message);
@@ -108,10 +136,9 @@ export default function Index() {
     }
   }
 
-  // Pinch Gesture (Zoom)
+  // Gesture Handlers
   const pinchGesture = Gesture.Pinch()
     .onStart(() => {
-      // Reset translation when starting a pinch
       offsetX.value = translateX.value;
       offsetY.value = translateY.value;
     })
@@ -119,10 +146,8 @@ export default function Index() {
       scale.value = Math.max(0.1, Math.min(event.scale, 3));
     });
 
-  // Pan Gesture (Drag)
   const panGesture = Gesture.Pan()
     .onStart(() => {
-      // Reset scale when starting a pan
       scale.value = withSpring(1);
     })
     .onUpdate((event) => {
@@ -134,29 +159,31 @@ export default function Index() {
       offsetY.value = translateY.value;
     });
 
-  // Rotation Gesture (Two-Finger Rotate)
   const rotateGesture = Gesture.Rotation()
     .onUpdate((event) => {
       rotation.value = event.rotation;
     });
 
-  // Combine Gestures
   const gesture = useMemo(() => Gesture.Simultaneous(pinchGesture, panGesture, rotateGesture), [pinchGesture, panGesture, rotateGesture]);
 
-  // Handle Floor Change & Reset Zoom/Pan
+  /**
+   * Handles floor change and resets map transformations
+   * @param {number} floor - The floor number to switch to
+   */
   const handleFloorChange = (floor: number) => {
     setCurrentFloor(floor);
     scale.value = withSpring(1);
     translateX.value = withSpring(0);
     translateY.value = withSpring(0);
     rotation.value = 0;
-
     getMapData(floor);
   };
 
   useEffect(() => {
     getMapData(1);
   }, []);
+
+  const router = useRouter();
 
   return (
     <>
@@ -183,16 +210,20 @@ export default function Index() {
       <StatusBar barStyle="dark-content" />
 
       {/** SEARCH BAR */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} size={16} color="white" />
-          <TextInput style={[styles.searchInput, { fontFamily: 'Montserrat-Regular' }]} placeholder ="Try searching for a room" placeholderTextColor="white"/>
-          <TouchableOpacity onPress={handleMicrophonePress}>
-            <FontAwesomeIcon icon={faMicrophone} size={16} color="white" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
+<TouchableOpacity 
+  style={styles.searchContainer} 
+  onPress={() => { router.push('/(root)/maps/searchbox-function-screen'); }}
+>
+  <View style={styles.searchBar}>
+    <FontAwesomeIcon icon={faMagnifyingGlass} size={16} color="white" />
+    <Text style={[styles.searchInput, { fontFamily: 'Montserrat-Regular', color: 'white' }]}>
+      Try searching for a room
+    </Text>
+    <TouchableOpacity onPress={handleMicrophonePress}>
+      <FontAwesomeIcon icon={faMicrophone} size={16} color="white" />
+    </TouchableOpacity>
+  </View>
+</TouchableOpacity>
       {/** BUILDING NAME */}
       <Text style={styles.buildingName}>Old Building</Text>
 
@@ -247,6 +278,27 @@ export default function Index() {
   );
 }
 
+/**
+ * @constant styles
+ * @description StyleSheet for the Index component
+ * 
+ * @property {Object} floorSelector - Floor selection buttons container
+ * @property {Object} activeButton - Active floor button styling
+ * @property {Object} buttonText - Floor button text styling
+ * @property {Object} container - Main container layout
+ * @property {Object} searchContainer - Search bar positioning
+ * @property {Object} searchBar - Search bar styling with blue background
+ * @property {Object} searchInput - Search input text styling
+ * @property {Object} buildingName - Building title text styling
+ * @property {Object} mapControls - Map control buttons container
+ * @property {Object} controlButton - Individual control button styling
+ * @property {Object} floorButton - Floor selector button styling
+ * @property {Object} floorText - Floor text styling
+ * @property {Object} modalOverlay - Floor menu modal overlay
+ * @property {Object} floorMenu - Floor menu popup styling
+ * @property {Object} floorOption - Floor option button styling
+ * @property {Object} floorOptionText - Floor option text styling
+ */
 const styles = StyleSheet.create({
   floorSelector: {
     position: "absolute",
