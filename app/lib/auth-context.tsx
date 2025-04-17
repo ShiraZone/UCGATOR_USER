@@ -11,15 +11,35 @@ import { useLoading } from "./load-context";
 // storage
 import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
 
+
+// (root)/lib/auth-context.tsx
 export interface User {
+    // User
     _id: string;
     email: string;
+    status: string;
+    verified: boolean;
+    // Profile
     avatar: string;
     firstName: string | null;
     middleName: string | null;
     lastName: string | null;
-    verified: boolean;
-    status: string;
+    profileType: string | null;
+    gender: string | null;
+    bio: string | null;
+    emergencyContact: emergencyContact[] | null;
+}
+
+interface emergencyContact {
+    name: string;
+    relationship: string;
+    phonenum: string;
+}
+
+interface emergencyContact {
+    name: string;
+    relationship: string;
+    phonenum: string;
 }
 
 interface AuthContextType {
@@ -95,14 +115,21 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             await saveUserSession(sessionId);
             
             const updatedUser = {
+                // User
                 _id: _id,
                 email: email,
+                status: status,
+                verified: verified,
+
+                // Profile
                 avatar: profile.avatar,
                 firstName: profile.firstName || null,
                 middleName: profile.middleName || null,
                 lastName: profile.lastName || null,
-                status: status,
-                verified: verified,
+                profileType: profile.profileType || null,
+                gender: profile.gender || null,
+                bio: profile.bio || null,
+                emergencyContact: profile.emergencyContact || null,
             };
             
             setUser(updatedUser);
@@ -143,16 +170,25 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             const { _id, email, status, verified, token, sessionId, profile } = response.data.data;
 
-            setUser({
+            const updatedUser = {
+                // User
                 _id: _id,
                 email: email,
                 status: status,
                 verified: verified,
-                avatar: profile?.avatar,
-                firstName: profile?.firstname || null,
-                middleName: profile?.middleName || null,
-                lastName: profile?.lastName || null,
-            })
+
+                // Profile
+                avatar: profile.avatar,
+                firstName: profile.firstName || null,
+                middleName: profile.middleName || null,
+                lastName: profile.lastName || null,
+                profileType: profile.profileType || null,
+                gender: profile.gender || null,
+                bio: profile.bio || null,
+                emergencyContact: profile.emergencyContact || null,
+            };
+
+            setUser(updatedUser);
 
             await saveToken(token);
             await saveUserSession(sessionId);
@@ -204,18 +240,27 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             });
             
             const { _id, email, status, verified, profile } = response.data.data;
-
-            setUser({
+            
+            const updatedUser = {
+                // User
                 _id: _id,
                 email: email,
                 status: status,
                 verified: verified,
-                avatar: profile?.avatar,
-                firstName: profile?.firstName || null,
-                middleName: profile?.middleName || null,
-                lastName: profile?.lastName || null,
-            });
-            
+
+                // Profile
+                avatar: profile.avatar,
+                firstName: profile.firstName || null,
+                middleName: profile.middleName || null,
+                lastName: profile.lastName || null,
+                profileType: profile.profileType || null,
+                gender: profile.gender || null,
+                bio: profile.bio || null,
+                emergencyContact: profile.emergencyContact || null,
+            };
+
+            setUser(updatedUser);
+
             // Wait for the next render cycle to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 0));
 
