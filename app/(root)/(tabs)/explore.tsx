@@ -1,30 +1,46 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
 import React from 'react';
-
+import { useRouter } from 'expo-router';
 const { width } = Dimensions.get('window');
 
 /**
- * Renders the Explore screen, featuring a navigation header,
- * tabs for popular locations and user history, and placeholder sections.
- *
+ * Explore Component
+ * 
  * @component
- * @returns {JSX.Element} The rendered Explore screen.
- *
- * @example
- * // To use inside a navigator
- * <Explore />
+ * @description Main explore screen interface that provides navigation options and location discovery.
+ * Features a visually appealing header with navigation controls and categorized location sections.
  *
  * @features
- * - Image header with overlayed title and navigation button.
- * - Tabs for user history and frequently visited locations.
- * - Placeholder sections representing various locations (e.g., Cashier, Records).
+ * - Hero image header with overlaid navigation controls
+ * - Start Navigation button for quick route planning
+ * - Tab-based navigation between popular locations and user history
+ * - Section cards for different campus locations (Cashier, Records)
+ * - Responsive design adapting to screen width
  *
- * @style
- * Uses `StyleSheet` for layout and styling, including responsive image sizing
- * and button interactions.
+ * @navigation
+ * - START NAVIGATION button routes to start-navigation screen
+ * - Tabs switch between widely navigated locations and user history
+ * - Section cards provide quick access to specific locations
+ *
+ * @styling
+ * - Uses custom color palette defined in COLORS constant
+ * - Montserrat font family for consistent typography
+ * - Responsive image sizing based on device width
+ * - Modern UI elements with rounded corners and borders
+ *
+ * @returns {React.ReactElement} The rendered Explore component
  */
-
 const Explore = () => {
+  const router = useRouter();
+
+  /**
+   * Handles navigation to the start navigation screen
+   * Triggered by the START NAVIGATION button press
+   */
+  const handleStartNavigation = () => {
+    router.push('/(root)/navigate/start-navigation');
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {/* Header Components */}
@@ -39,7 +55,7 @@ const Explore = () => {
         <View style={styles.headerContent}>
           <Text style={styles.headerTitle}>Navigate</Text>
 
-          <TouchableOpacity style={styles.startButton}>
+          <TouchableOpacity style={styles.startButton} onPress={handleStartNavigation} >
             <Text style={styles.startButtonText}>START NAVIGATION</Text>
           </TouchableOpacity>
         </View>
@@ -71,12 +87,38 @@ const Explore = () => {
 
 export default Explore;
 
+/**
+ * @constant COLORS
+ * @description Color palette used throughout the Explore component
+ * 
+ * @property {string} blue1 - Primary blue color (#2B4F6E)
+ * @property {string} white - Background and text color (#F6F6F6)
+ * @property {string} red - Accent color for sections (#FF0000)
+ */
 const COLORS = {
   blue1: '#2B4F6E',
   white: '#F6F6F6',
   red: '#FF0000',
 };
 
+/**
+ * @constant styles
+ * @description StyleSheet for the Explore component
+ * 
+ * @property {Object} container - Main scroll container styling
+ * @property {Object} headerContainer - Container for the hero image and overlay content
+ * @property {Object} headerImage - Hero image styling with responsive width
+ * @property {Object} headerContent - Overlay content positioning and layout
+ * @property {Object} headerTitle - Title text styling
+ * @property {Object} startButton - Navigation button with glowing border effect
+ * @property {Object} startButtonText - Button text styling
+ * @property {Object} tabRow - Container for navigation tabs
+ * @property {Object} tab - Individual tab styling
+ * @property {Object} tabText - Tab text styling
+ * @property {Object} section - Section container layout
+ * @property {Object} sectionTitle - Section header text styling
+ * @property {Object} sectionBox - Placeholder box styling for sections
+ */
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.white,

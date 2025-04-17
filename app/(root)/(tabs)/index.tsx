@@ -41,6 +41,8 @@ import {
   faChevronDown,
   faSearch
 } from '@fortawesome/free-solid-svg-icons';
+import { showErrorToast } from '@/app/components/toast-config';
+import { useRouter } from 'expo-router';
 
 // CONSTANTS
 const COLORS = {
@@ -51,7 +53,6 @@ const COLORS = {
 };
 
 // CONSTANT
-//import COLORS from '@/app/constants/colors';
 import Toast from 'react-native-toast-message';
 
 // AXIOS
@@ -63,24 +64,38 @@ import { useLoading } from '@/app/lib/load-context';
 import { getToken } from '@/app/lib/secure-store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 /**
- * Index screen component for a building navigation view.
- * Includes a search bar, map control buttons, and a dropdown to switch between building floors.
- *
+ * Index Component
+ * 
  * @component
- * @returns {JSX.Element} The rendered index screen layout.
+ * @description Main map view interface for building navigation with interactive floor plans.
+ * Features gesture controls for map manipulation, floor selection, and location search.
  *
  * @features
- * - Search bar with microphone icon (functionality can be expanded).
- * - Map control buttons: Expand, Locate, and Compress.
- * - Floor selector with modal-based dropdown.
- * - Responsive layout using absolute positioning and FlatList.
+ * - Interactive map with gesture controls:
+ *   - Pinch to zoom (scale: 0.1 to 3x)
+ *   - Pan to move
+ *   - Two-finger rotation
+ * - Floor selection system:
+ *   - Quick floor switching
+ *   - Modal-based floor picker
+ *   - Automatic map data fetching
+ * - Search interface:
+ *   - Search bar with voice input option
+ *   - Building name display
+ * - Map controls:
+ *   - Expand/Compress buttons
+ *   - Location arrow for navigation
  *
- * @example
- * // Include in a navigator screen
- * <Index />
+ * @gestures
+ * - Pinch: Zoom in/out with scale limits
+ * - Pan: Drag the map with position memory
+ * - Rotate: Two-finger rotation with radian calculation
  *
- * @note
- * FontAwesome icons and custom Montserrat fonts are used for styling consistency.
+ * @api
+ * - Fetches map data from server using authenticated requests
+ * - Handles floor-specific map images
+ *
+ * @returns {React.ReactElement} The rendered Index component
  */
 
 export default function Index(): JSX.Element {
@@ -97,6 +112,7 @@ export default function Index(): JSX.Element {
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
   const [naturalImageSize, setNaturalImageSize] = useState({ width: 0, height: 0 });
 
+  // Gesture shared values
   const scale = useSharedValue(1);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -104,12 +120,16 @@ export default function Index(): JSX.Element {
   const offsetX = useSharedValue(0);
   const offsetY = useSharedValue(0);
 
+  /**
+   * Animated style for map transformations
+   * Combines scale, translation, and rotation
+   */
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [
       { scale: scale.value },
       { translateX: translateX.value },
       { translateY: translateY.value },
-      { rotate: `${rotation.value}rad` }, // Rotation in radians
+      { rotate: `${rotation.value}rad` },
     ],
   }));
 
@@ -184,7 +204,6 @@ export default function Index(): JSX.Element {
     offsetY.value = translateY.value;
   });
 
-  // Rotation Gesture (Two-Finger Rotate)
   const rotateGesture = Gesture.Rotation()
     .onUpdate((event) => {
       rotation.value = event.rotation;
@@ -366,6 +385,27 @@ export default function Index(): JSX.Element {
   );
 }
 
+/**
+ * @constant styles
+ * @description StyleSheet for the Index component
+ * 
+ * @property {Object} floorSelector - Floor selection buttons container
+ * @property {Object} activeButton - Active floor button styling
+ * @property {Object} buttonText - Floor button text styling
+ * @property {Object} container - Main container layout
+ * @property {Object} searchContainer - Search bar positioning
+ * @property {Object} searchBar - Search bar styling with blue background
+ * @property {Object} searchInput - Search input text styling
+ * @property {Object} buildingName - Building title text styling
+ * @property {Object} mapControls - Map control buttons container
+ * @property {Object} controlButton - Individual control button styling
+ * @property {Object} floorButton - Floor selector button styling
+ * @property {Object} floorText - Floor text styling
+ * @property {Object} modalOverlay - Floor menu modal overlay
+ * @property {Object} floorMenu - Floor menu popup styling
+ * @property {Object} floorOption - Floor option button styling
+ * @property {Object} floorOptionText - Floor option text styling
+ */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
