@@ -18,29 +18,29 @@ const CONTENT_ITEMS = [
         id: 1, 
         title: 'How to Give First Aid', 
         content: `
-1. Check the Scene for Safety
-- Ensure the environment is safe for you and the injured person.
+                1. Check the Scene for Safety
+                - Ensure the environment is safe for you and the injured person.
 
-- Don’t rush in—you must stay safe to help.
+                - Don’t rush in—you must stay safe to help.
 
-2. Check the Person
-- Is the person responsive? Gently tap and ask, “Are you okay?”
-- If unresponsive, call for help and check breathing.
-- If responsive, ask about their pain or symptoms.
+                2. Check the Person
+                - Is the person responsive? Gently tap and ask, “Are you okay?”
+                - If unresponsive, call for help and check breathing.
+                - If responsive, ask about their pain or symptoms.
 
-3. Call Emergency Services
-- Dial your local emergency number (e.g., 911).
-- Provide clear info: location, what happened, number of people hurt.
+                3. Call Emergency Services
+                - Dial your local emergency number (e.g., 911).
+                - Provide clear info: location, what happened, number of people hurt.
 
-4. Monitor Their Condition
-- Stay with them.
-- Watch for changes in breathing, color, alertness.
-- Be calm and reassuring.
+                4. Monitor Their Condition
+                - Stay with them.
+                - Watch for changes in breathing, color, alertness.
+                - Be calm and reassuring.
 
-5. Wait for Help to Arrive
-- Continue providing care.
-- If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.
-`, 
+                5. Wait for Help to Arrive
+                - Continue providing care.
+                - If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.
+                `, 
         icon: faFirstAid 
     },
     { 

@@ -8,18 +8,18 @@ import axios from "axios";
 import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
 
-// async storage
-import { getRegistrationStatus, saveRegistrationStatus } from "./async-store";
+// storage
 import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
 
-interface User {
-    id: string;
+export interface User {
+    _id: string;
     email: string;
     avatar: string;
-    firstName: string;
-    middleName: string;
-    lastName: string;
+    firstName: string | null;
+    middleName: string | null;
+    lastName: string | null;
     verified: boolean;
+    status: string;
 }
 
 interface AuthContextType {
@@ -27,8 +27,9 @@ interface AuthContextType {
     signUp: (email: string, password: string, linkUri: any) => Promise<void>;
     logout: () => Promise<boolean>;
     getUserInfo: () => Promise<any>;
-    user: User | null;
+    user: User | null | undefined;
     isLoggedIn: boolean;
+    setUser: (arg0: User | null | undefined) => void;
 }
 
 interface AuthContextProps {
@@ -40,28 +41,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: AuthContextProps) => {
     // Global loading state
     const { setLoading } = useLoading();
-    const [user, setUser] = useState<User | null>(null);
-    // State to track if the user is logged in
+    const [user, setUser] = useState<User | null | undefined>();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    // Router instance for navigation
     const router = useRouter();
-    // API endpoint from config
     const activeEndpoint = config.endpoint;
-    // State to store error messages
 
-
-    // function for initializing route sequence for the application
-    // if token is not null
-    // redirect screen to homepage screen
-    // use function for in effect
     const initializaAuthProvider = async () => {
-        // set loading to true
         setLoading(true);
-        // get token from secureStorage
         const userToken = await getToken();
-        console.log(userToken);
-        // If token is null
-        // replace screen with rout get started or the onboarding screen.
+        
         if (!userToken) {
             router.replace('/(root)/(auth)/get-started');
             setLoading(false);
@@ -69,86 +57,109 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             return;
         }
 
-        const registrationStep = await getRegistrationStatus();
+        try {
+            const userData = await getUserInfo();
 
-        if (registrationStep === 'profile_pending' || registrationStep === 'pending') {
-            router.replace('/(root)/onboarding/name-input' )
-            setIsLoggedIn(true);
-        } else {
-            setIsLoggedIn(true);
-            await getUserInfo();
+            // Use the fresh data from getUserInfo instead of the state
+            if (!userData.verified) {
+                console.log(`User ${userData._id} is currently not verified. Redirecting to OTP page.`);
+                router.replace('/(root)/(auth)/one-time-password');
+                return;
+            }
+
+            if (!userData.profile?.firstName || !userData.profile?.lastName) {
+                console.log(`User ${userData._id} is currently not finished settings its profile. Redirecting to profile page.`);
+                router.replace('/(root)/onboarding/name-input');
+                return;
+            }
+        } catch (error) {
+            console.error('Error initializing auth:', error);
+            // If there's an error getting user info, redirect to get started
+            router.replace('/(root)/(auth)/get-started');
+        } finally {
+            setLoading(false);
         }
-
-        setLoading(false); // set loading to false
     }
 
-    // function for login system for the application
-    // requires parameters email and password of type stirng
-    // set loadings to true when this function is called
-    // await api response
-    // if success initiate saving login information
-    // replace login screen with index screen
-    const login = async (email: string, password: string) => {
-        setLoading(true); // sets loading to truee
+    const login = async (emailLogin: string, password: string) => {
+        setLoading(true);
         try {
-            // await response from end API
-            const response = await axios.post(`${activeEndpoint}/auth/sign-in`, {
-                email,
+            const response = await axios.post(`${activeEndpoint}/auth/user/sign-in`, {
+                email: emailLogin,
                 password
             });
 
-            const token = response.data.value.token; // pass the token
-            const sessionID = response.data.value.sessionID; // pass the sessionID
+            const { _id, email, status, verified, token, sessionId, profile} = response.data.data;
 
-            await saveToken(token); // save the token to secure store
-            await saveUserSession(sessionID); // save the user session to secure stores
+            await saveToken(token);
+            await saveUserSession(sessionId);
             
-            setIsLoggedIn(true); // set user logged in to true
-            await getUserInfo(); // get user information
+            const updatedUser = {
+                _id: _id,
+                email: email,
+                avatar: profile.avatar,
+                firstName: profile.firstName || null,
+                middleName: profile.middleName || null,
+                lastName: profile.lastName || null,
+                status: status,
+                verified: verified,
+            };
+            
+            setUser(updatedUser);
+            setIsLoggedIn(true);
 
-            // replace screen with index screen
+            // Wait for the next render cycle to ensure state is updated
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            if (!verified) {
+                console.log(`User ${_id} is currently not verified. Redirecting to OTP page.`);
+                router.replace('/(root)/(auth)/one-time-password');
+                return;
+            }
+
+            if (!profile.firstName || !profile.lastName) {
+                console.log(`User ${_id} is currently not finished settings its profile. Redirecting to profile page.`);
+                router.replace('/(root)/onboarding/name-input');
+                return;
+            }
+
             router.replace('/');  
         } catch (error: any) {
-            console.log("error: ",error.response?.data?.status);
-            console.log("error response: ",error.response?.data?.error);
-
-            // show proper error message in a toast message
             showErrorToast(error.response?.data?.error, 'Error');
         } finally {
-            setLoading(false); // set loading to false
+            setLoading(false);
         }
     }
 
-    // function for sign up system for the application
-    // requires paramters email and password of type string
-    // set loadings to true when this function is called
-    // await api response
-    // is success save login information
-    // replace signup screen with personal information screen input
-    const signUp = async (email: string, password: string, linkUri: any) => {
+    const signUp = async (userEmail: string, password: string) => {
         setLoading(true);
         try {
-            const response = await axios.post(`${config.endpoint}/auth/sign-up`, {
-                email,
+            const response = await axios.post(`${config.endpoint}/auth/user/sign-up`, {
+                email: userEmail,
                 password
             });
 
             if (!response.data.success) throw new Error('Register failed. Please try again later.');
 
-            const token = response.data.value.token;
-            const sessionID = response.data.value.sessionID;
-            const regestrationStep = response.data.value.registrationStep;
+            const { _id, email, status, verified, token, sessionId, profile } = response.data.data;
+
+            setUser({
+                _id: _id,
+                email: email,
+                status: status,
+                verified: verified,
+                avatar: profile?.avatar,
+                firstName: profile?.firstname || null,
+                middleName: profile?.middleName || null,
+                lastName: profile?.lastName || null,
+            })
 
             await saveToken(token);
-            await saveUserSession(sessionID);
-            await saveRegistrationStatus(regestrationStep);
-
+            await saveUserSession(sessionId);
+            
             setIsLoggedIn(true);
 
-            router.replace({
-                pathname: linkUri,
-                params: { email }
-            });
+            router.replace('/(root)/(auth)/one-time-password');
         } catch (error: any) {
             showErrorToast(error.response?.data?.error, 'Error');
         } finally {
@@ -186,30 +197,32 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // pass user data to global request
     const getUserInfo = async () => {
         try {
-            // await API response with header authorization bearer
-            const response = await axios.get(`${activeEndpoint}/user/user-information`, {
+            const response = await axios.get(`${activeEndpoint}/profile/user/read/user-information`, {
                 headers: {
                     Authorization: `Bearer ${await getToken()}`
                 }
             });
             
-            // assuming that the response remain success and is success
-            // return data
-            const data = response.data.user;
-            
-            setUser({
-                id: data.userID,
-                email: data.email,
-                verified: data.verified,
-                avatar: data.personalInformation.avatar,
-                firstName: data.personalInformation.firstName,
-                middleName: data.personalInformation.middleName,
-                lastName: data.personalInformation.lastName,
-            })
+            const { _id, email, status, verified, profile } = response.data.data;
 
+            setUser({
+                _id: _id,
+                email: email,
+                status: status,
+                verified: verified,
+                avatar: profile?.avatar,
+                firstName: profile?.firstName || null,
+                middleName: profile?.middleName || null,
+                lastName: profile?.lastName || null,
+            });
             
+            // Wait for the next render cycle to ensure state is updated
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            return response.data.data;
         } catch (error: any) {
             showErrorToast('Error getting user information', 'Error');
+            throw error;
         }
     }
 
@@ -220,7 +233,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ login, signUp, logout, getUserInfo, isLoggedIn, user }}>
+        <AuthContext.Provider value={{ login, signUp, logout, getUserInfo, isLoggedIn, user, setUser }}>
             {children}
         </AuthContext.Provider>
     )

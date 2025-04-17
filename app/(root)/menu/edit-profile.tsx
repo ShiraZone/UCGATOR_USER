@@ -52,13 +52,13 @@ const ProfileInformation = {
     "password": "janedoeisarat",
     "Bio": "*sqeak*"
 }
+
 const AccountType = {
     "type": "student",
     //"type": "teacher",
     //"type": "visitor",
     "verified": false,
 }
-
 
 const EditProfile = () => {
     const { user } = useAuth();
