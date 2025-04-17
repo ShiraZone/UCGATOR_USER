@@ -46,6 +46,12 @@ interface emergencyContact {
     phonenum: string;
 }
 
+interface emergencyContact {
+    name: string;
+    relationship: string;
+    phonenum: string;
+}
+
 interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
     signUp: (email: string, password: string, linkUri: any) => Promise<void>;
