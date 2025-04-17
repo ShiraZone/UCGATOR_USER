@@ -11,10 +11,8 @@ import { useLoading } from "./load-context";
 // storage
 import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
 
-
 // (root)/lib/auth-context.tsx
-export interface User {
-    // User
+interface User {
     _id: string;
     email: string;
     status: string;
@@ -28,6 +26,12 @@ export interface User {
     gender: string | null;
     bio: string | null;
     emergencyContact: emergencyContact[] | null;
+}
+
+interface emergencyContact {
+    name: string;
+    relationship: string;
+    phonenum: string;
 }
 
 interface emergencyContact {
