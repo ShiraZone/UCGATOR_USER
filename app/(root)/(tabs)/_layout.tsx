@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router'
 import COLORS from '@/app/constants/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faNewspaper, faMap, faCompass, faUser } from '@fortawesome/free-solid-svg-icons'
+import { useFonts } from 'expo-font'
 
 interface TabIconProps {
     title: string;
@@ -21,6 +22,17 @@ const TabIcon = ({ title, icon, focused}: TabIconProps) => {
 };
 
 const TabsLayout = () => {
+    // Load Montserrat fonts
+    const [fontsLoaded] = useFonts({
+        'Montserrat-Regular': require('@/assets/fonts/Montserrat-Regular.ttf'),
+        'Montserrat-Bold': require('@/assets/fonts/Montserrat-Bold.ttf'),
+    });
+
+    // Don't render until fonts are loaded
+    if (!fontsLoaded) {
+        return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
+    }
+
     return (
         <Tabs screenOptions={{
             tabBarShowLabel: false,
@@ -101,7 +113,7 @@ const styles = StyleSheet.create({
     selectedText: {
         color: COLORS.pmy.blue1,
         marginLeft: 5,
-        fontWeight: "bold",
+        fontFamily: 'Montserrat-Bold',
         fontSize: 12,
     },
 })

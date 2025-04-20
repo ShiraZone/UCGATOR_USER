@@ -37,9 +37,24 @@ const StartNavigation = () => {
     router.push("/navigate/arrow-clicked");
   };
 
+  const handleUpdatePreferences = () => {
+    router.push("/navigate/update-preferences");
+  };
+
+  const handleStopPoints = () => {
+    router.push("/navigate/stop-points");
+  };
+
+  const handleBackPress = () => {
+    router.push('/(root)/(tabs)/explore');
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Navigate</Text>
+      <TouchableOpacity style={styles.backButton} onPress={handleBackPress}>
+        <FontAwesomeIcon icon={faArrowRight} size={24} color="#FFFFFF" style={styles.backIcon} />
+      </TouchableOpacity>
+      <Text style={styles.title}>Set your destination</Text>
 
       <View style={styles.navigationCard}>
         {/* From Location */}
@@ -76,15 +91,21 @@ const StartNavigation = () => {
       </View>
 
       {/* Update Preferences Button */}
-      <TouchableOpacity style={styles.updateButton}>
+      <TouchableOpacity 
+        style={styles.updateButton}
+        onPress={handleUpdatePreferences}
+      >
         <Text style={styles.updateButtonText}>UPDATE YOUR PREFERENCES</Text>
       </TouchableOpacity>
 
       {/* Add Stop Points Section */}
       <View style={styles.stopPointsSection}>
         <Text style={styles.stopPointsTitle}>Add Stop Points</Text>
-        <TouchableOpacity style={styles.addStopButton}>
-          <FontAwesomeIcon icon={faPlus} size={24} color="#FFFFFF" />
+        <TouchableOpacity 
+          style={styles.addStopButton}
+          onPress={handleStopPoints}
+        >
+          <FontAwesomeIcon icon={faPlus} size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -107,6 +128,8 @@ const StartNavigation = () => {
  * @property {Object} stopPointsSection - Container for stop points feature
  * @property {Object} stopPointsTitle - Section title styling
  * @property {Object} addStopButton - Dashed border button for adding stops
+ * @property {Object} backButton - Back button container
+ * @property {Object} backIcon - Back button icon styling
  */
 const styles = StyleSheet.create({
   container: {
@@ -119,6 +142,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Bold',
     marginBottom: 20,
+    marginLeft: 40,
   },
   navigationCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
@@ -201,10 +225,21 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#FFFFFF',
     borderStyle: 'dashed',
-    borderRadius: 10,
-    height: 60,
+    borderRadius: 8,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    zIndex: 1,
+  },
+  backIcon: {
+    transform: [{ rotate: '180deg' }],
+    marginLeft: 10,
+    marginTop: 13,
   },
 });
 

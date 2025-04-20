@@ -1,46 +1,16 @@
 // REACT
 import React from 'react';
-import {
-  useState,
-  useEffect,
-  useMemo
-} from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 // REACT NATIVE
 import Animated from 'react-native-reanimated';
-import {
-  withTiming,
-  useSharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
+import { withTiming, useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 // COMPONENTS
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import {
-  GestureHandlerRootView,
-  GestureDetector,
-  Gesture
-} from "react-native-gesture-handler";
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TextInput,
-  StatusBar,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform
-} from 'react-native';
-import {
-  faMicrophone,
-  faLocationArrow,
-  faExpand,
-  faCompress,
-  faChevronUp,
-  faChevronDown,
-  faSearch
-} from '@fortawesome/free-solid-svg-icons';
+import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
+import { StyleSheet, View, Text, Image, TextInput, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { showErrorToast } from '@/app/components/toast-config';
 import { useRouter } from 'expo-router';
 
@@ -52,9 +22,6 @@ const COLORS = {
   },
 };
 
-// CONSTANT
-import Toast from 'react-native-toast-message';
-
 // AXIOS
 import axios from 'axios';
 
@@ -63,6 +30,8 @@ import { config } from '@/app/lib/config';
 import { useLoading } from '@/app/lib/load-context';
 import { getToken } from '@/app/lib/secure-store';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
+
 /**
  * Index Component
  * 
@@ -135,6 +104,19 @@ export default function Index(): JSX.Element {
 
   const [buildingName, setBuildingName] = useState<string>();
   const [floorData, setFloorData] = useState<any[]>([]);
+
+  const router = useRouter();
+
+  // Load Montserrat fonts
+  const [fontsLoaded] = useFonts({
+    'Montserrat-Regular': require('@/assets/fonts/Montserrat-Regular.ttf'),
+    'Montserrat-Bold': require('@/assets/fonts/Montserrat-Bold.ttf'),
+  });
+
+  // Don't render until fonts are loaded
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
+  }
 
   const getMapData = async () => {
     setLoading(true);
@@ -298,6 +280,13 @@ export default function Index(): JSX.Element {
     translateY.value = withTiming(0);
   };
 
+  /**
+   * Navigate to the search function screen
+   */
+  const handleSearchPress = () => {
+    router.push('/(root)/maps/searchbox-function-screen');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.pmy.white} />
@@ -309,11 +298,14 @@ export default function Index(): JSX.Element {
         <View style={styles.mainContainer}>
           <View style={styles.contentContainer}>
             {/* Search Bar */}
-            <View style={styles.searchBarContainer}>
+            <TouchableOpacity 
+              style={styles.searchBarContainer}
+              onPress={handleSearchPress}
+            >
               <FontAwesomeIcon icon={faSearch} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
-              <TextInput style={styles.searchInput} placeholder='Try searching for a room...' placeholderTextColor={COLORS.pmy.white} value={searchQuery} />
+              <Text style={styles.searchInput}>Try searching for a room...</Text>
               <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
-            </View>
+            </TouchableOpacity>
             {/* Building Name */}
             <Text style={styles.buildingTitle}>{buildingName}</Text>
             {/* Map Area with Gesture Handlers */}
@@ -438,17 +430,20 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     height: 40,
-    color: '#FFFFFF',
-    fontFamily: 'System',
+    color: '#D9D9D9',
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 16,
+    textAlignVertical: 'center',
+    paddingTop: 1.5,
   },
   buildingTitle: {
     position: 'absolute',
     top: 70,
     left: 10,
     fontSize: 20,
-    fontWeight: 'bold',
     color: '#2B4F6E',
     zIndex: 5,
+    fontFamily: 'Montserrat-Bold',
   },
   mapContainer: {
     flex: 1,
@@ -480,7 +475,7 @@ const styles = StyleSheet.create({
   },
   floorText: {
     color: '#FFFFFF',
-    fontWeight: 'bold',
+    fontFamily: 'Montserrat-Bold',
   },
   controlButton: {
     width: 40,
@@ -522,9 +517,11 @@ const styles = StyleSheet.create({
   floorOptionText: {
     fontSize: 16,
     color: '#333333',
+    fontFamily: 'Montserrat-Regular',
   },
   selectedFloorOptionText: {
     color: '#FFFFFF',
+    fontFamily: 'Montserrat-Bold',
   },
   poiContainer: {
     position: 'absolute',
@@ -546,6 +543,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     flexShrink: 1, // Allow text to shrink if needed
     flexWrap: 'wrap', // Allow text to wrap
+    fontFamily: 'Montserrat-Regular',
   },
   poiMarker: {
     width: 6,
