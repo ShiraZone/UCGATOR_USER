@@ -30,7 +30,7 @@ import { config } from '@/app/lib/config';
 import { router } from 'expo-router';
 import { getToken } from '@/app/lib/secure-store';
 import { useAuth } from '@/app/lib/auth-context';
-import { User } from '@/app/lib/auth-context';
+import { User } from '/app/lib/auth-context';
 import { showErrorToast, showSuccessToast } from '@/app/components/toast-config';
 
 const OneTimePassword = () => {
