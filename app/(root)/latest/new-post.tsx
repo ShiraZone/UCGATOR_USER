@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
     },
     headerTitle: {
         fontSize: 18,
-        fontWeight: 'bold',
+        fontFamily: 'Montserrat-Bold',
         color: COLORS.black,
     },
     nextButton: {
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     },
     nextButtonText: {
         color: COLORS.white,
-        fontWeight: 'bold',
+        fontFamily: 'Montserrat-Bold',
         fontSize: 14,
     },
     userInfoContainer: {
@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
         marginRight: 10,
     },
     userName: {
-        fontWeight: 'bold',
+        fontFamily: 'Montserrat-Bold',
         fontSize: 16,
         color: COLORS.black,
         marginBottom: 4,
@@ -205,6 +205,7 @@ const styles = StyleSheet.create({
         color: COLORS.darkGray,
         marginLeft: 4,
         marginRight: 4,
+        fontFamily: 'Montserrat-Regular',
     },
     inputScrollView: {
         flex: 1, 
@@ -215,6 +216,7 @@ const styles = StyleSheet.create({
         color: COLORS.black,
         paddingTop: 10, 
         minHeight: 100, 
+        fontFamily: 'Montserrat-Regular',
     },
     bottomSheet: {
         borderTopWidth: 1,
@@ -253,6 +255,7 @@ const styles = StyleSheet.create({
         marginLeft: 15,
         fontSize: 16,
         color: COLORS.black,
+        fontFamily: 'Montserrat-Regular',
     },
 });
 
