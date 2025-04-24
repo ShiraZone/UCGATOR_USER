@@ -1,7 +1,10 @@
-import { StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity, Animated, Button, Image } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity, Animated, Button, Image, StatusBar } from 'react-native';
 import React, { useState, useRef } from 'react';
 import { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -41,6 +44,7 @@ const { width } = Dimensions.get('window');
  */
 
 const Latest = () => {
+  const router = useRouter();
   const [scrollY, setScrollY] = useState(new Animated.Value(0));
   const [headerHeight, setHeaderHeight] = useState(189);
   const [announcements, setAnnouncements] = useState([
@@ -320,70 +324,71 @@ const Latest = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerContainer, { height: headerHeight }]}>
-        <View style={styles.headerBackground} />
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Latest</Text>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <StatusBar backgroundColor='white' barStyle={'dark-content'} />
+      <ScrollView overScrollMode='never' bounces={false}>
+        <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 24, color: COLORS.blue1 }}>UCGATOR</Text>
+          <View>
+            <TouchableOpacity onPress={() => router.push('/(root)/latest/new-post')}>
+              <FontAwesomeIcon icon={faPen} size={25} color={COLORS.blue1} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={styles.buttonRow}>
-        <Button title="Add Announcement" onPress={handleAddAnnouncement} />
-        <Button title="Remove Announcement" onPress={() => handleRemoveAnnouncement(announcements.length - 1)} />
-      </View>
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        bounces={false}
-        overScrollMode='never'
-      >
-        {announcements.map((text, index) => (
-          <TouchableOpacity key={index} onPress={() => handleDoubleTap(index)} activeOpacity={1}>
-            <View style={styles.announcementContainer}>
-              {hidden[index] ? (
-                <View style={styles.undoContainer}>
-                  <Text style={styles.undoText}>Announcement hidden</Text>
-                  <View style={styles.undoButtons}>
-                    <TouchableOpacity onPress={() => handleUndoHide(index)}>
-                      <Text style={styles.undoButton}>Undo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleRemoveAnnouncement(index)}>
-                      <Text style={styles.deleteButton}>Delete</Text>
-                    </TouchableOpacity>
+        <ScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          bounces={false}
+          overScrollMode='never'
+        >
+          {announcements.map((text, index) => (
+            <TouchableOpacity key={index} onPress={() => handleDoubleTap(index)} activeOpacity={1}>
+              <View style={styles.announcementContainer}>
+                {hidden[index] ? (
+                  <View style={styles.undoContainer}>
+                    <Text style={styles.undoText}>Announcement hidden</Text>
+                    <View style={styles.undoButtons}>
+                      <TouchableOpacity onPress={() => handleUndoHide(index)}>
+                        <Text style={styles.undoButton}>Undo</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => handleRemoveAnnouncement(index)}>
+                        <Text style={styles.deleteButton}>Delete</Text>
+                      </TouchableOpacity>
+                    </View>
                   </View>
-                </View>
-              ) : (
-                <>
-                  <TouchableOpacity style={styles.closeButton} onPress={() => handleHideAnnouncement(index)}>
-                    <FontAwesome name="times" size={20} color={COLORS.blue1} />
-                  </TouchableOpacity>
-                  <View style={styles.profileContainer}>
-                    <Image source={require('@/assets/images/profile-placeholder.png')} style={styles.profileImage} />
-                    <Text style={styles.profileName}>{text}</Text>
-                    <Text style={styles.announcementTime}>Posted 10 minutes ago</Text>
-                  </View>
-                  <Image source={require('@/assets/images/shark.webp')} style={styles.announcementImage} />
-                  <Text style={styles.announcementMessage}>Announcement message</Text>
-                  <View style={styles.likeContainer}>
-                    <TouchableOpacity onPress={() => handleLikeButtonClick(index)}>
-                      <FontAwesome
-                        name={liked[index] ? "thumbs-up" : "thumbs-o-up"}
-                        size={24}
-                        color={COLORS.blue1}
-                      />
+                ) : (
+                  <>
+                    <TouchableOpacity style={styles.closeButton} onPress={() => handleHideAnnouncement(index)}>
+                      <FontAwesome name="times" size={20} color={COLORS.blue1} />
                     </TouchableOpacity>
-                  </View>
-                  {showLikePopup[index] && (
-                    <Animated.View style={[styles.likePopup, { opacity: likeOpacity[index] }]}>  
-                      <FontAwesome name="thumbs-up" size={48} color={COLORS.blue1} />
-                    </Animated.View>
-                  )}
-                </>
-              )}
-            </View>
-          </TouchableOpacity>
-        ))}
+                    <View style={styles.profileContainer}>
+                      <Image source={require('@/assets/images/profile-placeholder.png')} style={styles.profileImage} />
+                      <Text style={styles.profileName}>{text}</Text>
+                      <Text style={styles.announcementTime}>Posted 10 minutes ago</Text>
+                    </View>
+                    <Image source={require('@/assets/images/shark.webp')} style={styles.announcementImage} />
+                    <Text style={styles.announcementMessage}>Announcement message</Text>
+                    <View style={styles.likeContainer}>
+                      <TouchableOpacity onPress={() => handleLikeButtonClick(index)}>
+                        <FontAwesome
+                          name={liked[index] ? "thumbs-up" : "thumbs-o-up"}
+                          size={24}
+                          color={COLORS.blue1}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                    {showLikePopup[index] && (
+                      <Animated.View style={[styles.likePopup, { opacity: likeOpacity[index] }]}>  
+                        <FontAwesome name="thumbs-up" size={48} color={COLORS.blue1} />
+                      </Animated.View>
+                    )}
+                  </>
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </ScrollView>
     </View>
   );
