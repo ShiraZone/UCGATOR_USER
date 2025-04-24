@@ -36,6 +36,10 @@ interface Post {
     createdBy: User;
     likeCount: number;
     hasLiked: boolean;
+    location?: {
+        pinID: string;
+        pinName: string;
+    } | null;
 }
 
 interface PostsProps {
@@ -54,19 +58,16 @@ const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - date.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
-    if (diffDays < 1) {
-        const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-        if (diffHours < 1) {
-            const diffMinutes = Math.ceil(diffTime / (1000 * 60));
-            return `${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`;
-        }
-        return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
-    } else if (diffDays < 7) {
-        return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+    if (diffMinutes < 60) {
+        return `${diffMinutes}m ago`;
+    } else if (diffHours < 24) {
+        return `${diffHours}h ago`;
     } else {
-        return date.toLocaleDateString();
+        return `${diffDays}d ago`;
     }
 };
 
@@ -169,6 +170,7 @@ const Posts = ({
         const postId = item?.id || '';
         const isLiked = likedPosts[postId] || item.hasLiked || false;
         const likeCount = item.likeCount || 0;
+        const location = item?.location;
 
         return (
             <View style={styles.postContainer}>
@@ -181,9 +183,17 @@ const Posts = ({
                         />
                         <View>
                             <Text style={styles.userName}>{createdBy.name}</Text>
-                            <Text style={styles.timestamp}>
-                                {formatDate(createdAt)}
-                            </Text>
+                            <View style={styles.timestampContainer}>
+                                <Text style={styles.timestamp}>
+                                    {formatDate(createdAt)}
+                                </Text>
+                                {location && (
+                                    <>
+                                        <Text style={styles.timestampDot}>•</Text>
+                                        <Text style={styles.locationText}>{location.pinName}</Text>
+                                    </>
+                                )}
+                            </View>
                         </View>
                     </View>
                 </View>
@@ -322,10 +332,25 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#333',
     },
+    timestampContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
     timestamp: {
         fontFamily: 'Montserrat-Regular',
         fontSize: 12,
         color: '#888',
+    },
+    timestampDot: {
+        fontFamily: 'Montserrat-Regular',
+        fontSize: 12,
+        color: '#888',
+        marginHorizontal: 4,
+    },
+    locationText: {
+        fontFamily: 'Montserrat-Bold',
+        fontSize: 13,
+        color: '#2B4F6E',
     },
     mediaContainer: {
         width: '100%',

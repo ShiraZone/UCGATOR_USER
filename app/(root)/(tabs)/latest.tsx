@@ -4,11 +4,11 @@ import React, {
   useEffect
 } from 'react';
 // REACT NATIVE
-import { 
-  Text, 
-  View, 
+import {
+  Text,
+  View,
   Dimensions,
-  StyleSheet, 
+  StyleSheet,
   StatusBar,
   TouchableOpacity,
   Alert
@@ -16,8 +16,8 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 // ICON
-import { 
-  faPlusSquare 
+import {
+  faPlusSquare
 } from '@fortawesome/free-solid-svg-icons';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
@@ -28,6 +28,7 @@ import axios from 'axios';
 // API
 import { config } from '@/app/lib/config';
 import Posts from '@/app/components/posts-component';
+import { useRouter } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
@@ -59,6 +60,7 @@ interface Post {
 }
 
 const Latest = () => {
+  const router = useRouter();
   const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -70,22 +72,22 @@ const Latest = () => {
 
   const loadPosts = async (page: number) => {
     if (loading) return;
-    
+
     setLoading(true);
     setError('');
 
     try {
       const userToken = await getToken();
       setToken(userToken);
-      
+
       const response = await axios.get(`${config.endpoint}/post/all?page=${page}&limit=5`, {
         headers: {
           Authorization: `Bearer ${userToken}`
         }
       });
-      
+
       const data = response.data.data;
-      
+
       // Create liked posts map from the hasLiked field
       const likedPostsMap = data.reduce((acc: Record<string, boolean>, post: Post) => {
         acc[post.id] = post.hasLiked;
@@ -136,12 +138,12 @@ const Latest = () => {
       ...prev,
       [postId]: isLiked
     }));
-    
+
     // Update the like count in the posts array
-    setPosts(prevPosts => 
-      prevPosts.map(post => 
-        post.id === postId 
-          ? { ...post, likeCount: newLikeCount } 
+    setPosts(prevPosts =>
+      prevPosts.map(post =>
+        post.id === postId
+          ? { ...post, likeCount: newLikeCount }
           : post
       )
     );
@@ -158,16 +160,16 @@ const Latest = () => {
         <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 24, color: COLORS.blue1 }}>UCGATOR</Text>
           <View>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/(root)/latest/new-post')}>
               <FontAwesomeIcon icon={faPlusSquare} size={32} color={COLORS.blue1} />
             </TouchableOpacity>
           </View>
         </View>
-        
+
         {error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.retryButton}
               onPress={handleRefresh}
             >
@@ -175,7 +177,7 @@ const Latest = () => {
             </TouchableOpacity>
           </View>
         ) : (
-          <Posts 
+          <Posts
             posts={posts}
             loading={loading}
             onRefresh={handleRefresh}
