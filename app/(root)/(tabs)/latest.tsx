@@ -1,390 +1,191 @@
-import { StyleSheet, Text, View, Dimensions, ScrollView, TouchableOpacity, Animated, Button, Image } from 'react-native';
-import React, { useState, useRef } from 'react';
-import { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
+// REACT
+import React, {
+  useState,
+  useEffect
+} from 'react';
+// REACT NATIVE
+import { 
+  Text, 
+  View, 
+  Dimensions,
+  StyleSheet, 
+  StatusBar,
+  TouchableOpacity,
+  Alert
+} from 'react-native';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
+// ICON
+import { 
+  faPlusSquare 
+} from '@fortawesome/free-solid-svg-icons';
+
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+// AUTH
+import { getToken } from '@/app/lib/secure-store';
+// AXIOS
+import axios from 'axios';
+// API
+import { config } from '@/app/lib/config';
+import Posts from '@/app/components/posts-component';
 
 const { width } = Dimensions.get('window');
 
-/**
- * Latest component displays a scrollable list of announcements with interactive features.
- *
- * @component
- * @returns {JSX.Element} The rendered Latest screen with dynamic header and announcement cards.
- *
- * @example
- * // Use in your navigation stack or render directly
- * <Latest />
- *
- * @features
- * - Shrinking header on scroll using Animated.
- * - Touchable placeholders for announcements.
- * - Add and remove announcements dynamically with buttons.
- *
- * @state
- * @state {Animated.Value} scrollY - Tracks the vertical scroll offset.
- * @state {number} headerHeight - Controls the height of the header (shrinks with scroll).
- * @state {string[]} announcements - List of current announcements shown in the scroll view.
- * @state {boolean[]} liked - Tracks whether each announcement is liked.
- * @state {boolean[]} hidden - Tracks whether each announcement is hidden.
- * @state {boolean[]} showLikePopup - Tracks whether each announcement's like popup is shown.
- *
- * @function handleAddAnnouncement - Adds a new announcement to the list.
- * @function handleRemoveAnnouncement - Removes the last announcement from the list.
- * @function handlePlaceholderClick - Handles tap event for a specific announcement.
- * @function handleScroll - Updates the header height when scrolling.
- * @function handleLikeToggle - Toggles the like status of an announcement.
- * @function handleHideAnnouncement - Hides an announcement.
- * @function handleUndoHide - Undoes the hiding of an announcement.
- *
- * @style
- * Styles are defined using StyleSheet for layout, color, and typography customization.
- */
+interface Post {
+  id: string;
+  mediaUrls: string[];
+  style: {
+    fontFamily: string;
+    fontSize: string;
+    color: string;
+    backgroundColor: string;
+    textAlign: string;
+    fontWeight: string;
+    _id: string;
+  };
+  caption?: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  deletionDate: null | string;
+  likeCount: number;
+  hasLiked: boolean;
+  createdBy: {
+    id: string;
+    name: string;
+    avatar: string;
+    type: string;
+  };
+}
 
 const Latest = () => {
-  const [scrollY, setScrollY] = useState(new Animated.Value(0));
-  const [headerHeight, setHeaderHeight] = useState(189);
-  const [announcements, setAnnouncements] = useState([
-    'Profile name 1',
-    'Profile name 2',
-    'Profile name 3',
-    'Profile name 4',
-    'Profile name 5',
-    'Profile name 6',
-  ]);
-  const [liked, setLiked] = useState(announcements.map(() => false));
-  const [hidden, setHidden] = useState(announcements.map(() => false));
-  const [showLikePopup, setShowLikePopup] = useState(announcements.map(() => false));
-  const likeOpacity = useRef(announcements.map(() => new Animated.Value(0))).current;
-  const likeScale = useRef(announcements.map(() => new Animated.Value(0))).current;
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [hasMore, setHasMore] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
 
-  const handlePlaceholderClick = (placeholderName: string) => {
-    console.log(`${placeholderName} clicked`);
-  };
+  const loadPosts = async (page: number) => {
+    if (loading) return;
+    
+    setLoading(true);
+    setError('');
 
-  const handleScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-    {
-      useNativeDriver: false,
-      listener: (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-        const scrollOffset = event.nativeEvent.contentOffset.y;
-        const newHeaderHeight = Math.max(100, 189 - scrollOffset);
-        setHeaderHeight(newHeaderHeight);
-      },
-    }
-  );
-  
-  /**
-   * Handles the addition of a new announcement.
-   * Increments the announcement count and updates the state.
-   */
-  const handleAddAnnouncement = () => {
-    const newNumber = announcements.length + 1;
-    setAnnouncements([...announcements, `Announcement ${newNumber}`]);
-  };
-
-  /**
-   * Handles the removal of an announcement by index.
-   * Updates the announcements, liked, and hidden states.
-   *
-   * @param {number} index - The index of the announcement to remove.
-   */
-  const handleRemoveAnnouncement = (index: number) => {
-    if (announcements.length > 0) {
-      setAnnouncements(announcements.filter((_, i) => i !== index));
-      setLiked(liked.filter((_, i) => i !== index));
-      setHidden(hidden.filter((_, i) => i !== index));
-    }
-  };
-
-  /**
-   * Toggles the like status of an announcement.
-   * Animates the like popup and updates the liked state.
-   *
-   * @param {number} index - The index of the announcement to toggle like status.
-   */
-  const handleLikeToggle = (index: number) => {
-    setLiked(liked.map((item, i) => (i === index ? !item : item)));
-    setShowLikePopup(showLikePopup.map((item, i) => (i === index ? true : item)));
-    Animated.parallel([
-      Animated.timing(likeOpacity[index], {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.spring(likeScale[index], {
-        toValue: 1,
-        friction: 3,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setTimeout(() => {
-        Animated.parallel([
-          Animated.timing(likeOpacity[index], {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.timing(likeScale[index], {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setShowLikePopup(showLikePopup.map((item, i) => (i === index ? false : item)));
-        });
-      }, 1000);
-    });
-  };
-
-  /**
-   *                                    ++====++*+=====-                                                 
-                              ==**#####*++*#*****++=-=-:                                            
-                         ***+*####%%%#######%%##*+++++==-:                                          
-                         *#####%%%%%%%%%%%%%%%#%%####**++=---                                       
-                        ###*##%%%%%%%@@%%%%%#*++#%%%#####*+=--                                      
-                         **#%%%%%%%%%%##*#%%#%%#+-=++###*+*+=:                                      
-                        ####%%@%%@@%#*++++##%%%@@%#*+-+**++=-:                                      
-                        #%%%%%%%%%%#*++=---==+*##=+#%#++****+-:                                     
-                       #%%%%%%@%%%##*++=----==++-:----:-   ++=-                                     
-                      #%@@%%@@@@@%#***+==--++*+==:::::..                                            
-                    ####%%%%%@@%%##**++===*#***==-:::...                                            
-                   #%%%@%#%%%@@%%##***+++###*##*+=::....                                            
-                  #%%%%#####%@%%%##*****%%%###%#*+-:....                                            
-                 *#%%%##%%%%@@%%%##****#%%#%%%%%#*=-:...                                            
-                ####%##%@@@@@%%%###****#%%%%%%@@%#*=-:..                                            
-                #%%#%%%@@@@@@%%%####***#%%%%%%@@@%#+-:...                                           
-                #%*#+#%@@@@@%%%%%%####*#*#%%%%@@@%#*+-:...                                          
-               #%#*+##%@%%%%%%@@%%%#####**###%#*-:%#*=-::.                                          
-               #%#++*#%@%%%%%%%%@@%%####****+=:.. %%#+=-::                                          
-              #%%*=**%@@%%%%%%%%%@%%%##*+++-::.:-   %#*=-:                                          
-              #%%++*%%@%#%##**#%%%@%%#*+==-::-+*+-   %%#                                            
-              #%#=*%%%%%#%#####%%%@@%#*++-=*****==--                                                
-               #*-+#%%%%%%%###**#%%%@@@%%#%%##***++=-                                               
-              #*+-=%@@@##%%%##**    %%@@@@@@%%%%#*++-                                               
-           %%%#*=+*%%%**#####*+      %%@@@@@@%%***=                                                 
-          %%%%%#***%##*##*++*+=       %%@@@@@%#=+*+-                                                
-          %%%%%*#*%%#%#*#+=++=        #%%%%%@#*=+++=--                                              
-           ##%%%##%@%*%*=*+*=-     ****#%%%%#%+=%**+=+                                              
-           #%%@%#%%%%++*++#*+=+     *##%%%%%%##+*#*+=-                                              
-            %%%@@%%@*=#*#***+++     #%%%%%##**+#%+*#+==                                             
-         ##%%%%@@@*-=*#%=**#*+=    #%%%%@@#**+*%%+***+=                                             
-        ##%%###%@#=*#%#+%****++=  *#%%%@@%*%%##*-+==++-:                                            
-       %%%%%@@@@%%*=%%#+%%+**++=  ##%%@@%%+=#%*#++#***+-::                                          
-       %%%%@@%%%##*+%#+++#%+**+==#%%@%%%@@#==*##%*+*#***#=-                                         
-     %%%@%%%@@@%%%%****++*##+*+**+*%%%@%%@#=#+####++***+##+-                                        
-     @@@@@%%@%#%%%#######***#*+**##%%@%@@%+#@*##***%#*+*#**+-                                       
-       @%%@@##%@@@@@@%##%******==#%%%@%@@%*%@#*#%#****++*#*#=                                       
-        @%%#%@@%%%%#%*#***+++===--*%%%%%%%##@#+###*=-----=++                                        
-        %%%%@%@#@@##@###=**+--:::::*%@%@@%%%@##**#*++==-:..:                                        
-       @%%%%%%@%@@%#%#*##=====--::::-#%@%%%%%#%%*++*+====-:...                                      
-       %%%@@%@%%@%%#%***#*===----:::::+%%%%#%#######*=+*+==-:...                                    
-       %%@%%%%@@%%%*##**#+=+==---=-:::::*########***###++*--==:..:                                  
-      %%%%##%#%%%###*****+-+*=+---+-:--..-*%%%%%%####***###+-:=-:::::                               
-      #######*##*#*#***#*+--++-=+--+=::=::::=#%@@@@%%%###*###*+=-:::::::::--==-::                   
-      %########*****#***#*-:=*+:-+=-==:-----==--=**#@@@%%##****+=-----::-=++=---::::.               
-      %%%%%%%%%#******++**=:-=*+:-+-:+=:=+-::-+##*=-:=%@@%#######**##***++-::------:..:             
-        @@@@@@@@%#***+=-+*=::-=++::=+==:.-*#+--*#***++==-:.:*#%%%###%####*=:::::-=--:.:::           
-               @@%#***=-===:.:-=+=::=++=::+***==-:-++++=:::..:=+**%#*#*+++++=-=+====:.:-::          
-                 %%##******+--*%%#+--*%%#*=:-%%#+--:=*#*+------:--==#@@%%########*++--:+*           
-                  %%%######**=:-@%*+--*@%#+---*%#*+-:.-*#**+***+-:...   @@%%%%%%%%%#***             
-                    @@@@@@%##+-:-%%*=-:=@%*+-::*%#*==-:-######*+=---:        @@@@@@                 
-                           %%*+=-+%#*+--#%#*+=:-%%#*+-:.+%%%%%%##**+=                               
-                            @%#+-=%%#*=:=@%**=-:=@#**+-::#@@@@@@%%%                                 
-                              @%#%%@%##*#%@%%#*=+ @%%#**#                                           
-   * Hides an announcement by index.
-   * Updates the hidden state.
-   *
-   * @param {number} index - The index of the announcement to hide.
-   */
-  const handleHideAnnouncement = (index: number) => {
-    setHidden(hidden.map((item, i) => (i === index ? true : item)));
-  };
-
-  /**
-   * Undoes the hiding of an announcement by index.
-   * Updates the hidden state.
-   *
-   * @param {number} index - The index of the announcement to unhide.
-   */
-  const handleUndoHide = (index: number) => {
-    setHidden(hidden.map((item, i) => (i === index ? false : item)));
-  };
-
-  let lastTap: number | null = null;
-  /**
-   * HEHE
-   * Handles a double-tap event on an announcement.
-   * Toggles the like status if the announcement is not already liked.
-   *
-   * @param {number} index - The index of the announcement that was double-tapped.
-   */
-  const handleDoubleTap = (index: number) => {
-    const now = Date.now();
-    const DOUBLE_PRESS_DELAY = 300;
-    if (lastTap && (now - lastTap) < DOUBLE_PRESS_DELAY) {
-      if (!liked[index]) {
-        handleLikeToggle(index);
-        setShowLikePopup(showLikePopup.map((item, i) => (i === index ? true : item)));
-        Animated.parallel([
-          Animated.timing(likeOpacity[index], {
-            toValue: 1,
-            duration: 300,
-            useNativeDriver: true,
-          }),
-          Animated.spring(likeScale[index], {
-            toValue: 1,
-            friction: 3,
-            useNativeDriver: true,
-          }),
-        ]).start(() => {
-          setTimeout(() => {
-            Animated.parallel([
-              Animated.timing(likeOpacity[index], {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-              Animated.timing(likeScale[index], {
-                toValue: 0,
-                duration: 300,
-                useNativeDriver: true,
-              }),
-            ]).start(() => {
-              setShowLikePopup(showLikePopup.map((item, i) => (i === index ? false : item)));
-            });
-          }, 1000);
-        });
-      } else {
-        setShowLikePopup(showLikePopup.map((item, i) => (i === index ? true : item)));
-        Animated.timing(likeOpacity[index], {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }).start(() => {
-          setTimeout(() => {
-            Animated.timing(likeOpacity[index], {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }).start(() => {
-              setShowLikePopup(showLikePopup.map((item, i) => (i === index ? false : item)));
-            });
-          }, 1000);
-        });
-      }
-    } else {
-      lastTap = now;
-    }
-  };
-
-  /**
-   * Handles the like button click event.
-   * Toggles the like status and animates the like popup.
-   *
-   * @param {number} index - The index of the announcement for the like button clicked.
-   */
-  const handleLikeButtonClick = (index: number) => {
-    if (!liked[index]) {
-      setShowLikePopup(showLikePopup.map((item, i) => (i === index ? true : item)));
-      Animated.parallel([
-        Animated.timing(likeOpacity[index], {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.spring(likeScale[index], {
-          toValue: 1,
-          friction: 3,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        setTimeout(() => {
-          Animated.parallel([
-            Animated.timing(likeOpacity[index], {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-            Animated.timing(likeScale[index], {
-              toValue: 0,
-              duration: 300,
-              useNativeDriver: true,
-            }),
-          ]).start(() => {
-            setShowLikePopup(showLikePopup.map((item, i) => (i === index ? false : item)));
-          });
-        }, 1000);
+    try {
+      const userToken = await getToken();
+      setToken(userToken);
+      
+      const response = await axios.get(`${config.endpoint}/post/all?page=${page}&limit=5`, {
+        headers: {
+          Authorization: `Bearer ${userToken}`
+        }
       });
+      
+      const data = response.data.data;
+      
+      // Create liked posts map from the hasLiked field
+      const likedPostsMap = data.reduce((acc: Record<string, boolean>, post: Post) => {
+        acc[post.id] = post.hasLiked;
+        return acc;
+      }, {});
+
+      // Update posts and liked status
+      if (page === 1) {
+        setPosts(data);
+        setLikedPosts(likedPostsMap);
+      } else {
+        setPosts(prevPosts => [...prevPosts, ...data]);
+        setLikedPosts(prev => ({
+          ...prev,
+          ...likedPostsMap
+        }));
+      }
+
+      setHasMore(currentPage < response.data.totalPages);
+
+    } catch (error: any) {
+      console.error('Error loading posts:', error);
+      setError('Failed to load posts. Please try again.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-    handleLikeToggle(index);
   };
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    setCurrentPage(1);
+    loadPosts(1);
+  };
+
+  const handleLoadMore = () => {
+    if (!loading && hasMore) {
+      const nextPage = currentPage + 1;
+      setCurrentPage(nextPage);
+      loadPosts(nextPage);
+    }
+  };
+
+  // Function to update like count when a post is liked/unliked
+  const handleLikeUpdate = (postId: string, isLiked: boolean, newLikeCount: number) => {
+    // Update the liked status
+    setLikedPosts(prev => ({
+      ...prev,
+      [postId]: isLiked
+    }));
+    
+    // Update the like count in the posts array
+    setPosts(prevPosts => 
+      prevPosts.map(post => 
+        post.id === postId 
+          ? { ...post, likeCount: newLikeCount } 
+          : post
+      )
+    );
+  };
+
+  useEffect(() => {
+    loadPosts(1);
+  }, []);
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.headerContainer, { height: headerHeight }]}>
-        <View style={styles.headerBackground} />
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Latest</Text>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <StatusBar backgroundColor='white' barStyle={'dark-content'} />
+      <SafeAreaView style={{ flex: 1 }}>
+        <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 24, color: COLORS.blue1 }}>UCGATOR</Text>
+          <View>
+            <TouchableOpacity>
+              <FontAwesomeIcon icon={faPlusSquare} size={32} color={COLORS.blue1} />
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-      <View style={styles.buttonRow}>
-        <Button title="Add Announcement" onPress={handleAddAnnouncement} />
-        <Button title="Remove Announcement" onPress={() => handleRemoveAnnouncement(announcements.length - 1)} />
-      </View>
-      <ScrollView
-        contentContainerStyle={styles.scrollViewContent}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        bounces={false}
-        overScrollMode='never'
-      >
-        {announcements.map((text, index) => (
-          <TouchableOpacity key={index} onPress={() => handleDoubleTap(index)} activeOpacity={1}>
-            <View style={styles.announcementContainer}>
-              {hidden[index] ? (
-                <View style={styles.undoContainer}>
-                  <Text style={styles.undoText}>Announcement hidden</Text>
-                  <View style={styles.undoButtons}>
-                    <TouchableOpacity onPress={() => handleUndoHide(index)}>
-                      <Text style={styles.undoButton}>Undo</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => handleRemoveAnnouncement(index)}>
-                      <Text style={styles.deleteButton}>Delete</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              ) : (
-                <>
-                  <TouchableOpacity style={styles.closeButton} onPress={() => handleHideAnnouncement(index)}>
-                    <FontAwesome name="times" size={20} color={COLORS.blue1} />
-                  </TouchableOpacity>
-                  <View style={styles.profileContainer}>
-                    <Image source={require('@/assets/images/profile-placeholder.png')} style={styles.profileImage} />
-                    <Text style={styles.profileName}>{text}</Text>
-                    <Text style={styles.announcementTime}>Posted 10 minutes ago</Text>
-                  </View>
-                  <Image source={require('@/assets/images/shark.webp')} style={styles.announcementImage} />
-                  <Text style={styles.announcementMessage}>Announcement message</Text>
-                  <View style={styles.likeContainer}>
-                    <TouchableOpacity onPress={() => handleLikeButtonClick(index)}>
-                      <FontAwesome
-                        name={liked[index] ? "thumbs-up" : "thumbs-o-up"}
-                        size={24}
-                        color={COLORS.blue1}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                  {showLikePopup[index] && (
-                    <Animated.View style={[styles.likePopup, { opacity: likeOpacity[index] }]}>  
-                      <FontAwesome name="thumbs-up" size={48} color={COLORS.blue1} />
-                    </Animated.View>
-                  )}
-                </>
-              )}
-            </View>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        
+        {error ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={handleRefresh}
+            >
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <Posts 
+            posts={posts}
+            loading={loading}
+            onRefresh={handleRefresh}
+            onLoadMore={handleLoadMore}
+            hasMore={hasMore}
+            likedPosts={likedPosts}
+            onLikeUpdate={handleLikeUpdate}
+          />
+        )}
+      </SafeAreaView>
     </View>
   );
 };
@@ -397,37 +198,38 @@ const COLORS = {
   gray: '#D3D3D3',
 };
 
-/**
- * Styles for the Latest component.
- *
- * @style
- * @property {object} container - Style for the main container.
- * @property {object} headerContainer - Style for the header container.
- * @property {object} headerBackground - Style for the header background.
- * @property {object} headerContent - Style for the header content.
- * @property {object} headerTitle - Style for the header title text.
- * @property {object} buttonRow - Style for the button row.
- * @property {object} scrollViewContent - Style for the scroll view content.
- * @property {object} announcementContainer - Style for the announcement container.
- * @property {object} profileName - Style for the profile name text.
- * @property {object} announcementMessage - Style for the announcement message text.
- * @property {object} announcementImage - Style for the announcement image.
- * @property {object} likeContainer - Style for the like button container.
- * @property {object} closeButton - Style for the close button.
- * @property {object} undoContainer - Style for the undo container.
- * @property {object} undoText - Style for the undo text.
- * @property {object} undoButtons - Style for the undo buttons.
- * @property {object} undoButton - Style for the undo button.
- * @property {object} deleteButton - Style for the delete button.
- * @property {object} likePopup - Style for the like popup animation.
- * @property {object} profileContainer - Style for the profile container.
- * @property {object} profileImage - Style for the profile image.
- * @property {object} announcementTime - Style for the announcement time text.
- */
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.white,
     flex: 1,
+  },
+
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  errorText: {
+    fontFamily: 'Montserrat-Regular',
+    fontSize: 16,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+
+  retryButton: {
+    backgroundColor: COLORS.blue1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+
+  retryButtonText: {
+    fontFamily: 'Montserrat-Bold',
+    fontSize: 16,
+    color: 'white',
   },
 
   headerContainer: {

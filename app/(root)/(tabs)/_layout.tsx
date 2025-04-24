@@ -90,14 +90,11 @@ const styles = StyleSheet.create({
     // MAP WILL NOT BE VISIBLE IN HERE
     tabBar: {
         backgroundColor: COLORS.pmy.blue1,
-        borderTopWidth: 1,
         height: 60,
         flexDirection: "row",
         justifyContent: "space-around",
         paddingTop: 10,
         paddingHorizontal: 15,
-        borderRadius: 20,
-        margin: 10,
     },
     tabButton: {
         flexDirection: "row",

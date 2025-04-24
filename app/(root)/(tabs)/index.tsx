@@ -11,7 +11,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
 import { StyleSheet, View, Text, Image, TextInput, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { showErrorToast } from '@/app/components/toast-config';
 import { useRouter } from 'expo-router';
 
 // CONSTANTS
