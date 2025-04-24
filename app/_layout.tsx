@@ -39,7 +39,7 @@ export default function RootLayout() {
           <LoadingIndicator />
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen 
-              name="(root)/latest/new-post"
+              name="/(root)/latest/new-post"
               options={{ presentation: 'modal' }} 
             />
           </Stack>

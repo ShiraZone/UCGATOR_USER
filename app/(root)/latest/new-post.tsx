@@ -91,7 +91,7 @@ const NewPost = () => {
             <View style={styles.userInfoContainer}>
                 <Image source={require('@/assets/images/profile-placeholder.png')} style={styles.profileImage} />
                 <View>
-                    <Text style={styles.userName}>Profile Name</Text> {/* Replace with actual user name */}
+                    <Text style={styles.userName}>Profile Name</Text>
                     <View style={styles.postOptionsRow}>
                         {/* Add actual option dropdowns/buttons here */}
                         <TouchableOpacity style={styles.optionButton}>
