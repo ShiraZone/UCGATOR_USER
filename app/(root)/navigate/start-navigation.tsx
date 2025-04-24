@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faLocationDot, faArrowRight, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { faLocationDot, faArrowRight, faPlus, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from "expo-router";
+import { useStopPoints } from '../../context/StopPointsContext';
 
 /**
  * StartNavigation Component
@@ -28,6 +29,7 @@ import { useRouter } from "expo-router";
  */
 const StartNavigation = () => {
   const router = useRouter();
+  const { stopPoints, removeStopPoint } = useStopPoints();
 
   /**
    * Handles the arrow button click event
@@ -42,7 +44,7 @@ const StartNavigation = () => {
   };
 
   const handleStopPoints = () => {
-    router.push("/navigate/stop-points");
+    router.push("/maps/searchbox-function-screen?source=stopPoints");
   };
 
   const handleBackPress = () => {
@@ -98,9 +100,21 @@ const StartNavigation = () => {
         <Text style={styles.updateButtonText}>UPDATE YOUR PREFERENCES</Text>
       </TouchableOpacity>
 
-      {/* Add Stop Points Section */}
+      {/* Stop Points Section (includes added points and add button) */}
       <View style={styles.stopPointsSection}>
-        <Text style={styles.stopPointsTitle}>Add Stop Points</Text>
+        <Text style={styles.stopPointsTitle}>Stop Points</Text>
+        
+        {/* List of added stop points */}
+        {stopPoints.map((point: string, index: number) => (
+          <View key={index} style={styles.addedStopPointContainer}>
+            <Text style={styles.addedStopPointText}>{point}</Text>
+            <TouchableOpacity onPress={() => removeStopPoint(index)} style={styles.removeStopPointButton}>
+              <FontAwesomeIcon icon={faTimes} size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+        ))}
+        
+        {/* Add Stop Points Button */}
         <TouchableOpacity 
           style={styles.addStopButton}
           onPress={handleStopPoints}
@@ -130,6 +144,9 @@ const StartNavigation = () => {
  * @property {Object} addStopButton - Dashed border button for adding stops
  * @property {Object} backButton - Back button container
  * @property {Object} backIcon - Back button icon styling
+ * @property {Object} addedStopPointContainer - Styles for added stop points
+ * @property {Object} addedStopPointText - Styles for added stop points text
+ * @property {Object} removeStopPointButton - Style for the remove button
  */
 const styles = StyleSheet.create({
   container: {
@@ -214,6 +231,7 @@ const styles = StyleSheet.create({
   },
   stopPointsSection: {
     marginTop: 10,
+    paddingBottom: 60,
   },
   stopPointsTitle: {
     color: '#FFFFFF',
@@ -240,6 +258,25 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '180deg' }],
     marginLeft: 10,
     marginTop: 13,
+  },
+  addedStopPointContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  addedStopPointText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+  },
+  removeStopPointButton: {
+    padding: 5,
+    marginLeft: 10,
   },
 });
 
