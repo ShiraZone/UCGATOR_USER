@@ -151,7 +151,7 @@ const Posts = ({
         // Add null checks to prevent TypeError
         const mediaUrls = item?.mediaUrls || [];
         const style = item?.style || {
-            fontFamily: 'Arial',
+            fontFamily: 'Montserrat-Regular',
             fontSize: '16px',
             color: '#000000',
             backgroundColor: '#ffffff',
