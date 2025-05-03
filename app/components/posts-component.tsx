@@ -50,6 +50,7 @@ interface PostsProps {
     hasMore?: boolean;
     likedPosts?: Record<string, boolean>;
     onLikeUpdate?: (postId: string, isLiked: boolean, newLikeCount: number) => void;
+    ListHeaderComponent?: any;
 }
 
 interface ImageDimensions {
@@ -83,7 +84,8 @@ const Posts = ({
     onLoadMore, 
     hasMore = false,
     likedPosts = {},
-    onLikeUpdate
+    onLikeUpdate,
+    ListHeaderComponent
 }: PostsProps) => {
     const [token, setToken] = useState<string | null>(null);
     const [imageDimensions, setImageDimensions] = useState<Record<string, ImageDimensions>>({});
@@ -333,13 +335,17 @@ const Posts = ({
                 onEndReached={hasMore ? onLoadMore : undefined}
                 onEndReachedThreshold={0.5}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    !loading ? (
-                        <View style={styles.emptyContainer}>
-                            <Text style={styles.emptyText}>No posts available</Text>
-                        </View>
-                    ) : null
-                }
+                ListHeaderComponent={ListHeaderComponent}
+                ListEmptyComponent={() => {
+                    if (!loading) {
+                        return (
+                            <View style={styles.emptyContainer}>
+                                <Text style={styles.emptyText}>No posts yet</Text>
+                            </View>
+                        );
+                    }
+                    return null;
+                }}
             />
 
             <Modal
