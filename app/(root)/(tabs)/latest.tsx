@@ -11,7 +11,6 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
-  Alert
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -106,7 +105,14 @@ const Latest = () => {
         }));
       }
 
-      setHasMore(currentPage < response.data.totalPages);
+      // Update hasMore based on current page and total pages
+      const hasMorePages = page < response.data.totalPages;
+      setHasMore(hasMorePages);
+      
+      // Only update currentPage if we successfully loaded the data
+      if (data.length > 0) {
+        setCurrentPage(page);
+      }
 
     } catch (error: any) {
       console.error('Error loading posts:', error);

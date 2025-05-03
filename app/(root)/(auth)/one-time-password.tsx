@@ -28,23 +28,20 @@ import IMAGES from '@/app/constants/images';
 import axios from 'axios';
 import { config } from '@/app/lib/config';
 import { router } from 'expo-router';
-import { getToken } from '@/app/lib/secure-store';
 import { useAuth } from '@/app/lib/auth-context';
-import { User } from '/app/lib/auth-context';
+import { User } from '@/app/lib/auth-context';
 import { showErrorToast, showSuccessToast } from '@/app/components/toast-config';
 
 const OneTimePassword = () => {
     // HOOKS
     const { setLoading } = useLoading();
     const { user, setUser } = useAuth();
-    const email = user?.email;
+    const email = user?.email || useSearchParams().get('email') as string;
+    const mode = useSearchParams().get('mode') as string;
     // STATES
     const [timer, setTimer] = useState(60);
     const [otpCode, setOtp] = useState<string[]>(Array(6).fill(''));
     const [isResending, setIsResending] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [isInitialLoad, setIsInitialLoad] = useState(true);
-    const hasInitiatedMail = useRef(false);
 
     // REFS
     const otpInputRefs = Array.from({ length: 6 }, () => React.createRef<TextInput>());
@@ -54,13 +51,10 @@ const OneTimePassword = () => {
         
         setIsResending(true);
         setLoading(true);
-        const token = await getToken();
 
         try {
-            const response = await axios.post(`${config.endpoint}/otp/user/send`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+            const response = await axios.post(`${config.endpoint}/otp/mail`, {
+                email
             });
 
             if (response.data.success) {
@@ -70,7 +64,6 @@ const OneTimePassword = () => {
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || 'Failed to send OTP. Please try again.';
             showErrorToast(errorMessage, 'Error');
-            setError(errorMessage);
         } finally {
             setLoading(false);
             setIsResending(false);
@@ -84,7 +77,6 @@ const OneTimePassword = () => {
         const updatedOtp = [...otpCode];
         updatedOtp[index] = text;
         setOtp(updatedOtp);
-        setError(null);
 
         // Auto-focus next input
         if (text && index < 5) {
@@ -111,26 +103,19 @@ const OneTimePassword = () => {
 
     const validateOTP = async () => {
         const otp = otpCode.join('');
-        const token = await getToken();
-        
         // Check if all 6 digits are filled
         const isComplete = otpCode.every(digit => digit.length === 1);
         if (!isComplete) {
-            setError('Please enter the complete 6-digit OTP code.');
+            showErrorToast('Please enter the complete 6-digit OTP code.', 'Error');
             return;
         }
 
         setLoading(true);
-        setError(null);
         
         try {
-            const response = await axios.post(`${config.endpoint}/otp/user/verify`, { 
+            const response = await axios.patch(`${config.endpoint}/otp/mail`, { 
                 email, 
                 otp 
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
             });
 
             if (response.data.success) {
@@ -141,13 +126,21 @@ const OneTimePassword = () => {
                         verified: true
                     } as User);
                 }
-                router.push('/(root)/onboarding/name-input');
+
+                // UPDATE MODE WHEN THIS SHIT IS CALLED
+                
+                switch (mode) {
+                    case 'registration':
+                        router.replace('/(root)/onboarding/name-input');
+                        break;
+                    case 'forgot-password':
+                        router.push(`/(root)/(auth)/change-password?email=${email}`);
+                        break;
+                }
             }
         } catch (error: any) {
             const errorMessage = error.response?.data?.error || 'Invalid OTP. Please try again.';
             showErrorToast(errorMessage, 'Error');
-            setError(errorMessage);
-            // Clear OTP on error
             setOtp(Array(6).fill(''));
             otpInputRefs[0]?.current?.focus();
         } finally {
@@ -171,11 +164,8 @@ const OneTimePassword = () => {
     }, []);
 
     useEffect(() => {
-        if (email && !hasInitiatedMail.current) {
-            hasInitiatedMail.current = true;
-            sendMail();
-        }
-    }, [email]);
+        startCountdown();
+    }, []);
 
     return (
         <SafeAreaView style={{ flex: 1 }}>
@@ -192,10 +182,6 @@ const OneTimePassword = () => {
                                     The code is only valid within 5 minutes. You may request for a new code after{' '}
                                     <Text style={styles.boldText}>{timer}</Text> seconds
                                 </Text>
-                                
-                                {error && (
-                                    <Text style={styles.errorText}>{error}</Text>
-                                )}
 
                                 <View style={styles.otpContainer}>
                                     {Array.from({ length: 6 }).map((_, index) => (
@@ -203,7 +189,6 @@ const OneTimePassword = () => {
                                             key={index}
                                             style={[
                                                 styles.textInput,
-                                                error && styles.errorInput,
                                                 otpCode[index] && styles.filledInput
                                             ]}
                                             keyboardType="number-pad"

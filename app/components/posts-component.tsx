@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, FlatList, Dimensions, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, Text, View, Image, FlatList, Dimensions, TouchableOpacity, Alert, ImageSourcePropType, ImageStyle, Modal, Pressable } from 'react-native'
 import React, { useState, useEffect } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faHeart as faHeartSolid, faImages } from '@fortawesome/free-solid-svg-icons'
@@ -52,6 +52,11 @@ interface PostsProps {
     onLikeUpdate?: (postId: string, isLiked: boolean, newLikeCount: number) => void;
 }
 
+interface ImageDimensions {
+    width: number;
+    height: number;
+}
+
 const { width } = Dimensions.get('window');
 
 const formatDate = (dateString: string) => {
@@ -81,6 +86,8 @@ const Posts = ({
     onLikeUpdate
 }: PostsProps) => {
     const [token, setToken] = useState<string | null>(null);
+    const [imageDimensions, setImageDimensions] = useState<Record<string, ImageDimensions>>({});
+    const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
     useEffect(() => {
         const loadToken = async () => {
@@ -147,6 +154,23 @@ const Posts = ({
         }
     };
 
+    const handleImageLoad = (postId: string, url: string) => {
+        Image.getSize(url, (width, height) => {
+            setImageDimensions(prev => ({
+                ...prev,
+                [postId]: { width, height }
+            }));
+        });
+    };
+
+    const handleImageLongPress = (url: string) => {
+        setZoomedImage(url);
+    };
+
+    const handleCloseZoom = () => {
+        setZoomedImage(null);
+    };
+
     const renderPost = ({ item }: { item: Post }) => {
         // Add null checks to prevent TypeError
         const mediaUrls = item?.mediaUrls || [];
@@ -171,6 +195,14 @@ const Posts = ({
         const isLiked = likedPosts[postId] || item.hasLiked || false;
         const likeCount = item.likeCount || 0;
         const location = item?.location;
+        const dimensions = imageDimensions[item.id];
+        const imageStyle: ImageStyle = dimensions ? {
+            width: width,
+            height: (width * dimensions.height) / dimensions.width,
+        } : {
+            width: '100%',
+            aspectRatio: 1,
+        };
 
         return (
             <View style={styles.postContainer}>
@@ -202,13 +234,21 @@ const Posts = ({
                 {mediaUrls.length > 0 && (
                     <View style={styles.mediaContainer}>
                         {mediaUrls.length === 1 ? (
-                            <Image 
-                                source={{ uri: mediaUrls[0] }} 
-                                style={styles.singleImage} 
-                                resizeMode="cover"
-                            />
+                            <View style={styles.imageWrapper}>
+                                <Pressable
+                                    onLongPress={() => handleImageLongPress(mediaUrls[0])}
+                                    delayLongPress={200}
+                                >
+                                    <Image 
+                                        source={{ uri: mediaUrls[0] }} 
+                                        style={imageStyle}
+                                        resizeMode="contain"
+                                        onLoad={() => handleImageLoad(item.id, mediaUrls[0])}
+                                    />
+                                </Pressable>
+                            </View>
                         ) : (
-                            <View>
+                            <View style={styles.multiImageContainer}>
                                 <FlatList
                                     data={mediaUrls}
                                     horizontal
@@ -216,11 +256,19 @@ const Posts = ({
                                     showsHorizontalScrollIndicator={false}
                                     keyExtractor={(url, index) => `${item.id || index}-${index}`}
                                     renderItem={({ item: url }) => (
-                                        <Image 
-                                            source={{ uri: url }} 
-                                            style={styles.multiImage} 
-                                            resizeMode="cover"
-                                        />
+                                        <View style={styles.multiImageWrapper}>
+                                            <Pressable
+                                                onLongPress={() => handleImageLongPress(url)}
+                                                delayLongPress={200}
+                                            >
+                                                <Image 
+                                                    source={{ uri: url }} 
+                                                    style={[imageStyle, styles.multiImage]}
+                                                    resizeMode="contain"
+                                                    onLoad={() => handleImageLoad(item.id, url)}
+                                                />
+                                            </Pressable>
+                                        </View>
                                     )}
                                 />
                                 <View style={styles.imageIndicator}>
@@ -274,23 +322,45 @@ const Posts = ({
     }
 
     return (
-        <FlatList
-            data={posts}
-            renderItem={renderPost}
-            keyExtractor={(item) => item?.id || Math.random().toString()}
-            contentContainerStyle={styles.container}
-            refreshing={loading}
-            onRefresh={onRefresh}
-            onEndReached={hasMore ? onLoadMore : undefined}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-                !loading ? (
-                    <View style={styles.emptyContainer}>
-                        <Text style={styles.emptyText}>No posts available</Text>
-                    </View>
-                ) : null
-            }
-        />
+        <>
+            <FlatList
+                data={posts}
+                renderItem={renderPost}
+                keyExtractor={(item) => item?.id || Math.random().toString()}
+                contentContainerStyle={styles.container}
+                refreshing={loading}
+                onRefresh={onRefresh}
+                onEndReached={hasMore ? onLoadMore : undefined}
+                onEndReachedThreshold={0.5}
+                showsVerticalScrollIndicator={false}
+                ListEmptyComponent={
+                    !loading ? (
+                        <View style={styles.emptyContainer}>
+                            <Text style={styles.emptyText}>No posts available</Text>
+                        </View>
+                    ) : null
+                }
+            />
+
+            <Modal
+                visible={!!zoomedImage}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={handleCloseZoom}
+            >
+                <View style={styles.modalContainer}>
+                    <Pressable style={styles.modalContent} onPress={handleCloseZoom}>
+                        {zoomedImage && (
+                            <Image
+                                source={{ uri: zoomedImage }}
+                                style={styles.zoomedImage}
+                                resizeMode="contain"
+                            />
+                        )}
+                    </Pressable>
+                </View>
+            </Modal>
+        </>
     )
 }
 
@@ -354,12 +424,29 @@ const styles = StyleSheet.create({
     },
     mediaContainer: {
         width: '100%',
-        height: width, // Square images
-        position: 'relative', // Added for absolute positioning of indicator
+        position: 'relative',
+        backgroundColor: '#f0f0f0',
+    },
+    imageWrapper: {
+        width: '100%',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f0f0f0',
+    },
+    multiImageContainer: {
+        width: '100%',
+        position: 'relative',
+        backgroundColor: '#f0f0f0',
+    },
+    multiImageWrapper: {
+        width: width,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#f0f0f0',
     },
     singleImage: {
         width: '100%',
-        height: '100%',
+        aspectRatio: 1,
     },
     multiImage: {
         width: width,
@@ -417,5 +504,22 @@ const styles = StyleSheet.create({
     },
     likedText: {
         color: '#FF3B30',
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    },
+    modalContent: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    zoomedImage: {
+        width: width,
+        height: width,
+        maxHeight: '80%',
     },
 })

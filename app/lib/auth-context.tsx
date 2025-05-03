@@ -9,10 +9,10 @@ import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
 
 // storage
-import { showErrorToast, showSuccessToast, showInfoToast }  from "../components/toast-config";
+import { showErrorToast, showSuccessToast }  from "../components/toast-config";
 
 // (root)/lib/auth-context.tsx
-interface User {
+export interface User {
     _id: string;
     email: string;
     status: string;
@@ -26,24 +26,6 @@ interface User {
     gender: string | null;
     bio: string | null;
     emergencyContact: emergencyContact[] | null;
-}
-
-interface emergencyContact {
-    name: string;
-    relationship: string;
-    phonenum: string;
-}
-
-interface emergencyContact {
-    name: string;
-    relationship: string;
-    phonenum: string;
-}
-
-interface emergencyContact {
-    name: string;
-    relationship: string;
-    phonenum: string;
 }
 
 interface emergencyContact {
@@ -226,13 +208,15 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             await deleteUserSession();
             setIsLoggedIn(false);
 
+            showSuccessToast('Logout successful', 'Success');
+            setUser(null);
+
             router.replace('/(root)/(auth)/get-started');
-            return true; // reutnr success | true for validation purposes
+            return true;
         } catch (error) {
-            console.error(error); // log error
-            return false; // return false if error
+            return false;
         } finally {
-            setLoading(false) // set loading to false
+            setLoading(false)
         }
     }
 

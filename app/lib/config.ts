@@ -23,8 +23,8 @@ export const testConnection = async () => {
     const router = useRouter();
 
     try {
-
         const isConnected = await checkNetworkConnection();
+        
         if (!isConnected) {
             return;
         }

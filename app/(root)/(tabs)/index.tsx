@@ -119,10 +119,16 @@ export default function Index(): JSX.Element {
 
   const getMapData = async () => {
     setLoading(true);
+    const token = await getToken();
+
+    if(!token) {
+      return;
+    }
+    
     try {
       const response = await axios.get(`${config.endpoint}/map/user/building/load`, {
         headers: {
-          Authorization: `Bearer ${await getToken()}`
+          Authorization: `Bearer ${token}`
         }
       });
 
