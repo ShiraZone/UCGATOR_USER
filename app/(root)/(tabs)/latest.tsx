@@ -265,6 +265,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     color: COLORS.white,
     fontSize: 22,
+    fontFamily: 'Montserrat-Bold',
     fontWeight: 'bold',
     marginBottom: 10,
   },
