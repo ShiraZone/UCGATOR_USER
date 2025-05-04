@@ -1,47 +1,38 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Dimensions, Image } from 'react-native';
-import React from 'react';
-import { useRouter } from 'expo-router';
+
 import { FontAwesome } from '@expo/vector-icons';
+
+// ICONS
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import {
+  faSquareCaretRight
+} from '@fortawesome/free-solid-svg-icons';
+
+// RECT
+import React from 'react';
+import { useState } from 'react';
+
+// ROUTER
+import { useRouter } from 'expo-router';
+
+// COMPONENTS
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  ScrollView, 
+  StatusBar, 
+  Dimensions, 
+  Image 
+} from 'react-native';
+
+
 const { width } = Dimensions.get('window');
 
-/**
- * Explore Component
- * 
- * @component
- * @description Main explore screen interface that provides navigation options and location discovery.
- * Features a visually appealing header with navigation controls and categorized location sections.
- *
- * @features
- * - Hero image header with overlaid navigation controls
- * - Start Navigation button for quick route planning
- * - Tab-based navigation between popular locations and user history
- * - Section cards for different campus locations (Cashier, Records)
- * - Responsive design adapting to screen width
- *
- * @navigation
- * - START NAVIGATION button routes to start-navigation screen
- * - Tabs switch between widely navigated locations and user history
- * - Section cards provide quick access to specific locations
- *
- * @styling
- * - Uses custom color palette defined in COLORS constant
- * - Montserrat font family for consistent typography
- * - Responsive image sizing based on device width
- * - Modern UI elements with rounded corners and borders
- *
- * @returns {React.ReactElement} The rendered Explore component
- */
 const Explore = () => {
   const router = useRouter();
-  const [activeTab, setActiveTab] = React.useState('widelyNavigated');
-
-  /**
-   * Handles navigation to the start navigation screen
-   * Triggered by the START NAVIGATION button press
-   */
-  const handleStartNavigation = () => {
-    router.push('/(root)/navigate/start-navigation');
-  };
+  const [activeTab, setActiveTab] = useState('widelyNavigated');
 
   const handleHistoryPress = () => {
     setActiveTab('history');
@@ -70,34 +61,38 @@ const Explore = () => {
   ];
 
   return (
-    <View style={styles.container}>
-      {/* Header Components */}
-      <View style={styles.headerContainer}>
-        <Image
-          source={require('@/assets/images/menu_image_cover.png')} 
-          style={styles.headerImage}
-          resizeMode="contain"
-        />
-
-        {/* Title and Start Button on top of the image */}
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Navigate</Text>
-
-          <TouchableOpacity style={styles.startButton} onPress={handleStartNavigation} >
-            <Text style={styles.startButtonText}>START NAVIGATION</Text>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <StatusBar backgroundColor='white' barStyle={'dark-content'} />
+      <SafeAreaView>
+        <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
+          <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 24, color: COLORS.blue1 }}>Explore</Text>
+          <View>
+            <TouchableOpacity onPress={() => router.push('/(root)/navigate/start-navigation')}>
+              <FontAwesomeIcon icon={faSquareCaretRight} size={32} color={COLORS.blue1} />
+            </TouchableOpacity>
+          </View>
+        </View>
+        {/* Tabs */}
+        <View style={{  paddingHorizontal: 15, flexDirection: 'row', gap: 10}}>
+          <TouchableOpacity onPress={handleWidelyNavigatedPress} style={[styles.tabButtons, activeTab === 'widelyNavigated' && styles.activeTab]}>
+            <Text style={styles.tabText}>Widely Navigated</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleHistoryPress} style={[styles.tabButtons, activeTab === 'history' && styles.activeTab]}>
+            <Text style={styles.tabText}>Your History</Text>
           </TouchableOpacity>
         </View>
-      </View>
-
+      </SafeAreaView>
       {/* Tabs */}
       <View style={styles.tabRow}>
-        <TouchableOpacity 
+
+
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'widelyNavigated' && styles.activeTab]}
           onPress={handleWidelyNavigatedPress}
         >
           <Text style={styles.tabText}>Widely Navigated Location</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[styles.tab, activeTab === 'history' && styles.activeTab]}
           onPress={handleHistoryPress}
         >
@@ -149,46 +144,35 @@ const COLORS = {
   red: '#FF0000',
 };
 
-/**
- * @constant styles
- * @description StyleSheet for the Explore component
- * 
- * @property {Object} container - Main scroll container styling
- * @property {Object} headerContainer - Container for the hero image and overlay content
- * @property {Object} headerImage - Hero image styling with responsive width
- * @property {Object} headerContent - Overlay content positioning and layout
- * @property {Object} headerTitle - Title text styling
- * @property {Object} startButton - Navigation button with glowing border effect
- * @property {Object} startButtonText - Button text styling
- * @property {Object} tabRow - Container for navigation tabs
- * @property {Object} tab - Individual tab styling
- * @property {Object} tabText - Tab text styling
- * @property {Object} section - Section container layout
- * @property {Object} sectionTitle - Section header text styling
- * @property {Object} sectionBox - Placeholder box styling for sections
- * @property {Object} activeTab - Active tab styling
- */
 const styles = StyleSheet.create({
+  tabButtons: {
+    backgroundColor: COLORS.blue1,
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 22,
+  },
+  tabText: {
+    color: COLORS.white,
+    fontSize: 12,
+    fontFamily: 'Montserrat-Bold'
+  },
   container: {
     backgroundColor: COLORS.white,
     paddingBottom: 40,
   },
-
   headerContainer: {
-    position: 'relative', 
+    position: 'relative',
   },
-
   headerImage: {
-    width: width - 0, 
+    width: width - 0,
     height: 189,
     alignSelf: 'center',
   },
-
   headerContent: {
-    position: 'absolute', 
-    top: '10%', 
-    left: 10, 
-    right: 20, 
+    position: 'absolute',
+    top: '10%',
+    left: 10,
+    right: 20,
     alignItems: 'flex-start',
   },
 
@@ -231,12 +215,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 0,
   },
 
-  tabText: {
-    color: COLORS.white,
-    fontSize: 12,
-    paddingHorizontal: 35,
-    fontFamily: 'Montserrat-Bold'
-  },
+
 
   section: {
     marginTop: 20,

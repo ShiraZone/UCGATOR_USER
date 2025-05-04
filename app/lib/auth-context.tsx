@@ -145,6 +145,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             router.replace('/');  
         } catch (error: any) {
             showErrorToast(error.response?.data?.error, 'Error');
+            console.log(error.response);
         } finally {
             setLoading(false);
         }

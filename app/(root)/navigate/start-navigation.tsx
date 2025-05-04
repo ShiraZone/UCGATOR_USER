@@ -48,7 +48,7 @@ const StartNavigation = () => {
   };
 
   const handleBackPress = () => {
-    router.push('/(root)/(tabs)/explore');
+    router.back();
   };
 
   return (

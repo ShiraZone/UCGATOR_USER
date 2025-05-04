@@ -9,7 +9,7 @@ import { withTiming, useSharedValue, useAnimatedStyle } from 'react-native-reani
 // COMPONENTS
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
-import { StyleSheet, View, Text, Image, TextInput, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Text, Image, Modal, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useRouter } from 'expo-router';
 
@@ -30,41 +30,6 @@ import { useLoading } from '@/app/lib/load-context';
 import { getToken } from '@/app/lib/secure-store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
-
-/**
- * Index Component
- * 
- * @component
- * @description Main map view interface for building navigation with interactive floor plans.
- * Features gesture controls for map manipulation, floor selection, and location search.
- *
- * @features
- * - Interactive map with gesture controls:
- *   - Pinch to zoom (scale: 0.1 to 3x)
- *   - Pan to move
- *   - Two-finger rotation
- * - Floor selection system:
- *   - Quick floor switching
- *   - Modal-based floor picker
- *   - Automatic map data fetching
- * - Search interface:
- *   - Search bar with voice input option
- *   - Building name display
- * - Map controls:
- *   - Expand/Compress buttons
- *   - Location arrow for navigation
- *
- * @gestures
- * - Pinch: Zoom in/out with scale limits
- * - Pan: Drag the map with position memory
- * - Rotate: Two-finger rotation with radian calculation
- *
- * @api
- * - Fetches map data from server using authenticated requests
- * - Handles floor-specific map images
- *
- * @returns {React.ReactElement} The rendered Index component
- */
 
 export default function Index(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
@@ -121,10 +86,10 @@ export default function Index(): JSX.Element {
     setLoading(true);
     const token = await getToken();
 
-    if(!token) {
+    if (!token) {
       return;
     }
-    
+
     try {
       const response = await axios.get(`${config.endpoint}/map/user/building/load`, {
         headers: {
@@ -292,117 +257,98 @@ export default function Index(): JSX.Element {
     router.push('/(root)/maps/searchbox-function-screen');
   };
 
+  const handleTargetPin = (poiId: string) => {
+    // Navigate to location details screen with the pin ID
+    router.push({
+      pathname: '/(root)/maps/location-details',
+      params: { id: poiId }
+    });
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.pmy.white} />
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 100}
-      >
-        <View style={styles.mainContainer}>
-          <View style={styles.contentContainer}>
-            {/* Search Bar */}
-            <TouchableOpacity 
-              style={styles.searchBarContainer}
-              onPress={handleSearchPress}
-            >
-              <FontAwesomeIcon icon={faSearch} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
-              <Text style={styles.searchInput}>Try searching for a room...</Text>
-              <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
-            </TouchableOpacity>
-            {/* Building Name */}
-            <Text style={styles.buildingTitle}>{buildingName}</Text>
-            {/* Map Area with Gesture Handlers */}
-            <GestureHandlerRootView style={styles.mapContainer}>
-              <GestureDetector gesture={gesture}>
-                <Animated.View style={[animatedStyle]}>
-                  {currentImage && (
-                    <>
-                      <Image source={{ uri: currentImage }} style={{ height: '100%', width: '100%' }} resizeMode='contain' onLayout={onImageLayout} />
-                      {pois.map((poi) => {
-                        const position = calculatePoiPosition(poi.coordinates.x, poi.coordinates.y);
-                        return (
-                          <View key={poi._id} style={[ styles.poiContainer, { left: position.x, top: position.y, }]}>
-                            <View style={styles.poiMarker} />
-                            <Animated.View style={[styles.poiLabelContainer, labelAnimatedStyle]}>
+
+      <View style={styles.mainContainer}>
+        <View style={styles.contentContainer}>
+          {/* Search Bar */}
+          <TouchableOpacity style={styles.searchBarContainer} onPress={handleSearchPress}>
+            <FontAwesomeIcon icon={faSearch} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+            <Text style={styles.searchInput}>Try searching for a room...</Text>
+            <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+          </TouchableOpacity>
+          {/* Building Name */}
+          <Text style={styles.buildingTitle}>{buildingName}</Text>
+          {/* Map Area with Gesture Handlers */}
+          <GestureHandlerRootView style={styles.mapContainer}>
+            <GestureDetector gesture={gesture}>
+              <Animated.View style={[animatedStyle]}>
+                {currentImage && (
+                  <>
+                    <Image source={{ uri: currentImage }} style={{ height: '100%', width: '100%' }} resizeMode='contain' onLayout={onImageLayout} />
+                    {pois.map((poi) => {
+                      const position = calculatePoiPosition(poi.coordinates.x, poi.coordinates.y);
+                      return (
+                        <View key={poi._id} style={[styles.poiContainer, { left: position.x, top: position.y, }]}>
+                          <View style={styles.poiMarker} />
+                          <Animated.View style={[styles.poiLabelContainer, labelAnimatedStyle]}>
+                            <TouchableOpacity onPress={() => handleTargetPin(poi._id)}>
                               <Text style={styles.poiLabel} numberOfLines={2}>{poi.details.pinName}</Text>
-                            </Animated.View>
-                          </View>
-                        );
-                      })}
-                    </>
-                  )}
-                </Animated.View>
-              </GestureDetector>
-            </GestureHandlerRootView>
-            {/* Navigation Controls */}
-            <View style={styles.navigationControls}>
-              <TouchableOpacity style={styles.controlButton} onPress={handleZoomIn}>
-                <FontAwesomeIcon icon={faExpand} color={COLORS.pmy.white} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={handleCenter}>
-                <FontAwesomeIcon icon={faLocationArrow} color={COLORS.pmy.white} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.controlButton} onPress={handleZoomOut}>
-                <FontAwesomeIcon icon={faCompress} color={COLORS.pmy.white} />
-              </TouchableOpacity>
-            </View>
-            {/* Floor Selector */}
-            <TouchableOpacity style={styles.floorSelector} onPress={() => setFloorMenuVisible(!isFloorMenuVisible)}>
-              <Text style={styles.floorText}>{selectedFloor} <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} /></Text>
+                            </TouchableOpacity>
+                          </Animated.View>
+                        </View>
+                      );
+                    })}
+                  </>
+                )}
+              </Animated.View>
+            </GestureDetector>
+          </GestureHandlerRootView>
+          {/* Navigation Controls */}
+          <View style={styles.navigationControls}>
+            <TouchableOpacity style={styles.controlButton} onPress={handleZoomIn}>
+              <FontAwesomeIcon icon={faExpand} color={COLORS.pmy.white} />
             </TouchableOpacity>
-            {/* Floor Dropdown */}
-            {isFloorMenuVisible && (
-              <View style={styles.dropdownContainer}>
-                <View style={styles.dropdownContent}>
-                  {floorData.map((floor) => (
-                    <TouchableOpacity
-                      key={floor.floorID}
-                      style={[styles.floorOption, selectedFloor === floor.floorName && styles.selectedFloorOption]}
-                      onPress={() => {
-                        setFloorMenuVisible(false);
-                        setSelectedFloor(floor.floorName);
-                        setCurrentFloor(floor.floorNumber);
-                        handleFloorChange(floor.floorNumber);
-                      }}
-                    >
-                      <Text style={[styles.floorOptionText, selectedFloor === floor.floorName && styles.selectedFloorOptionText]}>
-                        {floor.floorName}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
+            <TouchableOpacity style={styles.controlButton} onPress={handleCenter}>
+              <FontAwesomeIcon icon={faLocationArrow} color={COLORS.pmy.white} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.controlButton} onPress={handleZoomOut}>
+              <FontAwesomeIcon icon={faCompress} color={COLORS.pmy.white} />
+            </TouchableOpacity>
           </View>
+          {/* Floor Selector */}
+          <TouchableOpacity style={styles.floorSelector} onPress={() => setFloorMenuVisible(!isFloorMenuVisible)}>
+            <Text style={styles.floorText}>{selectedFloor} <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} /></Text>
+          </TouchableOpacity>
+          {/* Floor Dropdown */}
+          {isFloorMenuVisible && (
+            <View style={styles.dropdownContainer}>
+              <View style={styles.dropdownContent}>
+                {floorData.map((floor) => (
+                  <TouchableOpacity
+                    key={floor.floorID}
+                    style={[styles.floorOption, selectedFloor === floor.floorName && styles.selectedFloorOption]}
+                    onPress={() => {
+                      setFloorMenuVisible(false);
+                      setSelectedFloor(floor.floorName);
+                      setCurrentFloor(floor.floorNumber);
+                      handleFloorChange(floor.floorNumber);
+                    }}
+                  >
+                    <Text style={[styles.floorOptionText, selectedFloor === floor.floorName && styles.selectedFloorOptionText]}>
+                      {floor.floorName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
         </View>
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
 
-/**
- * @constant styles
- * @description StyleSheet for the Index component
- * 
- * @property {Object} floorSelector - Floor selection buttons container
- * @property {Object} activeButton - Active floor button styling
- * @property {Object} buttonText - Floor button text styling
- * @property {Object} container - Main container layout
- * @property {Object} searchContainer - Search bar positioning
- * @property {Object} searchBar - Search bar styling with blue background
- * @property {Object} searchInput - Search input text styling
- * @property {Object} buildingName - Building title text styling
- * @property {Object} mapControls - Map control buttons container
- * @property {Object} controlButton - Individual control button styling
- * @property {Object} floorButton - Floor selector button styling
- * @property {Object} floorText - Floor text styling
- * @property {Object} modalOverlay - Floor menu modal overlay
- * @property {Object} floorMenu - Floor menu popup styling
- * @property {Object} floorOption - Floor option button styling
- * @property {Object} floorOptionText - Floor option text styling
- */
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -540,14 +486,14 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     paddingHorizontal: 4,
     position: 'absolute',
-    top: 5, // Position at top of container
+    top: 5,
   },
   poiLabel: {
     color: '#FFFFFF',
     fontSize: 8,
     textAlign: 'center',
-    flexShrink: 1, // Allow text to shrink if needed
-    flexWrap: 'wrap', // Allow text to wrap
+    flexShrink: 1,
+    flexWrap: 'wrap',
     fontFamily: 'Montserrat-Regular',
   },
   poiMarker: {
@@ -555,6 +501,42 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     backgroundColor: 'red',
-    position: 'absolute', // Position in center of container
+    position: 'absolute',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: COLORS.pmy.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+    position: 'relative'
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'Montserrat-Bold',
+    color: COLORS.pmy.blue1,
+  },
+  closeButton: {
+    padding: 5,
+  },
+  modalBody: {
+    padding: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    fontFamily: 'Montserrat-Regular',
+    color: COLORS.pmy.blue1,
   },
 });
