@@ -220,12 +220,12 @@ const FirstAid = () => {
     return (
         <View style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <ImageBackground style={styles.topHeader} source={IMAGES.placement_image_cover} resizeMode="stretch">
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15}}>
+                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
                         <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerText}>First Aid</Text>
-                </ImageBackground>
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>First Aid</Text>
+                </View>
                 <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                     <Text style={styles.subtitle}>Tap each icon to show details.</Text>
                     <Text style={styles.locationText}>Current Location: {randomNum}</Text>
@@ -315,7 +315,6 @@ const styles = StyleSheet.create({
     },
     scrollContent: {
         flexGrow: 1,
-        paddingTop: 100,
         paddingHorizontal: 15,
         marginBottom: 20
     },
