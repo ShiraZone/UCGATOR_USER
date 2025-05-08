@@ -149,7 +149,7 @@ const ProfileInfoWindow = () => {
             <StatusBar backgroundColor={COLORS.pmy.blue1} barStyle="light-content" />
             {/* Header Container */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
+                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginHorizontal: 5 }} onPress={() => router.back()}>
                     <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                 </TouchableOpacity>
                 <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>Profile</Text>
@@ -181,8 +181,11 @@ const ProfileInfoWindow = () => {
                             </View>
 
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <TouchableOpacity style={{ width: '100%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} onPress={() => router.push('./edit-profile')} >
+                                <TouchableOpacity style={{ width: '70%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} onPress={() => router.push('./edit-profile')} >
                                     <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold', }}>Edit Profile</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={{ width: '25%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} >
+                                    <FontAwesomeIcon icon={faEllipsis} size={18} color={COLORS.pmy.white} />
                                 </TouchableOpacity>
                             </View>
 

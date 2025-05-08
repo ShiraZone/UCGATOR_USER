@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 // COMPONENTS
-import { TextInput, Image, ScrollView, StyleSheet, Text, View, TouchableWithoutFeedback, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Keyboard, Alert, } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, TouchableWithoutFeedback, TouchableOpacity, ImageBackground, KeyboardAvoidingView, Keyboard, Alert, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import axios from 'axios';
 
 // UTILS
 import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
 
 // HOOKS
 import { useAuth } from '@/app/lib/auth-context';
@@ -20,9 +21,11 @@ import { useLoading } from '@/app/lib/load-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faCircleUser, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 
+import { TextInput } from 'react-native';
+
 const EditProfile = () => {
 
-    const { user, getUserInfo } = useAuth();
+    const { user, setUser, getUserInfo } = useAuth();
     const [token, setToken] = useState<string | null>(null);
     const { setLoading } = useLoading();
     const activeEndpoint = config.endpoint;
@@ -178,7 +181,7 @@ const EditProfile = () => {
         <SafeAreaView style={styles.container}>
             {/* Header Content */}
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
+                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginHorizontal: 5 }} onPress={() => router.back()}>
                     <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                 </TouchableOpacity>
                 <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>Profile</Text>
@@ -201,11 +204,6 @@ const EditProfile = () => {
                                     <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue2 }}>{user?.email}</Text>
                                 </View>
                             </View>
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <TouchableOpacity style={{ width: '100%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} onPress={() => router.push('./edit-account')} >
-                                <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold', }}>Edit Account</Text>
-                            </TouchableOpacity>
                         </View>
                         {/* About Me Section */}
                         <View style={{ marginBottom: 20, backgroundColor: '#BCD4E6', borderRadius: 10, padding: 15 }}>

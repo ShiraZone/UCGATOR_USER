@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
 // COMPONENTS
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, TextInput, Modal, KeyboardAvoidingView, } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, TextInput, Modal, KeyboardAvoidingView,} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { useRouter } from 'expo-router';
 import { Linking } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CallingCode } from 'react-native-country-picker-modal';
+import { CallingCode }  from 'react-native-country-picker-modal';
 
 // ICONS
-import { faArrowLeft, faPlus, faPhone, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faArrowLeft, faPlus, faPhone, faEdit} from '@fortawesome/free-solid-svg-icons';
 
 // CONSTANTS
 import IMAGES from '@/app/constants/images';
@@ -69,7 +69,7 @@ const Emergency = () => {
     const [newContactRelation, setNewContactRelation] = useState('');
     const [callingCode, setCallingCode] = useState<CallingCode>('+63');
     const [isCountryPickerVisible, setIsCountryPickerVisible] = useState(false);
-
+    
     const STORAGE_KEY = '@custom_contacts';
 
     // CREATE
@@ -122,13 +122,11 @@ const Emergency = () => {
     const updateCustomContact = (id: number) => {
         const updatedContacts = customContacts.map((contact) =>
             contact.id === id
-                ? {
-                    ...contact,
-                    contact_title: newContactName,
-                    country_code: callingCode,
-                    contact_number: newContactNumber,
-                    relation: newContactRelation
-                }
+                ? { ...contact, 
+                    contact_title: newContactName, 
+                    country_code: callingCode, 
+                    contact_number: newContactNumber, 
+                    relation: newContactRelation }
                 : contact
         );
         setCustomContacts(updatedContacts);
@@ -146,30 +144,31 @@ const Emergency = () => {
         const updatedContacts = customContacts.filter((contact) => contact.id !== id);
         setCustomContacts(updatedContacts);
         saveCustomContacts(updatedContacts);
-        console.log('deletedContact: ', updatedContacts); // DEBUG
+        console.log('deletedContact: ',updatedContacts); // DEBUG
     };
 
     return (
         <View style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15}}>
-                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
+                <ImageBackground style={styles.topHeader} source={IMAGES.placement_image_cover} resizeMode="stretch">
+                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', position: 'absolute', left: 15, top: 15, }} onPress={() => router.back()} >
                         <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>Emergency</Text>
-                </View>
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.white, }}>Emergency</Text>
+                </ImageBackground>
+
                 {/* Main Content Area */}
-                <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15, marginBottom: 20 }} >
+                <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: 100 }} showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15, marginBottom: 20 }} >
                     <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginTop: 15, color: COLORS.pmy.blue1, }}>List of Emergency Contacts:</Text>
                     <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Regular', marginBottom: 15, color: COLORS.pmy.blue1, }}>Tap to Call</Text>
                     <View style={styles.contentContainer}>
                         {STATIC_CONTACT_LIST.map((contact) => (
-                            <TouchableOpacity key={contact.id} style={styles.contactListContainer}
-                                onPress={() => {
+                            <TouchableOpacity key={contact.id} style={styles.contactListContainer} 
+                                onPress={() => { 
                                     const phoneNumber = `tel:${contact.country_code}${contact.contact_number}`;
                                     try { Linking.openURL(phoneNumber); } catch (error) { console.error('Error opening URL:', error); };
                                 }}>
-                                <FontAwesomeIcon icon={faPhone} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }} />
+                                <FontAwesomeIcon icon={faPhone} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }}/>
                                 <View>
                                     <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Bold', color: COLORS.pmy.blue1, }}>{contact.contact_title} </Text>
                                     <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue2, }}>{contact.country_code}{contact.contact_number}</Text>
@@ -182,33 +181,33 @@ const Emergency = () => {
                     <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginTop: 15, marginBottom: 5, color: COLORS.pmy.blue1, }}>Custom Contacts:</Text>
                     <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Regular', marginBottom: 15, color: COLORS.pmy.blue1, }}>Tap to Call</Text>
                     <View style={styles.customContactContainer}>
-                        {customContacts.map((contact) => (
-                            <View key={contact.id} style={[styles.contactListContainer, { flexDirection: 'row', justifyContent: 'space-between' }]}>
-                                <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
-                                    onPress={() => {
-                                        const phoneNumber = `tel:${contact.contact_number}`;
-                                        Linking.openURL(phoneNumber);
-                                    }}>
-                                    <FontAwesomeIcon icon={faPhone} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }} />
-                                    <View>
-                                        <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Bold', color: COLORS.pmy.blue1 }}>{contact.contact_title}</Text>
-                                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue2 }}>{contact.contact_number}</Text>
-                                    </View>
-                                </TouchableOpacity>
-                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                    <TouchableOpacity
-                                        onPress={() => {
-                                            setEditingContact(contact);
-                                            setNewContactName(contact.contact_title);
-                                            setNewContactNumber(contact.contact_number);
-                                            setNewContactRelation(contact.relation);
-                                            setModalVisible(true);
-                                        }}>
-                                        <FontAwesomeIcon icon={faEdit} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }} />
-                                    </TouchableOpacity>
+                    {customContacts.map((contact) => (
+                        <View key={contact.id} style={[styles.contactListContainer, { flexDirection: 'row', justifyContent: 'space-between' }]}>
+                            <TouchableOpacity style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
+                                onPress={() => {
+                                    const phoneNumber = `tel:${contact.contact_number}`;
+                                    Linking.openURL(phoneNumber);
+                                }}>
+                                <FontAwesomeIcon icon={faPhone} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }} />
+                                <View>
+                                    <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Bold', color: COLORS.pmy.blue1 }}>{contact.contact_title}</Text>
+                                    <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue2 }}>{contact.contact_number}</Text>
                                 </View>
+                            </TouchableOpacity>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    setEditingContact(contact); 
+                                    setNewContactName(contact.contact_title); 
+                                    setNewContactNumber(contact.contact_number); 
+                                    setNewContactRelation(contact.relation);
+                                    setModalVisible(true); 
+                                }}>
+                                    <FontAwesomeIcon icon={faEdit} size={20} color={COLORS.pmy.blue1} style={{ marginRight: 10 }} />
+                                </TouchableOpacity>
                             </View>
-                        ))}
+                        </View>
+                    ))}
                         <TouchableOpacity style={[styles.contactListContainer, { justifyContent: 'center' }]}
                             onPress={() => {
                                 setEditingContact(null);
@@ -231,94 +230,92 @@ const Emergency = () => {
 
                             {/* Name Input */}
                             <View style={styles.modalContent}>
-                                <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginBottom: 10, color: COLORS.pmy.blue1 }}> {editingContact ? 'Edit Contact' : 'Add New Contact'}</Text>
-                                <TextInput placeholder="Name" value={newContactName} onChangeText={setNewContactName} style={styles.input} />
-                                <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                            <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginBottom: 10, color: COLORS.pmy.blue1 }}> {editingContact ? 'Edit Contact' : 'Add New Contact'}</Text>
+                            <TextInput placeholder="Name" value={newContactName} onChangeText={setNewContactName} style={styles.input}/>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
 
-                                    {/* Country Code Selector */}
-                                    <TouchableOpacity
-                                        style={{
-                                            borderWidth: 1, borderColor: COLORS.pmy.blue2, borderRadius: 8, padding: 9, marginBottom: 10, justifyContent: 'center',
-                                            alignItems: 'center',
-                                        }}
-                                        onPress={() => setIsCountryPickerVisible(true)}
-                                    >
-                                        <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Bold', color: COLORS.pmy.blue1 }}>{callingCode}</Text>
-                                    </TouchableOpacity>
+                                {/* Country Code Selector */}
+                                <TouchableOpacity
+                                    style={{ borderWidth: 1, borderColor: COLORS.pmy.blue2, borderRadius: 8, padding: 9, marginBottom: 10, justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                    onPress={() => setIsCountryPickerVisible(true)}
+                                >
+                                    <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Bold', color: COLORS.pmy.blue1 }}>{callingCode}</Text>
+                                </TouchableOpacity>
 
-                                    {/* Country Picker Modal */}
-                                    <Modal visible={isCountryPickerVisible} transparent={true} animationType="slide">
-                                        <View style={styles.modalContainer}>
-                                            <View style={styles.modalContent}>
-                                                <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginBottom: 10, color: COLORS.pmy.blue1 }}>Select Country Code</Text>
-                                                <ScrollView style={{ width: '100%' }}>
-                                                    {uniqueCountryCodes.map((country) => (
-                                                        <TouchableOpacity
-                                                            key={country.code}
-                                                            style={{
-                                                                padding: 10,
-                                                                borderBottomWidth: 1,
-                                                                borderBottomColor: COLORS.pmy.blue2,
-                                                            }}
-                                                            onPress={() => {
-                                                                setCallingCode(country.callingCode); // Set the calling code
-                                                                setIsCountryPickerVisible(false); // Close the modal
-                                                            }}
-                                                        >
-                                                            <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue1 }}>
-                                                                {country.name} ({country.callingCode})
-                                                            </Text>
-                                                        </TouchableOpacity>
-                                                    ))}
-                                                </ScrollView>
-                                                <TouchableOpacity
-                                                    style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginTop: 10 }]}
-                                                    onPress={() => setIsCountryPickerVisible(false)} // Close the modal
-                                                >
-                                                    <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Cancel</Text>
-                                                </TouchableOpacity>
-                                            </View>
+                                {/* Country Picker Modal */}
+                                <Modal visible={isCountryPickerVisible} transparent={true} animationType="slide">
+                                    <View style={styles.modalContainer}>
+                                        <View style={styles.modalContent}>
+                                            <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginBottom: 10, color: COLORS.pmy.blue1 }}>Select Country Code</Text>
+                                            <ScrollView style={{ width: '100%' }}>
+                                                {uniqueCountryCodes.map((country) => (
+                                                    <TouchableOpacity   
+                                                        key={country.code}
+                                                        style={{
+                                                            padding: 10,
+                                                            borderBottomWidth: 1,
+                                                            borderBottomColor: COLORS.pmy.blue2,
+                                                        }}
+                                                        onPress={() => {
+                                                            setCallingCode(country.callingCode); // Set the calling code
+                                                            setIsCountryPickerVisible(false); // Close the modal
+                                                        }}
+                                                    >
+                                                        <Text style={{ fontSize: 16, fontFamily: 'Montserrat-Regular', color: COLORS.pmy.blue1 }}>
+                                                            {country.name} ({country.callingCode})
+                                                        </Text>
+                                                    </TouchableOpacity>
+                                                ))}
+                                            </ScrollView>
+                                            <TouchableOpacity
+                                                style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginTop: 10 }]}
+                                                onPress={() => setIsCountryPickerVisible(false)} // Close the modal
+                                            >
+                                                <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Cancel</Text>
+                                            </TouchableOpacity>
                                         </View>
-                                    </Modal>
+                                    </View>
+                                </Modal>
 
-                                    {/* Contact Number Input */}
-                                    <TextInput
-                                        placeholder="Contact Number"
-                                        value={newContactNumber}
-                                        onChangeText={(text) => { if (text.length <= 15) setNewContactNumber(text); }}
-                                        style={[styles.input, { flex: 1, marginLeft: 10 }]}
-                                        keyboardType="phone-pad"
-                                    />
-                                </View>
+                                {/* Contact Number Input */}
                                 <TextInput
+                                    placeholder="Contact Number"
+                                    value={newContactNumber}
+                                    onChangeText={(text) => { if (text.length <= 15) setNewContactNumber(text); }}
+                                    style={[styles.input, { flex: 1, marginLeft: 10 }]}
+                                    keyboardType="phone-pad"
+                                />
+                            </View>
+                            <TextInput
                                     placeholder="Relation (e.g., Friend, Family, Doctor)"
                                     value={newContactRelation}
                                     onChangeText={setNewContactRelation}
                                     style={styles.input}
-                                />
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                    <TouchableOpacity
-                                        style={[styles.modalButton, { backgroundColor: COLORS.pmy.blue1, marginHorizontal: 5, borderWidth: 1 }]}
-                                        onPress={() => {
-                                            if (editingContact) { updateCustomContact(editingContact.id); }
-                                            else { addCustomContact(); }
-                                        }}>
-                                        <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>{editingContact ? 'Save Changes' : 'Save'}</Text>
-                                    </TouchableOpacity>
+                            />
+                            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, { backgroundColor: COLORS.pmy.blue1, marginHorizontal: 5, borderWidth: 1 }]}
+                                onPress={() => {
+                                    if (editingContact) { updateCustomContact(editingContact.id); } 
+                                    else { addCustomContact(); }}}>
+                                <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>{editingContact ? 'Save Changes' : 'Save'}</Text>
+                            </TouchableOpacity>
 
-                                    {/* DELETE or CANCEL BUTTON */}
-                                    {editingContact ? (
-                                        <TouchableOpacity style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginHorizontal: 5, borderWidth: 1 }]}
-                                            onPress={() => { deleteCustomContact(editingContact.id); setModalVisible(false); }}>
-                                            <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Delete</Text>
-                                        </TouchableOpacity>
-                                    ) : (
-                                        <TouchableOpacity
-                                            style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginHorizontal: 5, borderWidth: 1 }]}
-                                            onPress={() => setModalVisible(false)}>
-                                            <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Cancel</Text>
-                                        </TouchableOpacity>
-                                    )}
+                                {/* DELETE or CANCEL BUTTON */}
+                                {editingContact ? (
+                                    <TouchableOpacity style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginHorizontal: 5, borderWidth: 1 }]}
+                                        onPress={() => { deleteCustomContact(editingContact.id); setModalVisible(false); }}>
+                                        <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Delete</Text>
+                                    </TouchableOpacity>
+                                ) : (
+                                    <TouchableOpacity
+                                        style={[styles.modalButton, { backgroundColor: COLORS.alert.error, marginHorizontal: 5, borderWidth: 1 }]}
+                                        onPress={() => setModalVisible(false)}>
+                                        <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold' }}>Cancel</Text>
+                                    </TouchableOpacity>
+                                )}
                                 </View>
                             </View>
                         </View>
@@ -377,8 +374,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
     modalContent: {
-        width: '90%',
-        maxHeight: '70%',
+        width: '90%', 
+        maxHeight: '70%', 
         backgroundColor: COLORS.pmy.white,
         padding: 20,
         borderRadius: 10,
