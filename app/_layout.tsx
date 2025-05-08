@@ -5,6 +5,9 @@ import { AuthProvider } from "./lib/auth-context";
 import { testConnection } from "./lib/config";
 import { LoadingProvider } from "./lib/load-context";
 import LoadingIndicator from "./components/LoadingIndicator";
+import { StopPointsProvider } from "./context/StopPointsContext";
+import Toast from "react-native-toast-message";
+import { toastWrapper } from "./components/toast-config";
 
 export default function RootLayout() {
 
@@ -34,8 +37,16 @@ export default function RootLayout() {
   return (
     <LoadingProvider>
       <AuthProvider>
-        <LoadingIndicator />
-        <Stack screenOptions={{ headerShown: false }} />
+        <StopPointsProvider>
+          <LoadingIndicator />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen 
+              name="/(root)/latest/new-post"
+              options={{ presentation: 'modal' }} 
+            />
+          </Stack>
+          <Toast config={toastWrapper} />
+        </StopPointsProvider>
       </AuthProvider>
     </LoadingProvider>
   )

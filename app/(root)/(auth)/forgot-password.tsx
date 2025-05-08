@@ -1,41 +1,38 @@
 // DEPENDENCIES
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 // COMPONENTS
-import { Alert, StyleSheet, View, Text, KeyboardAvoidingView, ImageBackground, Image, TextInput, TouchableOpacity, Platform } from 'react-native'
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
-import { Link, useRouter } from 'expo-router';
+import { ScrollView, StyleSheet, View, Text, KeyboardAvoidingView, TouchableWithoutFeedback, Image, TextInput, TouchableOpacity, Keyboard } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { useRouter } from 'expo-router';
 import Toast from 'react-native-toast-message';
 
 // HOOKS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
+import { showErrorToast, showSuccessToast } from '@/app/components/toast-config';
+
+// ICONS
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons';
+import { useLoading } from '@/app/lib/load-context';
+import axios from 'axios';
+import { config } from '@/app/lib/config';
 
 const ForgotPassword = () => {
-    const [email, setEmail] = useState(''); // Store email
-
-    const [generatedOTP, setGeneratedOTP] = useState('');               // Store generated OTP ***DEBUG ONLY***
-    const [otp, setOtp] = useState('');                                 // Store OTP
-    const [timer, setTimer] = useState(0);                              // Timer state
-    const cooldown_timer = 60;                                          // Cooldown timer
-    const [isButtonDisabled, setIsButtonDisabled] = useState(false);    // Button state
-
+    const { setLoading } = useLoading();
+    const [email, setEmail] = useState('');
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+    
     const router = useRouter();
 
-    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Check if the email is valid.
+    const isValidEmail = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    /**
-     * Function to generate random 6-digit OTP for debug, replace with proper OTP handler
-     */
-    const generateRandomOTP = () => {
-        return Math.floor(100000 + Math.random() * 900000).toString();
-    }
-
-    const handleEmailInputChange = (field: 'email', value: string) => {
+    const handleEmailInputChange = (value: string) => {
         setEmail(value);
     }
+
     const handleSendOTP = () => {
-        // Send OTP to the email.
         if (!isValidEmail(email) || email.trim() === '') {
             Toast.show({
                 type: 'error',
@@ -45,160 +42,153 @@ const ForgotPassword = () => {
             });
             return;
         }
-        // Avoid spam
+
         setIsButtonDisabled(true);
-        setTimer(cooldown_timer);
-        const generatedOTP = generateRandomOTP();
-        setGeneratedOTP(generatedOTP);
-        console.log(`Generated OTP: ${generatedOTP}`);
-        Toast.show({
-            type: 'success',
-            text1: 'OTP Sent',
-            text2: 'Please check your email for the OTP.',
-            visibilityTime: 1500,
-        });
+        
+        // TODO: Implement actual OTP sending logic here
+        sendMail();
     }
-    useEffect(() => {
-        if (timer > 0) {
-            const interval = setInterval(() => {
-                setTimer(prevTimer => prevTimer - 1);
-            }, 1000);
-            return () => clearInterval(interval);
-        } else {
+
+    const sendMail = async () => {
+        setLoading(true);
+
+        console.log('Sending OTP to email:', email);
+
+        try {
+            const response = await axios.post(`${config.endpoint}/otp/mail`, { email });
+
+            if (response.data.success) {
+                router.push(`/(root)/(auth)/one-time-password?mode=forgot-password&email=${email}`);
+            }
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error;
+            console.error('Error sending OTP:', errorMessage);
+            showErrorToast(errorMessage, 'Error');
+        } finally {
+            setLoading(false);
             setIsButtonDisabled(false);
         }
-    }, [timer]);
-
-    const handleContinueForm = () => {
-        // Continue to the next form.
-        if (otp.length !== 6) {
-            Toast.show({
-                type: 'error',
-                text1: 'Invalid OTP',
-                text2: `The OTP ${otp} is not valid.`,
-                visibilityTime: 1500,
-            });
-            return;
-        }
-        if (otp !== generatedOTP) {
-            Toast.show({
-                type: 'error',
-                text1: 'Invalid OTP',
-                text2: `The OTP ${otp} is not valid.`,
-                visibilityTime: 1500,
-            });
-            return;
-        }
-        setGeneratedOTP('');
-        console.log('OTP cleared');
-        router.push('/change-password');
-        return;
     }
 
     return (
-        <SafeAreaProvider>
-            <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-                <ImageBackground source={require('../../../assets/images/background_image1.png')} style={{ flex: 1 }}>
-                    <View style={styles.container}>
-                        <View style={styles.card}>
-                            <Text style={styles.title}>Forgot Your{"\n"}Password?</Text>
-                            <View style={styles.inputRow}>
-                                <TextInput style={styles.input} 
-                                    placeholder="Enter your email" 
-                                    keyboardType='email-address' 
-                                    value={email} 
-                                    onChangeText={(text) => handleEmailInputChange('email', text)}
-                                />
-                                <TouchableOpacity disabled={isButtonDisabled} onPress={handleSendOTP}>
-                                    <Text style={{color: isButtonDisabled ? '#CCCCCC' : COLORS.accent.accent1}}>
-                                        {isButtonDisabled ? `SEND (${timer}s)` : 'SEND'}
-                                    </Text>
+        <SafeAreaView style={{ flex: 1 }}>
+            <KeyboardAvoidingView style={{ flex: 1 }} behavior='padding' enabled>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                    <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                        <View style={styles.topWrapper}>
+                            <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
+                        </View>
+                        <View>
+                            <View style={styles.formWrapper}>
+                                {/* EMAIL INPUT */}
+                                <View>
+                                    <View style={styles.textInputWrapper}>
+                                        <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
+                                        <TextInput 
+                                            style={styles.textInputField} 
+                                            placeholder='Enter your email' 
+                                            keyboardType='email-address' 
+                                            value={email}
+                                            onChangeText={handleEmailInputChange} 
+                                        />
+                                    </View>
+                                    <TouchableOpacity 
+                                        disabled={isButtonDisabled} 
+                                        onPress={handleSendOTP}
+                                        style={[styles.sendButton, isButtonDisabled && styles.disabledButton]}
+                                    >
+                                        <Text style={styles.sendButtonText}>
+                                            {isButtonDisabled ? 'SENDING...' : 'SEND OTP'}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+
+                                {/* CANCEL BUTTON */}
+                                <TouchableOpacity 
+                                    style={styles.cancelButton}
+                                    onPress={() => router.back()}
+                                >
+                                    <Text style={styles.cancelText}>CANCEL</Text>
                                 </TouchableOpacity>
                             </View>
-
-                            <View style={styles.inputRow}>
-                                <TextInput style={styles.input} 
-                                    placeholder="Enter OTP" 
-                                    keyboardType='numeric' 
-                                    value={otp} 
-                                    onChangeText={setOtp}
-                                />
-                            </View>
-
-                            <TouchableOpacity style={styles.Continuebutton} onPress={handleContinueForm}>
-                                <Link href='/change-password' style={styles.ContinebuttonText}>CONTINUE</Link>
-                            </TouchableOpacity>
-
-                            <TouchableOpacity  onPress={() => {router.back()}}>
-                                <Text style={styles.cancelText}>CANCEL</Text>
-                            </TouchableOpacity>
                         </View>
-                    </View>
-                </ImageBackground>
+                    </ScrollView>
+                </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
-            <Toast/>
-        </SafeAreaProvider>
+        </SafeAreaView>
     );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        justifyContent: "center",
+    topWrapper: {
+        height: 'auto',
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        paddingHorizontal: 10,
+        paddingVertical: 40
+    },
+    logo: {
+        width: 'auto',
+        minWidth: '50%',
+        maxHeight: 100,
+        minHeight: 60,
+        marginRight: 10
     },
     title: {
-        color: COLORS.accent.accent1,
-        fontSize: 26,
-        fontWeight: "bold",
+        fontFamily: 'Montserrat-Bold',
+        fontSize: 24,
+        color: COLORS.accent.accent1
+    },
+    formWrapper: {
+        borderRadius: 15,
         marginBottom: 20,
+        marginTop: 10,
+        paddingVertical: 45,
+        marginHorizontal: 20,
+        paddingHorizontal: 25,
+        backgroundColor: COLORS.accent.accent1,
+        justifyContent: "center",
     },
-    card: {
-        backgroundColor: "white",
-        borderRadius: 10,
-        padding: 20,
-        elevation: 5,
+    textInputWrapper: {
+        padding: 5,
+        backgroundColor: COLORS.white.white1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 8,
+        marginBottom: 25,
     },
-    label: {
-        fontSize: 14,
-        color: "#333333",
-        marginBottom: 5,
+    textInputIcon: {
+        margin: 5,
     },
-    inputRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        borderBottomWidth: 1,
-        borderBottomColor: "#CCCCCC",
-        marginBottom: 15,
-    },
-    input: {
+    textInputField: {
         flex: 1,
-        paddingVertical: 8,
+        padding: 10,
     },
-    Continuebutton: {
+    sendButton: {
         backgroundColor: COLORS.primary.primaryColor1,
-        borderColor: COLORS.accent.accent2,
-        borderWidth: 1,
         padding: 12,
         borderRadius: 25,
-        alignItems: "center",
-        marginTop: 10,
+        alignItems: 'center',
+        marginBottom: 20,
     },
-    ContinebuttonText: {
-        color: "white",
-        fontWeight: "bold",
+    disabledButton: {
+        backgroundColor: '#CCCCCC',
+    },
+    sendButtonText: {
+        color: COLORS.white.white1,
+        fontWeight: 'bold',
+    },
+    cancelButton: {
+        marginTop: 20,
+        alignItems: 'center',
     },
     cancelText: {
-        textAlign: "center",
-        color: COLORS.accent.accent1,
-        marginTop: 10,
-        fontWeight: "bold",
-    },
-    signUpText: {
-        fontWeight: "bold",
-        textDecorationLine: "underline",
-    },
+        color: COLORS.white.white1,
+        fontWeight: 'bold',
+        textDecorationLine: 'underline',
+    }
 });
 
 export default ForgotPassword;

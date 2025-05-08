@@ -1,5 +1,5 @@
 // REACT
-import React from 'react';
+import React, { useEffect } from 'react';
 
 // EXPO ROUTER
 import { useRouter } from "expo-router";
@@ -11,9 +11,6 @@ import { ScrollView, StyleSheet, Text, View, Image, TouchableOpacity, ImageBackg
 // CONSTANTS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
-
-// HOOKS
-import { useAuth } from '@/app/lib/auth-context';
 
 // HOOKS
 

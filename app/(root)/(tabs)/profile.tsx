@@ -8,18 +8,16 @@ import IMAGES from '@/app/constants/images';
 // hooks
 import { useAuth } from '@/app/lib/auth-context';
 // ICON
-import { faBell, 
-         faBookmark,
-         faCircleUser, 
-         faArrowRight, 
-         faPencil, 
-         faArrowRightToBracket, 
-         faWarning, 
-         faHeartPulse, 
-         faQuestionCircle, 
-         faGear, 
-         faDoorOpen, 
-         faShare } from '@fortawesome/free-solid-svg-icons';
+import { 
+    faBookmark,
+    faCircleUser, 
+    faArrowRight,
+    faWarning, 
+    faHeartPulse, 
+    faQuestionCircle, 
+    faGear, 
+    faDoorOpen, 
+    faShare } from '@fortawesome/free-solid-svg-icons';
     
 import { useRouter } from 'expo-router';
 

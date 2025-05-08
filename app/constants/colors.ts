@@ -50,11 +50,13 @@ const COLORS = {
 
     // PINAKA LEGIT NA JUD NI
     pmy: {
+        yellow: '#F6F6F6',   // default yellow, rgb(246, 246, 246)
         white: '#FFFFFF',      // default white, rgb(255, 255, 255)
         black: '#000000',      // default black, rgb(0, 0, 0)
         blue1:'#2B4F6E',    // icons and foreground, rgb(43, 79, 110)
         blue2: '#122E48',   // button background color, rgb(18, 46, 72)
         transparent: '#00000000', // transparent, rgb(0, 0, 0, 0)
+        yellow: '#DB920A',
     },
     sdy: {
         gray1: '#F6F6F6',   // foreground gray1, rgb(246, 246, 246)

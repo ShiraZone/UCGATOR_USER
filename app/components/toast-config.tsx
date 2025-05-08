@@ -9,7 +9,7 @@
 
 // CORE COMPONENTS
 import React from 'react';
-import Toast, { BaseToast,SuccessToast, ErrorToast } from "react-native-toast-message";
+import Toast, { BaseToast, SuccessToast, ErrorToast } from "react-native-toast-message";
 
 // UTILS
 import COLORS from "../constants/colors";
@@ -17,15 +17,13 @@ import COLORS from "../constants/colors";
 // Constants
 const TOAST_DURATION = 3000;
 
-const toastWrapper = {
+export const toastWrapper = {
     error: (props: any) => (
         <ErrorToast
             {...props}
             style={{
-                borderLeftColor: COLORS.alert.error,      // Customize the border color
-                borderWidth: 2,                         // Add a border
-                borderRadius: 8,                        // Add rounded corners
-                backgroundColor: COLORS.pmy.white,      // Customize the background color
+                borderLeftColor: '#000',
+                backgroundColor: COLORS.alert.error,
             }}
             text1Style={{
                 font: 'Montserrat-Bold',
@@ -44,10 +42,8 @@ const toastWrapper = {
         <SuccessToast
             {...props}
             style={{
-                borderLeftColor: COLORS.alert.success,      // Customize the border color
-                borderWidth: 2,                         // Add a border
-                borderRadius: 8,                        // Add rounded corners
-                backgroundColor: COLORS.pmy.white,      // Customize the background color
+                borderLeftColor: '#000',
+                backgroundColor: COLORS.alert.success,
             }}
             text1Style={{
                 font: 'Montserrat-Bold',
@@ -62,14 +58,12 @@ const toastWrapper = {
             }}
         />
     ),
-    Info: (props: any) => (
+    info: (props: any) => (
         <BaseToast
             {...props}
             style={{
-                borderLeftColor: COLORS.alert.warning,      // Customize the border color
-                borderWidth: 2,                         // Add a border
-                borderRadius: 8,                        // Add rounded corners
-                backgroundColor: COLORS.pmy.white,      // Customize the background color
+                borderLeftColor: '#000',
+                backgroundColor: COLORS.alert.warning,
             }}
             text1Style={{
                 font: 'Montserrat-Bold',
@@ -117,14 +111,4 @@ export const showInfoToast = (message: string, title: string = "Info") => {
         visibilityTime: TOAST_DURATION,
         autoHide: true,
     });
-};
-
-// Component Export
-export default function App(props: any) {
-    return (
-        <>
-            {/* Your app components */}
-            <Toast config={toastWrapper} />
-        </>
-    )
 };

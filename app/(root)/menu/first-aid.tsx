@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, KeyboardAvoidingView } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, Modal, Dimensions } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { useRouter } from 'expo-router'
@@ -20,11 +19,10 @@ const CONTENT_ITEMS = [
         content: `
 1. Check the Scene for Safety
 - Ensure the environment is safe for you and the injured person.
-
-- Don’t rush in—you must stay safe to help.
+- Don't rush in—you must stay safe to help.
 
 2. Check the Person
-- Is the person responsive? Gently tap and ask, “Are you okay?”
+- Is the person responsive? Gently tap and ask, "Are you okay?"
 - If unresponsive, call for help and check breathing.
 - If responsive, ask about their pain or symptoms.
 
@@ -39,8 +37,7 @@ const CONTENT_ITEMS = [
 
 5. Wait for Help to Arrive
 - Continue providing care.
-- If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.
-`, 
+- If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.`, 
         icon: faFirstAid 
     },
     { 
@@ -52,7 +49,7 @@ const CONTENT_ITEMS = [
 
 2. Elevate the Injured Area (if possible): If the wound is on an arm or leg, raise it above heart level to slow the bleeding.
 
-3. Maintain Pressure Until Bleeding Stops: Keep holding firm pressure for several minutes—don’t lift the bandage to check too soon.
+3. Maintain Pressure Until Bleeding Stops: Keep holding firm pressure for several minutes—don't lift the bandage to check too soon.
 
 4. Apply a Bandage: Once the bleeding slows, secure the wound with a sterile dressing or bandage.
 
@@ -122,7 +119,7 @@ Step-by-Step (Adult/Child over 1 year)
 
 Additional Notes:
 - Animal/human bites: High infection risk — seek medical attention.
-- Snakebites: Keep victim calm, immobilize limb, don’t suck venom or apply tourniquet.
+- Snakebites: Keep victim calm, immobilize limb, don't suck venom or apply tourniquet.
 - Bee stings: Remove stinger by scraping (not tweezing) to avoid squeezing more venom.
 `, 
         icon: faBug
@@ -196,7 +193,7 @@ Step-by-Step
 
 Additional Notes:
 1st-degree burn: Red, dry, painful – cool and cover.
-2nd-degree burn: Blisters, swelling – same care, don’t pop blisters.
+2nd-degree burn: Blisters, swelling – same care, don't pop blisters.
 3rd-degree burn: Charred/white, numb – do not remove clothing stuck to skin.
 `, 
         icon: faFire 
@@ -205,42 +202,83 @@ Additional Notes:
 
 const FirstAid = () => {
     const router = useRouter();
-    const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+    const [selectedItem, setSelectedItem] = useState<number | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
-    const toggleDropdown = (id: number) => {
-        setActiveDropdown(activeDropdown === id ? null : id);
+    const openModal = (id: number) => {
+        setSelectedItem(id);
+        setModalVisible(true);
     };
 
-    const randomNum = Math.floor(Math.random() * 1000) + 1; // Generate a random number between 1 and 1000, debugging purposes for location
+    const closeModal = () => {
+        setModalVisible(false);
+        setSelectedItem(null);
+    };
+
+    const randomNum = Math.floor(Math.random() * 1000) + 1;
 
     return (
         <View style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <ImageBackground style={styles.topHeader} source={IMAGES.placement_image_cover} resizeMode="stretch">
-                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', position: 'absolute', left: 15, top: 15 }} onPress={() => router.back()}>
-                    <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
-                </TouchableOpacity>
-                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.white }}>First Aid</Text>
-                </ImageBackground>
-                <ScrollView contentContainerStyle={{ flexGrow: 1, paddingTop: 100 }} showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15, marginBottom: 20}} >
-                    <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', marginVertical: 15, color: COLORS.pmy.blue1 }}>Tap each to show details.</Text>
-                    <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Regular', marginBottom: 15, color: COLORS.pmy.blue1 }}>Current Location: {randomNum}</Text>
-                    {CONTENT_ITEMS.map((item) => (
-                    <View key={item.id} style={{ marginBottom: 10 }}>
-                    <TouchableOpacity style={styles.dropdown} onPress={() => toggleDropdown(item.id)}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <FontAwesomeIcon icon={item.icon} size={16} color={COLORS.pmy.white} style={{ marginRight: 10 }} />
-                            <Text style={styles.dropdownText}>{item.title}</Text>
-                        </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15}}>
+                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
+                        <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                     </TouchableOpacity>
-                    {activeDropdown === item.id && (
-                        <View style={styles.dropdownContent}>
-                            <Text style={styles.dropdownContentText}>{item.content}</Text>
-                        </View>
-                    )}
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>First Aid</Text>
+                </View>
+                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    <Text style={styles.subtitle}>Tap each icon to show details.</Text>
+                    <Text style={styles.locationText}>Current Location: {randomNum}</Text>
+                    <View style={styles.gridContainer}>
+                        {CONTENT_ITEMS.map((item) => (
+                            <TouchableOpacity
+                                key={item.id}
+                                style={styles.gridItem}
+                                onPress={() => openModal(item.id)}
+                            >
+                                <View style={styles.iconContainer}>
+                                    <FontAwesomeIcon icon={item.icon} size={40} color={COLORS.pmy.white} />
+                                </View>
+                                <Text style={styles.gridItemText}>{item.title}</Text>
+                            </TouchableOpacity>
+                        ))}
                     </View>
-                ))}
                 </ScrollView>
+
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={modalVisible}
+                    onRequestClose={closeModal}
+                >
+                    <View style={styles.modalContainer}>
+                        <View style={styles.modalContent}>
+                            {selectedItem !== null && (
+                                <>
+                                    <View style={styles.modalHeader}>
+                                        <FontAwesomeIcon 
+                                            icon={CONTENT_ITEMS[selectedItem - 1].icon} 
+                                            size={24} 
+                                            color={COLORS.pmy.white} 
+                                            style={{ marginRight: 10 }} 
+                                        />
+                                        <Text style={styles.modalTitle}>
+                                            {CONTENT_ITEMS[selectedItem - 1].title}
+                                        </Text>
+                                    </View>
+                                    <ScrollView style={styles.modalScroll}>
+                                        <Text style={styles.modalText}>
+                                            {CONTENT_ITEMS[selectedItem - 1].content}
+                                        </Text>
+                                    </ScrollView>
+                                    <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                                        <Text style={styles.closeButtonText}>Close</Text>
+                                    </TouchableOpacity>
+                                </>
+                            )}
+                        </View>
+                    </View>
+                </Modal>
             </SafeAreaView>
         </View>
     );
@@ -254,35 +292,115 @@ const styles = StyleSheet.create({
         height: 100,
         padding: 15,
         justifyContent: 'center',
-        position: 'absolute', 
-        top: 0, 
+        position: 'absolute',
+        top: 0,
         left: 0,
-        right: 0, 
+        right: 0,
         zIndex: 1
     },
-    dropdown: {
-        backgroundColor: COLORS.pmy.blue1,
-        padding: 10,
+    backButton: {
+        backgroundColor: COLORS.pmy.blue2,
+        padding: 5,
         borderRadius: 8,
+        width: 'auto',
+        position: 'absolute',
+        left: 15,
+        top: 15
     },
-    dropdownText: {
-        color: COLORS.pmy.white,
-        fontSize: 16,
+    headerText: {
+        fontSize: 22,
+        textAlign: 'center',
+        fontFamily: 'Montserrat-ExtraBold',
+        color: COLORS.pmy.white
+    },
+    scrollContent: {
+        flexGrow: 1,
+        paddingHorizontal: 15,
+        marginBottom: 20
+    },
+    subtitle: {
+        fontSize: 18,
         fontFamily: 'Montserrat-Bold',
+        marginVertical: 15,
+        color: COLORS.pmy.blue1
     },
-    dropdownContent: {
+    locationText: {
+        fontSize: 18,
+        fontFamily: 'Montserrat-Regular',
+        marginBottom: 15,
+        color: COLORS.pmy.blue1
+    },
+    gridContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-between',
+        marginTop: 10
+    },
+    gridItem: {
+        width: (Dimensions.get('window').width - 40) / 2,
+        marginBottom: 20,
+        alignItems: 'center'
+    },
+    iconContainer: {
+        backgroundColor: COLORS.pmy.blue1,
+        width: 80,
+        height: 80,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 10
+    },
+    gridItemText: {
+        color: COLORS.pmy.blue1,
+        fontSize: 14,
+        fontFamily: 'Montserrat-Bold',
+        textAlign: 'center'
+    },
+    modalContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)'
+    },
+    modalContent: {
         backgroundColor: COLORS.pmy.white,
-        padding: 10,
-        borderBottomLeftRadius: 8,
-        borderBottomRightRadius: 8,
-        marginTop: 0,
-        borderWidth: 1,
-        borderColor: COLORS.pmy.blue2,
-        marginHorizontal: 5,
+        borderRadius: 10,
+        padding: 20,
+        width: '90%',
+        maxHeight: '80%'
     },
-    dropdownContentText: {
+    modalHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: COLORS.pmy.blue1,
+        padding: 15,
+        borderRadius: 8,
+        marginBottom: 15
+    },
+    modalTitle: {
+        color: COLORS.pmy.white,
+        fontSize: 18,
+        fontFamily: 'Montserrat-Bold'
+    },
+    modalScroll: {
+        maxHeight: '70%'
+    },
+    modalText: {
         color: COLORS.pmy.black,
         fontSize: 14,
         fontFamily: 'Montserrat-Regular',
+        lineHeight: 20
     },
+    closeButton: {
+        backgroundColor: COLORS.pmy.blue2,
+        padding: 15,
+        borderRadius: 8,
+        marginTop: 15,
+        alignItems: 'center'
+    },
+    closeButtonText: {
+        color: COLORS.pmy.white,
+        fontSize: 16,
+        fontFamily: 'Montserrat-Bold'
+    }
 });
