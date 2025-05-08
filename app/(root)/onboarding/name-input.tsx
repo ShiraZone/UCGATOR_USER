@@ -36,16 +36,20 @@ import { faChalkboardTeacher } from '@fortawesome/free-solid-svg-icons';
 import { faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 import { faMale, faFemale, } from '@fortawesome/free-solid-svg-icons';
 import { useLoading } from '@/app/lib/load-context';
-import { saveRegistrationStatus } from '@/app/lib/async-store';
 
 const OnboardingScreen1 = () => {
   const router = useRouter();
+  const { setUser, getUserInfo } = useAuth();
   const { setLoading } = useLoading();
   const [selectedGender, setSelectedGender] = useState<string | null>(null);
   const [selectedAccountType, setSelectedAccountType] = useState<string | null>(null);
   const [personalInfo, setPersonalInfo] = useState<{ firstName?: string, middleName?: string, lastName?: string, accountType?: string, gender?: string }>({}); // Register information state.
   const [step, setStep] = useState(1); // Step state for tracking the current step.
-  const handleInputChange = (field: keyof typeof personalInfo, value: string) => { setPersonalInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
+  
+  const handleInputChange = (field: keyof typeof personalInfo, value: string) => { 
+    setPersonalInfo((prev) => ({ ...prev, [field]: value })) 
+  };
+  
   const handleVerifyInput = () => {
     if (!personalInfo || !personalInfo.firstName || !personalInfo.lastName) {
       alert('Please provide your first name and last name.');
@@ -58,7 +62,7 @@ const OnboardingScreen1 = () => {
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      const response = await axios.post(`${config.endpoint}/user/create-profile`, {
+      const response = await axios.post(`${config.endpoint}/profile/user/create/user-profile`, {
         firstName: personalInfo.firstName,
         middleName: personalInfo.middleName,
         lastName: personalInfo.lastName,
@@ -70,13 +74,26 @@ const OnboardingScreen1 = () => {
         }
       });
 
-      const registrationStep = response.data?.registrationStep;
+      if (!response.data.success) {
+        console.error('Failed to update profile. ');
+        return;
+      }
+            
+      const profile = response.data.data.profile;
 
-      await saveRegistrationStatus(registrationStep);
+      // Get the current user state
+      const currentUser = await getUserInfo();
       
-      alert('Profile created successfully.');
-      
+      // Update only the profile information while keeping other user data
+      setUser({
+        ...currentUser,
+        firstName: profile.firstName,
+        middleName: profile.middleName,
+        lastName: profile.lastName,
+      });
+    
       router.replace('/');
+      
     } catch (error: any) {
       alert(error.response?.data?.error || error.message);
     } finally {

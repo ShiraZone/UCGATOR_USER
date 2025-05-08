@@ -52,7 +52,7 @@ const SignUp = () => {
         };
 
         try {
-            const targetUri = '/(root)/(auth)/one-time-password';
+            const targetUri = `/(root)/(auth)/one-time-password?mode=registration&email=${registerInfo.email}`;
             await signUp(registerInfo.email!, registerInfo.password!, targetUri);
         } catch (error: any) {
             console.error('Registration error: ', error);
@@ -66,7 +66,6 @@ const SignUp = () => {
                     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1}} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
-                            <Text style={{ fontSize: 24, fontFamily: 'Montserrat-Bold' }}>Register</Text>
                         </View>
                         <View>
                             <View style={styles.formWrapper}>

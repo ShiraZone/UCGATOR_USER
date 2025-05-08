@@ -1,12 +1,11 @@
 // DEPENDENCIES
 import React from 'react';
 
-
 // COMPONENTS
-import { Alert, Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View, TextInput, TouchableWithoutFeedback, TouchableOpacity, KeyboardAvoidingView, Keyboard } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { Link, Redirect, useRouter, withLayoutContext } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { Checkbox } from 'expo-checkbox';
 import Toast from 'react-native-toast-message';
 
@@ -21,19 +20,17 @@ import { useAuth } from '@/app/lib/auth-context';
 // UTILS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
-import { KeyboardState } from 'react-native-reanimated';
-import { ToastConfig } from 'react-native-toast-message';
 
 const SignIn = () => {
-    const { login } = useAuth();
-    const [isPasswordVisible, setPasswordVisibility] = useState(false); // Password visibility state.
-    const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({}); // Store login variables.
-    const validEmailFormat = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); // Check if email is valid.
-
-
-    const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
     const router = useRouter();
 
+    const { login } = useAuth();
+    const [isPasswordVisible, setPasswordVisibility] = useState(false);
+    const [loginInfo, setLoginInfo] = useState<{ email?: string; password?: string; }>({});
+    const validEmailFormat = (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    const handleInputChange = (field: keyof typeof loginInfo, value: string) => { setLoginInfo((prev) => ({ ...prev, [field]: value })) }; // Handle input change for the form.
+    
     const handleLogin = async () => {
         if (!loginInfo.email || !loginInfo.password) {
             // Show error message
@@ -56,7 +53,6 @@ const SignIn = () => {
                     <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: COLORS.white.white1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
                         <View style={styles.topWrapper}>
                             <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
-                            <Text style={{ fontSize: 24, fontFamily: 'Montserrat-Bold' }}>Login</Text>
                         </View>
                         <View>
                             <View style={styles.formWrapper}>
@@ -103,7 +99,6 @@ const SignIn = () => {
                     </ScrollView>
                 </TouchableWithoutFeedback>
             </KeyboardAvoidingView>
-            <Toast />
         </SafeAreaView>
     )
 }
