@@ -40,10 +40,7 @@ export default function RootLayout() {
         <StopPointsProvider>
           <LoadingIndicator />
           <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen 
-              name="/(root)/latest/new-post"
-              options={{ presentation: 'modal' }} 
-            />
+            <Stack />
           </Stack>
           <Toast config={toastWrapper} />
         </StopPointsProvider>

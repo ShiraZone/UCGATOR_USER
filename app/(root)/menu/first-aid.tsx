@@ -13,9 +13,9 @@ import COLORS from '@/app/constants/colors'
 
 // MAIN CONTENT ITEMS
 const CONTENT_ITEMS = [
-    { 
-        id: 1, 
-        title: 'How to Give First Aid', 
+    {
+        id: 1,
+        title: 'How to Give First Aid',
         content: `
 1. Check the Scene for Safety
 - Ensure the environment is safe for you and the injured person.
@@ -37,11 +37,11 @@ const CONTENT_ITEMS = [
 
 5. Wait for Help to Arrive
 - Continue providing care.
-- If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.`, 
-        icon: faFirstAid 
+- If trained, give CPR or rescue breathing if NEEDED and the person is unresponsive.`,
+        icon: faFirstAid
     },
-    { 
-        id: 2, 
+    {
+        id: 2,
         title: 'Bleeding',
         content: `How to handle general bleeding injuries.
             
@@ -54,11 +54,11 @@ const CONTENT_ITEMS = [
 4. Apply a Bandage: Once the bleeding slows, secure the wound with a sterile dressing or bandage.
 
 If the bleeding is from a minor cut or scrape, cleaning the wound with water and applying antiseptic can help prevent infection.`,
-        icon: faTint 
+        icon: faTint
     },
-    { 
-        id: 3, 
-        title: 'Choking', 
+    {
+        id: 3,
+        title: 'Choking',
         content: `
 Step-by-Step (Adult/Child over 1 year)
 
@@ -88,12 +88,12 @@ Additional Notes:
 - Infants (<1 year): Use 5 back blows and 5 chest thrusts (not abdominal).
 - Pregnant or obese: Use chest thrusts instead of abdominal.
 - Never perform blind finger sweeps—may push object deeper.
-`, 
-        icon: faLungs 
+`,
+        icon: faLungs
     },
-    { 
-        id: 4, 
-        title: 'Bites and Stings', 
+    {
+        id: 4,
+        title: 'Bites and Stings',
         content: `
 Step-by-Step (Adult/Child over 1 year)
 
@@ -121,12 +121,12 @@ Additional Notes:
 - Animal/human bites: High infection risk — seek medical attention.
 - Snakebites: Keep victim calm, immobilize limb, don't suck venom or apply tourniquet.
 - Bee stings: Remove stinger by scraping (not tweezing) to avoid squeezing more venom.
-`, 
+`,
         icon: faBug
     },
-    { 
-        id: 5, 
-        title: 'Chest and Abdominal Injuries', 
+    {
+        id: 5,
+        title: 'Chest and Abdominal Injuries',
         content: `
 Step-by-Step (Adult/Child over 1 year)
 
@@ -157,12 +157,12 @@ Additional Notes:
 - Never apply direct pressure on chest or abdomen wounds.
 - Look for signs of internal bleeding (e.g., pale, cold, weak pulse).
 - Avoid giving food or water.
-`, 
-        icon: faHeartbeat 
+`,
+        icon: faHeartbeat
     },
-    { 
-        id: 6, 
-        title: 'Burns', 
+    {
+        id: 6,
+        title: 'Burns',
         content: `
 Step-by-Step
 
@@ -195,8 +195,8 @@ Additional Notes:
 1st-degree burn: Red, dry, painful – cool and cover.
 2nd-degree burn: Blisters, swelling – same care, don't pop blisters.
 3rd-degree burn: Charred/white, numb – do not remove clothing stuck to skin.
-`, 
-        icon: faFire 
+`,
+        icon: faFire
     },
 ];
 
@@ -220,13 +220,13 @@ const FirstAid = () => {
     return (
         <View style={{ flex: 1 }}>
             <SafeAreaView style={{ flex: 1 }}>
-                <ImageBackground style={styles.topHeader} source={IMAGES.placement_image_cover} resizeMode="stretch">
-                    <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
+                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
                         <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                     </TouchableOpacity>
-                    <Text style={styles.headerText}>First Aid</Text>
-                </ImageBackground>
-                <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>First Aid</Text>
+                </View>
+                <ScrollView contentContainerStyle={{ flexGrow: 1}} style={{ paddingHorizontal: 15}} showsVerticalScrollIndicator={false}>
                     <Text style={styles.subtitle}>Tap each icon to show details.</Text>
                     <Text style={styles.locationText}>Current Location: {randomNum}</Text>
                     <View style={styles.gridContainer}>
@@ -256,11 +256,11 @@ const FirstAid = () => {
                             {selectedItem !== null && (
                                 <>
                                     <View style={styles.modalHeader}>
-                                        <FontAwesomeIcon 
-                                            icon={CONTENT_ITEMS[selectedItem - 1].icon} 
-                                            size={24} 
-                                            color={COLORS.pmy.white} 
-                                            style={{ marginRight: 10 }} 
+                                        <FontAwesomeIcon
+                                            icon={CONTENT_ITEMS[selectedItem - 1].icon}
+                                            size={24}
+                                            color={COLORS.pmy.white}
+                                            style={{ marginRight: 10 }}
                                         />
                                         <Text style={styles.modalTitle}>
                                             {CONTENT_ITEMS[selectedItem - 1].title}

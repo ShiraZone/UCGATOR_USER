@@ -11,16 +11,32 @@ import { ScrollView, StyleSheet, Text, View, Image, TouchableOpacity, ImageBackg
 // CONSTANTS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
+import { testConnection } from '@/app/lib/config';
 
 // HOOKS
 
 const GetStarted = () => {
-    const router = useRouter();
+    const router = useRouter();    
+    
+    useEffect(() => {
+        // Wrap in try-catch to safely handle connection testing
+        const checkConnection = async () => {
+            try {
+                await testConnection();
+                console.log('Connection successful');
+            } catch (error) {
+                console.error('Connection failed:', error);
+                router.replace('/(root)/onboarding/error-connection');
+            }
+        };
+
+        checkConnection();
+    }, [router]);
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.white.white1 }}>
             <StatusBar barStyle="dark-content" />
-            <ImageBackground source={IMAGES.uc_building} resizeMode='cover' style={{ flex: 1}}>
+            <ImageBackground source={IMAGES.uc_building} resizeMode='cover' style={{ flex: 1 }}>
                 <View style={styles.firstContainer}>
                     <Image source={IMAGES.ucgator_logo} style={styles.logo} resizeMode='contain' />
                 </View>
@@ -100,7 +116,7 @@ const styles = StyleSheet.create({
         color: COLORS.white.white1
     },
     privacy: {
-        color:COLORS.white.white1,
+        color: COLORS.white.white1,
         textAlign: 'center',
         fontSize: 14,
         fontFamily: 'Montserrat-Regular',

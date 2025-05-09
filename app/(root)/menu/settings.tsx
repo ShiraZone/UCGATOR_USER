@@ -66,13 +66,13 @@ const Settings = () => {
   return (
     <View style={{ backgroundColor: COLORS.pmy.white, flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ImageBackground style={{flexDirection: 'row', height: 100, padding: 15, marginBottom: 10, justifyContent: 'center' }} source={IMAGES.placement_image_cover} resizeMode='stretch'>
-          <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', position: 'absolute', left: 15, top: 15 }} onPress={() => router.back()}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
+          <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
             <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
           </TouchableOpacity>
-          <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.white}}>Settings</Text>
-        </ImageBackground>
-        <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15}}>
+          <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Settings</Text>
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15 }}>
           <View>
             <View style={styles.settingsPanel}>
               <Text style={styles.settingsPanelTitle}>Preferences</Text>
@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   settingsPanelTitle: {
-    paddingBottom: 8, 
-    fontFamily: 'Montserrat-SemiBold', 
+    paddingBottom: 8,
+    fontFamily: 'Montserrat-SemiBold',
     fontSize: 20
   },
   settingsPanelContent: {
-    marginHorizontal: 10, 
-    padding: 8, 
+    marginHorizontal: 10,
+    padding: 8,
     backgroundColor: COLORS.sdy.gray1,
     borderRadius: 15
   }
