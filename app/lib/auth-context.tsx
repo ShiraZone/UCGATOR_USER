@@ -10,7 +10,6 @@ import { useLoading } from "./load-context";
 
 // storage
 import { showErrorToast, showSuccessToast }  from "../components/toast-config";
-import { ApiService } from "./ApiClient";
 
 // (root)/lib/auth-context.tsx
 export interface User {
