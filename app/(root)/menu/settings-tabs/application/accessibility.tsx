@@ -9,7 +9,7 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import IMAGES from '@/app/constants/images';
 import COLORS from '@/app/constants/colors';
 
-const language = () => {
+const power_saving_mode = () => {
     const router = useRouter();
 
     return (
@@ -19,7 +19,7 @@ const language = () => {
                     <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
                         <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
                     </TouchableOpacity>
-                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Language</Text>
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Theme</Text>
                 </View>
 
                 
@@ -28,8 +28,8 @@ const language = () => {
     )
 };
 
-export default language;
+export default power_saving_mode;
 
 const styles = StyleSheet.create({
-    
+
 });
