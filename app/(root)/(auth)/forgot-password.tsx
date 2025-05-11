@@ -11,7 +11,7 @@ import Toast from 'react-native-toast-message';
 // HOOKS
 import COLORS from '@/app/constants/colors';
 import IMAGES from '@/app/constants/images';
-import { showErrorToast, showSuccessToast } from '@/app/components/toast-config';
+import { showErrorToast } from '@/app/components/toast-config';
 
 // ICONS
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons';

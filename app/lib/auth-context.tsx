@@ -93,15 +93,15 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         }
     }
 
-    const login = async (emailLogin: string, password: string) => {
+    const login = async (email: string, password: string) => {
         setLoading(true);
         try {
             const response = await axios.post(`${activeEndpoint}/auth/user/sign-in`, {
-                email: emailLogin,
+                email,
                 password
             });
 
-            const { _id, email, status, verified, token, sessionId, profile} = response.data.data;
+            const { _id, status, verified, token, sessionId, profile} = response.data.data;
 
             await saveToken(token);
             await saveUserSession(sessionId);
@@ -112,7 +112,6 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 email: email,
                 status: status,
                 verified: verified,
-
                 // Profile
                 avatar: profile.avatar,
                 firstName: profile.firstName || null,

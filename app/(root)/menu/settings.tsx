@@ -66,11 +66,11 @@ const Settings = () => {
   return (
     <View style={{ backgroundColor: COLORS.pmy.white, flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15 }}>
-          <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginRight: 5 }} onPress={() => router.back()}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
+          <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
             <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
           </TouchableOpacity>
-          <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1 }}>Settings</Text>
+          <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Settings</Text>
         </View>
         <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15 }}>
           <View>
