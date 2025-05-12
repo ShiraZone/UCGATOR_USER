@@ -69,14 +69,33 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             return;
         }
 
+        setLoading(true);
+
         try {
+            
             const userData = await getUserInfo();
 
-            // Use the fresh data from getUserInfo instead of the state
             if (!userData.verified) {
                 console.log(`User ${userData._id} is currently not verified. Redirecting to OTP page.`);
-                router.replace('/(root)/(auth)/one-time-password');
-                return;
+                const email = userData.email || '';
+
+                try {
+                    const response = await axios.post(`${activeEndpoint}/otp/mail`, { email });
+
+                    if (!response.data.success) {
+                        console.error('Error sending OTP email:', response.data.error);
+                        router.replace('/(root)/onboarding/error-connection');
+                        return;
+                    }
+
+                    router.push(`/(root)/(auth)/one-time-password?mode=registration&email=${email}`);
+                } catch (error) {
+                    showErrorToast('An error occurred while sending the OTP email. Please try again.', 'Error');
+                    console.error('Error sending OTP email:', error);
+                } finally {
+                    setLoading(false);
+
+                }
             }
 
             if (!userData.profile?.firstName || !userData.profile?.lastName) {
@@ -131,7 +150,16 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             if (!verified) {
                 console.log(`User ${_id} is currently not verified. Redirecting to OTP page.`);
-                router.replace('/(root)/(auth)/one-time-password');
+
+                const response = await axios.post(`${activeEndpoint}/otp/mail`, { email });
+
+                if (!response.data.success) {
+                    showErrorToast('An error occured while trying to login. Please try again.', 'Error');
+                    return;
+                }
+
+                router.replace(`/(root)/(auth)/one-time-password?mode=registration&email=${email}`);
+
                 return;
             }
 
@@ -159,6 +187,8 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             });
 
             if (!response.data.success) throw new Error('Register failed. Please try again later.');
+
+
 
             const { _id, email, status, verified, token, sessionId, profile } = response.data.data;
 

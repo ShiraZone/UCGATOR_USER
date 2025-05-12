@@ -61,13 +61,13 @@ const SignIn = () => {
                                 <View>
                                     <View style={styles.textInputWrapper}>
                                         <FontAwesomeIcon icon={faEnvelope} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
-                                        <TextInput style={styles.textInputField} placeholder='Enter your email' keyboardType='email-address' onChangeText={(text) => handleInputChange('email', text)} />
+                                        <TextInput style={styles.textInputField} placeholder='Enter your email' keyboardType='email-address' onChangeText={(text) => handleInputChange('email', text)} autoCapitalize='none'/>
                                     </View>
                                 </View>
                                 {/* PASSWORD */}
                                 <View style={styles.textInputWrapper}>
                                     <FontAwesomeIcon icon={faLock} color={COLORS.accent.accent1} size={24} style={styles.textInputIcon} />
-                                    <TextInput style={styles.textInputField} placeholder='Enter your password' secureTextEntry={!isPasswordVisible} onChangeText={(text) => handleInputChange('password', text)} />
+                                    <TextInput style={styles.textInputField} placeholder='Enter your password' secureTextEntry={!isPasswordVisible} onChangeText={(text) => handleInputChange('password', text)} autoCapitalize='none'/>
                                 </View>
                                 {/* OTHER FUNCTIONS */}
                                 <View style={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', padding: 3 }}>

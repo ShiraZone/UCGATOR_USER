@@ -31,6 +31,8 @@ import { router } from 'expo-router';
 import { useAuth } from '@/app/lib/auth-context';
 import { User } from '@/app/lib/auth-context';
 import { showErrorToast, showSuccessToast } from '@/app/components/toast-config';
+import { getToken } from '@/app/lib/secure-store';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 
 const OneTimePassword = () => {
     // HOOKS
@@ -43,12 +45,19 @@ const OneTimePassword = () => {
     const [otpCode, setOtp] = useState<string[]>(Array(6).fill(''));
     const [isResending, setIsResending] = useState(false);
 
+    // Effect to track changes to user verified status
+    useEffect(() => {
+        if (user?.verified) {
+            console.log('User verified status updated:', user.verified);
+        }
+    }, [user?.verified]);
+
     // REFS
     const otpInputRefs = Array.from({ length: 6 }, () => React.createRef<TextInput>());
 
     const sendMail = async () => {
         if (isResending) return;
-        
+
         setIsResending(true);
         setLoading(true);
 
@@ -73,7 +82,7 @@ const OneTimePassword = () => {
     const handleOtpChange = (text: string, index: number) => {
         // Only allow numbers
         if (!/^\d*$/.test(text)) return;
-        
+
         const updatedOtp = [...otpCode];
         updatedOtp[index] = text;
         setOtp(updatedOtp);
@@ -87,7 +96,7 @@ const OneTimePassword = () => {
     const handleKeyPress = (e: any, index: number) => {
         if (e.nativeEvent.key === 'Backspace') {
             const updatedOtp = [...otpCode];
-            
+
             // If current input is empty and not the first input, move to previous
             if (!updatedOtp[index] && index > 0) {
                 updatedOtp[index - 1] = ''; // Clear previous input
@@ -103,46 +112,73 @@ const OneTimePassword = () => {
 
     const validateOTP = async () => {
         const otp = otpCode.join('');
-        // Check if all 6 digits are filled
         const isComplete = otpCode.every(digit => digit.length === 1);
+
         if (!isComplete) {
             showErrorToast('Please enter the complete 6-digit OTP code.', 'Error');
             return;
         }
 
-        setLoading(true);
-        
         try {
-            const response = await axios.patch(`${config.endpoint}/otp/mail`, { 
-                email, 
-                otp 
+            const response = await axios.patch(`${config.endpoint}/otp/mail`, {
+                email,
+                otp
             });
 
-            if (response.data.success) {
-                showSuccessToast('OTP verified successfully!', 'Success');
-                if (user) {
-                    setUser({
-                        ...user,
-                        verified: true
-                    } as User);
-                }
+            showSuccessToast('OTP sent successfully!', 'Success');
 
-                // UPDATE MODE WHEN THIS SHIT IS CALLED
-                
-                switch (mode) {
-                    case 'registration':
-                        router.replace('/(root)/onboarding/name-input');
-                        break;
-                    case 'forgot-password':
-                        router.push(`/(root)/(auth)/change-password?email=${email}`);
-                        break;
-                }
+            switch (mode) {
+                case 'registration':
+                    const result = await verifyUser();
+
+                    if (!result) {
+                        return;
+                    }
+
+                    router.replace('/(root)/onboarding/name-input');
+                    break;
+                case 'forgot-password':
+                    router.push(`/(root)/(auth)/change-password?email=${email}`);
+                    break;
             }
+
         } catch (error: any) {
-            const errorMessage = error.response?.data?.error || 'Invalid OTP. Please try again.';
+            console.log(error);
+            const errorMessage = error.response?.data?.message;
             showErrorToast(errorMessage, 'Error');
             setOtp(Array(6).fill(''));
             otpInputRefs[0]?.current?.focus();
+        } finally {
+            setLoading(false);
+        }
+    }
+    
+    const verifyUser = async (): Promise<boolean> => {
+        setLoading(true);
+        
+        try {
+            // Use the correct endpoint based on your server's API structure
+            // This should match a route you've defined in your server
+            await axios.patch(`${config.endpoint}/management/account`, {}, {
+                headers: { Authorization: `Bearer ${await getToken()}` }
+            });
+            
+            if (user) {
+                // Update the local user state to reflect verified status
+                setUser({
+                    ...user,
+                    verified: true
+                });
+            }
+
+            return true;
+        } catch (error: any) {
+            console.error('Verification error:', error.response?.data?.error || error.message);
+            const errorMessage = error.response?.data?.error || 'Account verification failed. Please try again.';
+            showErrorToast(errorMessage, 'Error');
+            setOtp(Array(6).fill(''));
+            otpInputRefs[0]?.current?.focus();
+            return false;
         } finally {
             setLoading(false);
         }
@@ -178,7 +214,7 @@ const OneTimePassword = () => {
                         <View>
                             <View style={styles.formWrapper}>
                                 <Text style={styles.description}>
-                                    A <Text style={styles.boldText}>6-digit OTP</Text> code was sent to your registered email. 
+                                    A <Text style={styles.boldText}>6-digit OTP</Text> code was sent to your registered email.
                                     The code is only valid within 5 minutes. You may request for a new code after{' '}
                                     <Text style={styles.boldText}>{timer}</Text> seconds
                                 </Text>
@@ -211,8 +247,8 @@ const OneTimePassword = () => {
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity 
-                                    style={[styles.button, styles.verifyButton]} 
+                                <TouchableOpacity
+                                    style={[styles.button, styles.verifyButton]}
                                     onPress={validateOTP}
                                 >
                                     <Text style={styles.buttonText}>VERIFY OTP</Text>

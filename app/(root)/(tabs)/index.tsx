@@ -9,9 +9,9 @@ import { withTiming, useSharedValue, useAnimatedStyle } from 'react-native-reani
 // COMPONENTS
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
-import { StyleSheet, View, Text, Image, Modal, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch } from '@fortawesome/free-solid-svg-icons';
-import { useRouter } from 'expo-router';
+import { StyleSheet, View, Text, Image, Modal, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
+import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // CONSTANTS
 const COLORS = {
@@ -33,12 +33,16 @@ import { useFonts } from 'expo-font';
 
 export default function Index(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const [isFloorMenuVisible, setFloorMenuVisible] = useState<boolean>(false);
   const [selectedFloor, setSelectedFloor] = useState<string>("");
   const [currentFloor, setCurrentFloor] = useState(1);
 
   const { setLoading } = useLoading();
+  const router = useRouter();
+  const params = useLocalSearchParams<{ search?: string, pinType?: string }>();
 
   const [currentImage, setCurrentImage] = useState<string | null>(null);
   const [pois, setPois] = useState<any[]>([]);
@@ -69,8 +73,6 @@ export default function Index(): JSX.Element {
   const [buildingName, setBuildingName] = useState<string>();
   const [floorData, setFloorData] = useState<any[]>([]);
 
-  const router = useRouter();
-
   // Load Montserrat fonts
   const [fontsLoaded] = useFonts({
     'Montserrat-Regular': require('@/assets/fonts/Montserrat-Regular.ttf'),
@@ -80,7 +82,134 @@ export default function Index(): JSX.Element {
   // Don't render until fonts are loaded
   if (!fontsLoaded) {
     return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
-  }
+  }  
+  
+  /**
+   * Perform search for pins based on query and optional pin type
+   * @param query The search query string
+   * @param pinType Optional pin type filter
+   */
+  const performSearch = async (query: string, pinType?: string) => {
+    if (!query.trim()) {
+      setSearchQuery('');
+      // Reset to show all pins
+      if (currentImage) {
+        const currentFloorData = floorData.find(floor => floor.floorNumber === currentFloor);
+        if (currentFloorData) {
+          loadFloorData(currentFloorData.floorID);
+        }
+      }
+      return;
+    }
+    
+    setIsSearching(true);
+    setSearchQuery(query);
+    
+    try {
+      const token = await getToken();
+      
+      if (!token) {
+        console.error('No token available');
+        return;
+      }
+      
+      // Build the search URL with parameters
+      let searchUrl = `${config.endpoint}/search/pins?query=${encodeURIComponent(query.trim())}`;
+      if (pinType) {
+        searchUrl += `&pinType=${encodeURIComponent(pinType)}`;
+      }
+      
+      const response = await axios.get(searchUrl, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (response.data.success) {
+        setSearchResults(response.data.data);
+        
+        // If there are search results, go to the first result's building and floor
+        if (response.data.data.length > 0) {
+          const firstResult = response.data.data[0];
+          const buildingData = await loadBuildingData(firstResult.buildingID);
+          
+          if (buildingData) {
+            // Find the floor data and load it
+            const targetFloor = buildingData.floors.find(
+              (f: any) => f.floorID === firstResult.floor?.id
+            );
+            
+            if (targetFloor) {
+              setSelectedFloor(targetFloor.floorName);
+              setCurrentFloor(targetFloor.floorNumber);
+              
+              // Load floor data and filter pins based on search query
+              await loadFloorData(targetFloor.floorID, query, pinType, firstResult);
+            } else {
+              // Floor not found, but we have the building - select first available floor
+              if (buildingData.floors && buildingData.floors.length > 0) {
+                const firstFloor = buildingData.floors[0];
+                setSelectedFloor(firstFloor.floorName);
+                setCurrentFloor(firstFloor.floorNumber);
+                
+                await loadFloorData(firstFloor.floorID, query, pinType);
+              }
+            }
+          }
+        } else {
+          // No search results, but still filter current floor pins if applicable
+          if (currentImage && floorData.length > 0) {
+            const currentFloorData = floorData.find(floor => floor.floorNumber === currentFloor);
+            if (currentFloorData) {
+              loadFloorData(currentFloorData.floorID, query, pinType);
+            }
+          }
+        }
+      }
+    } catch (error: any) {
+      console.error('Search error:', error.response?.data?.message || error.message);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  /**
+   * Load building data
+   * @param buildingId The ID of the building to load
+   * @returns Building data object
+   */  
+  const loadBuildingData = async (buildingId: string) => {
+    try {
+      const token = await getToken();
+      const response = await axios.get(`${config.endpoint}/map/user/building/${buildingId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data.success) {
+        return response.data.building;
+      }
+    } catch (error: any) {
+      console.error('Error loading building:', error.response?.data?.error);
+    }
+    // If we can't load the specific building, try to load any available building as fallback
+    try {
+      const allBuildingsResponse = await axios.get(`${config.endpoint}/map/user/building/load`, {
+        headers: {
+          Authorization: `Bearer ${await getToken()}`
+        }
+      });
+      
+      if (allBuildingsResponse.data.success && 
+          allBuildingsResponse.data.buildings && 
+          allBuildingsResponse.data.buildings.length > 0) {
+        return allBuildingsResponse.data.buildings[0];
+      }
+    } catch (fallbackError) {
+      console.error('Fallback building load failed:', fallbackError);
+    }
+    
+    return null;
+  };
 
   const getMapData = async () => {
     setLoading(true);
@@ -108,23 +237,21 @@ export default function Index(): JSX.Element {
         const currentBuilding = buildings[0];
         const { buildingID, buildingName, floors } = currentBuilding;
         setBuildingName(buildingName);
-        setFloorData(floors);
-
-        // Only set initial floor if no floor is currently selected
-        if (!selectedFloor && floors && floors.length > 0) {
-          setSelectedFloor(floors[0].floorName);
-          setCurrentFloor(floors[0].floorNumber);
-          await loadFloorData(floors[0].floorID);
-        }
+        setFloorData(floors);      // Only set initial floor if no floor is currently selected
+      if (!selectedFloor && floors && floors.length > 0) {
+        setSelectedFloor(floors[0].floorName);
+        setCurrentFloor(floors[0].floorNumber);
+        await loadFloorData(floors[0].floorID, searchQuery);
+      }
       }
     } catch (error: any) {
       console.error(error.response?.data?.message || error.message);
     } finally {
       setLoading(false);
     }
-  }
-
-  const loadFloorData = async (floorID: string) => {
+  }  
+  
+  const loadFloorData = async (floorID: string, searchQuery?: string, pinType?: string, targetPin?: any) => {
     try {
       const response = await axios.get(`${config.endpoint}/map/user/building/${floorID}`, {
         headers: {
@@ -135,7 +262,73 @@ export default function Index(): JSX.Element {
       if (response.data.success) {
         const { floorImage, pois } = response.data.floor;
         setCurrentImage(floorImage);
-        setPois(pois);
+        
+        // If we have a search query, filter the pins
+        if (searchQuery) {
+          const filteredPois = pois.filter((poi: any) => {
+            // Match pin name or description
+            const nameMatch = poi.details.pinName.toLowerCase().includes(searchQuery.toLowerCase());
+            const descriptionMatch = poi.details.pinDescription?.toLowerCase().includes(searchQuery.toLowerCase());
+            const typeMatch = !pinType || poi.details.pinType?.toLowerCase() === pinType.toLowerCase();
+            
+            return (nameMatch || descriptionMatch) && typeMatch;
+          });
+          
+          setPois(filteredPois);
+          
+          // If we have a target pin or filtered pins, focus on the first one
+          if (filteredPois.length > 0) {
+            // Find the pin to focus on - either the target pin or the first filtered pin
+            const pinToFocus = targetPin ? 
+              filteredPois.find((poi: any) => poi._id === targetPin._id) || filteredPois[0] : 
+              filteredPois[0];
+            
+            // Wait for the image to load and layout to complete
+            setTimeout(() => {
+              if (pinToFocus && imageDimensions.width && imageDimensions.height) {
+                // Calculate the position of the pin
+                const position = calculatePoiPosition(pinToFocus.coordinates.x, pinToFocus.coordinates.y);
+                
+                // Calculate the center of the viewport
+                const centerX = imageDimensions.width / 2;
+                const centerY = imageDimensions.height / 2;
+                
+                // Calculate the translation needed to center the pin
+                const targetTranslateX = centerX - position.x;
+                const targetTranslateY = centerY - position.y;
+                
+                // Zoom in and center on the pin
+                scale.value = withTiming(1.8);
+                translateX.value = withTiming(targetTranslateX);
+                translateY.value = withTiming(targetTranslateY);
+                rotation.value = withTiming(0);
+                
+                // Update offset values
+                offsetX.value = targetTranslateX;
+                offsetY.value = targetTranslateY;
+              }
+            }, 300); // Small delay to ensure the image has been processed
+          } else {
+            // No matches found, reset the view
+            scale.value = withTiming(1);
+            translateX.value = withTiming(0);
+            translateY.value = withTiming(0);
+            rotation.value = withTiming(0);
+            offsetX.value = 0;
+            offsetY.value = 0;
+          }
+        } else {
+          // No search query, just show all pins
+          setPois(pois);
+          
+          // Reset view
+          scale.value = withTiming(1);
+          translateX.value = withTiming(0);
+          translateY.value = withTiming(0);
+          rotation.value = withTiming(0);
+          offsetX.value = 0;
+          offsetY.value = 0;
+        }
       }
     } catch (error: any) {
       console.error(error.response?.data?.message || error.message);
@@ -162,7 +355,6 @@ export default function Index(): JSX.Element {
     });
 
   const gesture = Gesture.Simultaneous(pinchGesture, panGesture, rotateGesture);
-
   // Handle Floor Change & Reset Zoom/Pan
   const handleFloorChange = async (floorNumber: number) => {
     setCurrentFloor(floorNumber);
@@ -173,8 +365,13 @@ export default function Index(): JSX.Element {
 
     // Find the floor ID for the selected floor number
     const selectedFloorData = floorData.find(floor => floor.floorNumber === floorNumber);
-    if (selectedFloorData) {
-      await loadFloorData(selectedFloorData.floorID);
+    if (selectedFloorData) {      // If there's an active search query, carry it over to the new floor
+      if (searchQuery) {
+        const pinType = params.pinType;
+        await loadFloorData(selectedFloorData.floorID, searchQuery, pinType);
+      } else {
+        await loadFloorData(selectedFloorData.floorID);
+      }
     }
   };
 
@@ -182,12 +379,19 @@ export default function Index(): JSX.Element {
     getMapData();
   }, []);
 
+  // Handle search params when navigating from search screen
+  useEffect(() => {
+    if (params.search) {
+      performSearch(params.search, params.pinType);
+    }
+  }, [params.search, params.pinType]);
+
   // Update floor selection when floorData changes
   useEffect(() => {
     if (floorData.length > 0 && !selectedFloor) {
       setSelectedFloor(floorData[0].floorName);
       setCurrentFloor(floorData[0].floorNumber);
-      loadFloorData(floorData[0].floorID);
+      loadFloorData(floorData[0].floorID, searchQuery);
     }
   }, [floorData]);
 
@@ -265,17 +469,55 @@ export default function Index(): JSX.Element {
     });
   }
 
+  /**
+   * Zoom and center on a specific pin
+   * @param poi The pin to focus on
+   */
+  const focusOnPin = (poi: any) => {
+    if (!poi || !imageDimensions.width || !imageDimensions.height) return;
+    
+    // Calculate the position of the POI in the map
+    const position = calculatePoiPosition(poi.coordinates.x, poi.coordinates.y);
+    
+    // Calculate center offsets
+    const centerX = imageDimensions.width / 2;
+    const centerY = imageDimensions.height / 2;
+    
+    // Calculate the translation needed to center the POI
+    const targetTranslateX = centerX - position.x;
+    const targetTranslateY = centerY - position.y;
+    
+    // Zoom in slightly and center on the POI
+    scale.value = withTiming(1.8);
+    translateX.value = withTiming(targetTranslateX);
+    translateY.value = withTiming(targetTranslateY);
+    rotation.value = withTiming(0);
+    
+    // Update shared values offsets
+    offsetX.value = targetTranslateX;
+    offsetY.value = targetTranslateY;
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor={COLORS.pmy.white} />
-
       <View style={styles.mainContainer}>
-        <View style={styles.contentContainer}>
-          {/* Search Bar */}
+        <View style={styles.contentContainer}>          
+          {/* Search Bar */}          
           <TouchableOpacity style={styles.searchBarContainer} onPress={handleSearchPress}>
             <FontAwesomeIcon icon={faSearch} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
-            <Text style={styles.searchInput}>Try searching for a room...</Text>
-            <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+            <Text style={styles.searchInput}>{searchQuery || 'Try searching for a room...'}</Text>            
+            {isSearching ? (
+              <ActivityIndicator size="small" color={COLORS.pmy.white} style={styles.searchIcon} />
+            ) : (
+              searchQuery ? (
+                <TouchableOpacity onPress={() => performSearch('')}>
+                  <FontAwesomeIcon icon={faTimes} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+                </TouchableOpacity>
+              ) : (
+                <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
+              )
+            )}
           </TouchableOpacity>
           {/* Building Name */}
           <Text style={styles.buildingTitle}>{buildingName}</Text>
@@ -318,7 +560,10 @@ export default function Index(): JSX.Element {
           </View>
           {/* Floor Selector */}
           <TouchableOpacity style={styles.floorSelector} onPress={() => setFloorMenuVisible(!isFloorMenuVisible)}>
-            <Text style={styles.floorText}>{selectedFloor} <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} /></Text>
+            <View style={styles.floorSelectorContent}>
+              <Text style={styles.floorText}>{selectedFloor}</Text>
+              <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} />
+            </View>
           </TouchableOpacity>
           {/* Floor Dropdown */}
           {isFloorMenuVisible && (
@@ -424,9 +669,15 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     zIndex: 5,
   },
+  floorSelectorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   floorText: {
     color: '#FFFFFF',
     fontFamily: 'Montserrat-Bold',
+    marginRight: 5,
   },
   controlButton: {
     width: 40,
