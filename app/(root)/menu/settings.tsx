@@ -84,7 +84,7 @@ const Settings = () => {
               </View>
             </View>
             <View style={styles.settingsPanel}>
-              <Text style={styles.settingsPanelTitle}>Appearnaces</Text>
+              <Text style={styles.settingsPanelTitle}>Appearances</Text>
               <View style={styles.settingsPanelContent}>
                 <SettingsItem icon={faPalette} title='Theme' onPress={() => alert('Routing Options')} />
                 <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => alert('Routing Options')} />
