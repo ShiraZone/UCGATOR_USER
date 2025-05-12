@@ -146,7 +146,7 @@ const ProfileInfoWindow = () => {
 
     return (
         <SafeAreaView style={styles.mainContainer}>
-            <StatusBar backgroundColor={COLORS.pmy.blue1} barStyle="light-content" />
+            <StatusBar backgroundColor='white' barStyle={'dark-content'} />
             {/* Header Container */}
             <View style={styles.headerContainer}>
                 <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', marginHorizontal: 5 }} onPress={() => router.back()}>

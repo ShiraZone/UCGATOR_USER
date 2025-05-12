@@ -500,7 +500,7 @@ export default function Index(): JSX.Element {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={COLORS.pmy.white} />
+      <StatusBar backgroundColor='white' barStyle={'dark-content'} />
       <View style={styles.mainContainer}>
         <View style={styles.contentContainer}>          
           {/* Search Bar */}          
@@ -597,7 +597,7 @@ export default function Index(): JSX.Element {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: 'white',
   },
   mainContainer: {
     flex: 1,

@@ -87,7 +87,7 @@ const Profile = () => {
     }
 
     return (
-        <ScrollView contentContainerStyle={{ paddingBottom: 75, flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView contentContainerStyle={{ paddingBottom: 75, flex: 1, backgroundColor: 'white' }} showsVerticalScrollIndicator={false}>
             <StatusBar backgroundColor={COLORS.pmy.blue1} barStyle={'light-content'} />
             <ImageBackground style={{ minHeight: 'auto', maxHeight: 175, height: 175, padding: 15 }} source={IMAGES.menu_image_cover}>
                 <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', letterSpacing: 1.5, color: COLORS.pmy.white }}>Menu</Text>
@@ -112,7 +112,7 @@ const Profile = () => {
                     <SettingsItem2 id={3} title='Emergency' icon={faWarning} onPress={() => handlePress('Emergency')} />
                     <SettingsItem2 id={4} title='Settings' icon={faGear} onPress={() => handlePress('Settings')} />
                 </View>
-                <View style={{ flexDirection: 'column', width: '100%', backgroundColor: COLORS.pmy.white, borderRadius: 10, padding: 15 }}>
+                <View style={{ flexDirection: 'column', width: '100%', borderRadius: 10, padding: 15, borderWidth: 1, borderColor: COLORS.pmy.blue1 }}>
                     <SettingsItem1 id={5} title='About UCGator' icon={faQuestionCircle} onPress={() => handlePress('Help')} />
                     <SettingsItem1 id={6} title='Share the App' icon={faShare} onPress={() => handlePress('Share the App')} />
                     <SettingsItem1 id={7} title='Logout' icon={faDoorOpen} onPress={logout} />
@@ -126,17 +126,17 @@ export default Profile
 
 const styles = StyleSheet.create({
     settingsItem1: {
-        backgroundColor: COLORS.pmy.white,
         borderRadius: 10,
         paddingVertical: 5,
         width: '100%', // Adjusted to take full width of the view for one item per row
     },
     settingsItem2: {
-        backgroundColor: COLORS.pmy.white,
         borderRadius: 10,
         padding: 15,
         marginBottom: 15,
         width: '48%', // Adjusted to take half the width of the view for two items per row
         marginHorizontal: '1%', // Added margin to create spacing between items
+        borderWidth: 1, 
+        borderColor: COLORS.pmy.blue1
     }
 })

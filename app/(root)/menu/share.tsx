@@ -23,7 +23,7 @@ const FirstAid = () => {
     const appDownloadUrl = 'https://tinyurl.com/totallyrealurltodownloadtheapp'; // Replace with actual app download URL
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
             <SafeAreaView style={{ flex: 1 }}>
                 <ImageBackground style={styles.topHeader} source={IMAGES.placement_image_cover} resizeMode="stretch">
                     <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto', position: 'absolute', left: 15, top: 15 }} onPress={() => router.back()}>

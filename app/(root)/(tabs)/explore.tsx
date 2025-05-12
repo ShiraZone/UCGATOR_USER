@@ -1,4 +1,3 @@
-
 import { FontAwesome } from '@expo/vector-icons';
 
 // ICONS
@@ -7,61 +6,106 @@ import {
   faSquareCaretRight
 } from '@fortawesome/free-solid-svg-icons';
 
+import { BarChart } from 'react-native-chart-kit';
+
 // RECT
 import React from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ROUTER
 import { useRouter } from 'expo-router';
 
 // COMPONENTS
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TouchableOpacity, 
-  ScrollView, 
-  StatusBar, 
-  Dimensions, 
-  Image 
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Dimensions,
+  Image,
+  ActivityIndicator,
+  RefreshControl
 } from 'react-native';
 
-
 const { width } = Dimensions.get('window');
+
+// Weather interface
+interface WeatherData {
+  location: {
+    name: string;
+    localtime: string;
+  };
+  current: {
+    temp_c: number;
+    condition: {
+      text: string;
+      icon: string;
+    };
+  };
+}
 
 const Explore = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('widelyNavigated');
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  // Define fetchWeather outside of useEffect so we can reuse it
+  const fetchWeather = async () => {
+    try {
+      // Get weather API key from environment variable
+      const apiKey = process.env.EXPO_PUBLIC_WEATHER_API;
+      const response = await fetch(
+        `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=Mandaue&aqi=no`
+      );
 
-  const handleHistoryPress = () => {
-    setActiveTab('history');
+      if (!response.ok) {
+        throw new Error('Weather data not available');
+      }      const data = await response.json();
+      setWeather(data);
+      setLastUpdated(new Date());
+      setError(null); // Clear any previous errors
+    } catch (err: any) {
+      setError('Failed to load weather data');
+      console.error(err?.response?.message || err.message);
+    } finally {
+      setLoading(false);
+      setRefreshing(false); // End refreshing state
+    }
+  };
+  
+  // Handle pull-to-refresh
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchWeather();
   };
 
-  const handleWidelyNavigatedPress = () => {
-    setActiveTab('widelyNavigated');
+  // Fetch weather data on component mount
+  useEffect(() => {
+    fetchWeather();
+  }, []);
+
+  // Format date for weather display
+  const formatDate = (dateString: string | undefined) => {
+    if (!dateString) return '';
+
+    const date = new Date(dateString);
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric'
+    };
+
+    return date.toLocaleDateString('en-US', options);
   };
-
-  const sampleLocations = [
-    'Library',
-    'Canteen',
-    'UCLM Covered Court',
-    'CCS Deans Office',
-    'Records Office',
-    'Cashier',
-  ];
-
-  const sampleHistory = [
-    'Cashier',
-    'Records Office',
-    'Canteen',
-    'UCLM Covered Court',
-    'CCS Deans Office',
-    'Library',
-  ];
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <View style={{ flex: 1, backgroundColor: 'white', paddingBottom: 50 }}>
       <StatusBar backgroundColor='white' barStyle={'dark-content'} />
       <SafeAreaView>
         <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -71,59 +115,178 @@ const Explore = () => {
               <FontAwesomeIcon icon={faSquareCaretRight} size={32} color={COLORS.blue1} />
             </TouchableOpacity>
           </View>
-        </View>
-        {/* Tabs */}
-        <View style={{  paddingHorizontal: 15, flexDirection: 'row', gap: 10}}>
-          <TouchableOpacity onPress={handleWidelyNavigatedPress} style={[styles.tabButtons, activeTab === 'widelyNavigated' && styles.activeTab]}>
-            <Text style={styles.tabText}>Widely Navigated</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleHistoryPress} style={[styles.tabButtons, activeTab === 'history' && styles.activeTab]}>
-            <Text style={styles.tabText}>Your History</Text>
-          </TouchableOpacity>
-        </View>
+        </View>        
+        <ScrollView 
+          showsHorizontalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[COLORS.blue1]}
+              tintColor={COLORS.blue1}
+              title="Refreshing weather data..."
+              titleColor={COLORS.blue1}
+            />
+          }
+        >
+          <View>
+            {/* WEATHER HERE */}
+            <View style={styles.weatherContainer}>
+              {loading ? (
+                <ActivityIndicator size="large" color={COLORS.white} />
+              ) : error ? (
+                <Text style={styles.errorText}>{error}</Text>
+              ) : weather ? (
+                <>
+                  <View style={styles.weatherLeftContent}> 
+                    <Text style={styles.weatherDate}>{formatDate(weather.location.localtime)}</Text>
+                    <Text style={styles.weatherCondition}>{weather.current.condition.text}</Text>
+                    <Text style={styles.weatherTemp}>{Math.round(weather.current.temp_c)}</Text>
+                  </View>
+                  <View style={styles.weatherRightContent}>
+                    <Image
+                      source={{ uri: `https:${weather.current.condition.icon.replace('64x64', '128x128')}` }}
+                      style={styles.weatherIcon}
+                    />
+                  </View>
+                </>
+              ) : null}
+            </View>
+            <View style={{ paddingHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>This data is only to the UCLM location.</Text>              
+              {lastUpdated && (
+                <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>
+                  Last updated: {lastUpdated.toLocaleTimeString()}
+                </Text>
+              )}
+            </View>
+
+            <View style={{ paddingHorizontal: 15, marginVertical: 10 }}>
+              {/* Frquent Activity*/}
+              <View style={{ marginBottom: 12 }}>
+                <View>
+                  <Text style={{ fontFamily: 'Montserrat-Bold', letterSpacing: 2, fontSize: 22, color: COLORS.blue1 }}>Activity</Text>
+                </View>
+                <View>
+                  <BarChart
+                    data={{
+                      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+                      datasets: [
+                        {
+                          data: [
+                            Math.random() * 10,
+                            Math.random() * 10,
+                            Math.random() * 10,
+                            Math.random() * 10,
+                            Math.random() * 10,
+                            Math.random() * 10
+                          ]
+                        }
+                      ]
+                    }}
+                    width={width - 30}
+                    height={200}
+                    yAxisLabel=""
+                    yAxisSuffix=""
+                    chartConfig={{
+                      backgroundColor: COLORS.blue1,
+                      backgroundGradientFrom: COLORS.blue1,
+                      backgroundGradientTo: "#4A7093",
+                      decimalPlaces: 1,
+                      color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
+                      style: {
+                        borderRadius: 8,
+                      },
+                      barPercentage: 0.5,
+                      propsForDots: {
+                        r: "6",
+                        strokeWidth: "2",
+                        stroke: "#ffa726"
+                      }
+                    }}
+                    style={{
+                      borderRadius: 15,
+                    }}
+                  />
+                </View>
+              </View>
+              {/* MY HISTORY */}
+              <View>
+                <View style={{ marginBottom: 12 }}>
+                  <Text style={{ fontFamily: 'Montserrat-Bold', letterSpacing: 2, fontSize: 22, color: COLORS.blue1 }}>History</Text>
+                  <Text style={{ fontFamily: 'Montserrat-Regular', letterSpacing: 1.5, fontSize: 14, color: COLORS.blue1 }}>From your navigation history.</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 10, marginBottom: 5 }}>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipNVZXePaunX1mFKoOKXa0Nr0iy8BhHNh8lkEWR-=w600-k' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+              {/* FREQUENTLY NAVIGATED */}
+              <View>
+                <View style={{ marginBottom: 12 }}>
+                  <Text style={{ fontFamily: 'Montserrat-Bold', letterSpacing: 2, fontSize: 22, color: COLORS.blue1 }}>Frequently Visited</Text>
+                  <Text style={{ fontFamily: 'Montserrat-Regular', letterSpacing: 1.5, fontSize: 14, color: COLORS.blue1 }}>From global data.</Text>
+                </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 10 }}>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>800 Visits</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
+                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
+                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
+                      <View>
+                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                </ScrollView>
+              </View>
+            </View>
+          </View>
+        </ScrollView>
       </SafeAreaView>
-      {/* Tabs */}
-      <View style={styles.tabRow}>
-
-
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'widelyNavigated' && styles.activeTab]}
-          onPress={handleWidelyNavigatedPress}
-        >
-          <Text style={styles.tabText}>Widely Navigated Location</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'history' && styles.activeTab]}
-          onPress={handleHistoryPress}
-        >
-          <Text style={styles.tabText}>Your History</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Dynamic Content */}
-      {activeTab === 'widelyNavigated' ? (
-        <ScrollView style={styles.widelyNavigatedContent}>
-          {sampleLocations.map((location, index) => (
-            <View key={index} style={styles.locationItem}>
-              <Text style={styles.locationText}>{location}</Text>
-              <TouchableOpacity>
-                <FontAwesome name="map-marker" size={24} color={COLORS.blue1} style={styles.navigateIcon} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      ) : (
-        <ScrollView style={styles.historyContent}>
-          {sampleHistory.map((history, index) => (
-            <View key={index} style={styles.locationItem}>
-              <Text style={styles.locationText}>{history}</Text>
-              <TouchableOpacity>
-                <FontAwesome name="map-marker" size={24} color={COLORS.blue1} style={styles.navigateIcon} />
-              </TouchableOpacity>
-            </View>
-          ))}
-        </ScrollView>
-      )}
     </View>
   );
 };
@@ -145,147 +308,61 @@ const COLORS = {
 };
 
 const styles = StyleSheet.create({
-  tabButtons: {
-    backgroundColor: COLORS.blue1,
-    borderRadius: 12,
-    paddingVertical: 8,
-    paddingHorizontal: 22,
-  },
-  tabText: {
-    color: COLORS.white,
-    fontSize: 12,
-    fontFamily: 'Montserrat-Bold'
-  },
-  container: {
-    backgroundColor: COLORS.white,
-    paddingBottom: 40,
-  },
-  headerContainer: {
-    position: 'relative',
-  },
-  headerImage: {
-    width: width - 0,
-    height: 189,
-    alignSelf: 'center',
-  },
-  headerContent: {
-    position: 'absolute',
-    top: '10%',
-    left: 10,
-    right: 20,
-    alignItems: 'flex-start',
-  },
-
-  headerTitle: {
-    color: COLORS.white,
-    fontSize: 22,
-    marginBottom: 20,
-    fontFamily: 'Montserrat-Bold'
-  },
-
-  startButton: {
-    backgroundColor: '#3D73A6',
-    paddingVertical: 10,
-    paddingHorizontal: 110,
-    borderRadius: 30,
-    borderWidth: 1,
-    borderColor: '#9BC9F5',
-    alignSelf: 'center',
-    marginBottom: 15,
-  },
-
-  startButtonText: {
-    color: COLORS.white,
-    fontFamily: 'Montserrat-Bold'
-  },
-
-  tabRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-    paddingHorizontal: 10,
-  },
-
-  tab: {
-    backgroundColor: COLORS.blue1,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    borderRadius: 20,
-    borderBottomRightRadius: 0,
-    borderBottomLeftRadius: 0,
-  },
-
-
-
-  section: {
-    marginTop: 20,
-    marginHorizontal: 10,
-  },
-
-  sectionTitle: {
-    fontFamily: 'Montserrat-Bold',
-    fontSize: 16,
-    marginBottom: 4,
-    marginLeft: 5,
-  },
-
-  sectionBox: {
-    height: 100,
-    backgroundColor: COLORS.red,
-    borderRadius: 8,
-  },
-
-  activeTab: {
-    backgroundColor: '#3D73A6',
-  },
-
-  widelyNavigatedContent: {
-    height: 550,
-    backgroundColor: '#3D73A6',
-    margin: 10,
-    marginLeft: 11,
-    marginRight: 11,
-    marginTop: 0,
-    borderRadius: 10,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-  historyContent: {
-    height: 550,
-    backgroundColor: '#3D73A6',
-    margin: 10,
-    marginTop: 0,
-    marginLeft: 11,
-    marginRight: 11,
-    borderRadius: 10,
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-  },
-
-  scrollContent: {
-    paddingVertical: 10,
-  },
-
-  locationItem: {
+  weatherContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 15,
+    backgroundColor: COLORS.blue1,
+    marginHorizontal: 15,
     marginVertical: 10,
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    height: 100,
+    padding: 20,
+    borderRadius: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+    overflow: 'hidden',
+    height: 170,
   },
-
-  locationText: {
+  weatherLeftContent: {
+    flex: 3,
+    paddingRight: 10,
+  },
+  weatherRightContent: {
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: 10,
+  },
+  weatherDate: {
+    color: COLORS.white,
+    fontFamily: 'Montserrat-Medium',
     fontSize: 16,
-    color: COLORS.blue1,
-    fontFamily: 'Montserrat-Bold',
+    marginBottom: 2,
   },
-
-  navigateIcon: {
-    marginRight: 10,
+  weatherCondition: {
+    color: COLORS.white,
+    fontFamily: 'Montserrat-SemiBold',
+    fontSize: 18,
+    marginTop: 2,
+  },
+  weatherTemp: {
+    color: COLORS.white,
+    fontFamily: 'Montserrat-Bold',
+    fontSize: 80,
+    lineHeight: 90,
+    marginTop: -5,
+  },
+  weatherIcon: {
+    width: 120,
+    height: 120,
+    resizeMode: 'contain',
+  },
+  errorText: {
+    color: COLORS.white,
+    fontFamily: 'Montserrat-Medium',
+    textAlign: 'center',
+    padding: 10,
   },
 });

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, Modal, Dimensions } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, Modal, Dimensions, StatusBar } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { useRouter } from 'expo-router'
@@ -218,7 +218,8 @@ const FirstAid = () => {
     const randomNum = Math.floor(Math.random() * 1000) + 1;
 
     return (
-        <View style={{ flex: 1 }}>
+        <View style={{ flex: 1, backgroundColor: 'white' }}>
+            <StatusBar backgroundColor='white' barStyle={'dark-content'} />
             <SafeAreaView style={{ flex: 1 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
                     <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>

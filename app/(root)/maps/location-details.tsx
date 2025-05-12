@@ -139,9 +139,8 @@ const LocationDetails = () => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="light-content" backgroundColor={COLORS.pmy.blue1} />
-
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
+            <StatusBar backgroundColor='white' barStyle={'dark-content'} />
             <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row' }}>
                 <TouchableOpacity onPress={handleBack} style={styles.backButton}>
                     <FontAwesomeIcon icon={faArrowLeft} size={24} color={COLORS.pmy.blue1} />
@@ -220,21 +219,37 @@ const LocationDetails = () => {
                                 <Text style={styles.infoLabel}>Room Type:</Text>
                                 <Text style={styles.infoValue}>{locationDetails.pinType || "Not specified"}</Text>
                             </View>
-                            <View style={styles.infoItem}>
-                                <Text style={styles.infoLabel}>Operating Hours:</Text>
-                                <Text style={styles.infoValue}>{locationDetails.operatingHours || "Not available"}</Text>
-                            </View>
                         </View>
-
-                        <TouchableOpacity style={styles.navigationButton} onPress={handleStartNavigation}>
-                            <FontAwesomeIcon icon={faDirections} size={20} color="#FFFFFF" style={styles.buttonIcon} />
-                            <Text style={styles.buttonText}>START NAVIGATION</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.favoriteButton} onPress={toggleFavorite}>
-                            <FontAwesomeIcon icon={faHeart} size={20} color={isFavorite ? 'red' : '#FFFFFF'} style={styles.buttonIcon} />
-                            <Text style={styles.buttonText}>{isFavorite ? 'UNFAVORITE' : 'FAVORITE'}</Text>
-                        </TouchableOpacity>
+                        
+                        <View style={{ marginHorizontal: 20, marginVertical: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
+                            <TouchableOpacity 
+                                style={[styles.navigationButton, { flex: 1, marginRight: 10 }]} 
+                                onPress={handleStartNavigation}
+                            >
+                                <FontAwesomeIcon 
+                                    icon={faDirections} 
+                                    size={20} 
+                                    color="#FFFFFF" 
+                                    style={styles.buttonIcon} 
+                                />
+                                <Text style={styles.buttonText}>Navigate</Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                style={[styles.favoriteButton, { flex: 1, backgroundColor: isFavorite ? '#FF4757' : COLORS.pmy.blue1 }]} 
+                                onPress={toggleFavorite}
+                            >
+                                <FontAwesomeIcon 
+                                    icon={faHeart} 
+                                    size={20} 
+                                    color="#FFFFFF" 
+                                    style={styles.buttonIcon} 
+                                />
+                                <Text style={styles.buttonText}>
+                                    {isFavorite ? 'Remove' : 'Favorite'}
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
                     </>
                 ) : (
                     <View style={styles.errorContainer}>
@@ -289,7 +304,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
     },
     locationHeader: {
-        marginBottom: 20,
         paddingHorizontal: 20, // Added horizontal padding
         marginTop: 10,
     },
@@ -305,19 +319,16 @@ const styles = StyleSheet.create({
         fontFamily: 'Montserrat-Regular',
     },
     infoSection: {
-        marginBottom: 20,
+        marginVertical: 15,
         backgroundColor: '#FFFFFF',
-        borderRadius: 10,
+        borderRadius: 8,
         padding: 15,
         marginHorizontal: 20, // Added horizontal margin
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 3,
+        borderWidth: 1, 
+        borderColor: COLORS.pmy.blue1 
     },
     sectionTitle: {
         fontSize: 18,
@@ -354,9 +365,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 30,
-        marginHorizontal: 20, // Added horizontal margin
     },
     buttonIcon: {
         marginRight: 10,
@@ -373,9 +381,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 30,
-        marginHorizontal: 20, // Added horizontal margin
     },
     errorContainer: {
         padding: 20,

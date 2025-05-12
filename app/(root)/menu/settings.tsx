@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View, ScrollView, ImageBackground, StatusBar } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { useRouter } from 'expo-router';
@@ -64,7 +64,8 @@ const Settings = () => {
   const router = useRouter();
 
   return (
-    <View style={{ backgroundColor: COLORS.pmy.white, flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <StatusBar backgroundColor='white' barStyle={'dark-content'} />
       <SafeAreaView style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
           <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
