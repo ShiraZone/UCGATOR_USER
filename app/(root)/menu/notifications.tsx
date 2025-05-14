@@ -18,6 +18,7 @@ import COLORS from '@/app/constants/colors';
 import { formatDistanceToNow } from 'date-fns';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { config } from '@/app/lib/config';
 
 interface Notification {
     _id: string;
@@ -64,7 +65,7 @@ const NotificationsScreen = () => {
             const token = await getToken();
             const currentPage = refresh ? 1 : page;
 
-            const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/notifications/?page=${currentPage}&limit=15`, {
+            const response = await axios.get(`${config.endpoint}/notifications/?page=${currentPage}&limit=15`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -103,7 +104,7 @@ const NotificationsScreen = () => {
     const markAsRead = async (notificationId: string) => {
         try {
             const token = await getToken();
-            await axios.put(`${process.env.EXPO_PUBLIC_API_URL}/notifications/${notificationId}/read`, {}, {
+            await axios.put(`${config.endpoint}/notifications/${notificationId}/read`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }

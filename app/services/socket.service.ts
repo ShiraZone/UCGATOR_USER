@@ -183,6 +183,32 @@ class SocketService {
     }
 
     /**
+     * Specifically subscribe to notification events
+     * @param callback - The callback function to execute when a notification is received
+     */
+    onNotification(callback: Function): void {
+        this.on('notification', callback);
+    }
+    
+    /**
+     * Unsubscribe from notification events
+     * @param callback - The callback function to remove
+     */
+    offNotification(callback?: Function): void {
+        this.off('notification', callback);
+    }
+    
+    /**
+     * Get the connection status of the socket
+     */
+    getConnectionStatus(): { isConnected: boolean; userId: string | null } {
+        return {
+            isConnected: this.isConnected,
+            userId: this.userId
+        };
+    }
+
+    /**
      * Disconnect the socket
      */
     disconnect(): void {
