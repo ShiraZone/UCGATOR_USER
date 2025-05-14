@@ -10,7 +10,7 @@ import { faArrowLeft } from '@fortawesome/free-solid-svg-icons'
 import { faRoute } from '@fortawesome/free-solid-svg-icons'
 import { faMap } from '@fortawesome/free-solid-svg-icons'
 import { faRuler } from '@fortawesome/free-solid-svg-icons'
-import { faExclamation } from '@fortawesome/free-solid-svg-icons'
+import { faLightbulb } from '@fortawesome/free-solid-svg-icons'
 import { faLanguage } from '@fortawesome/free-solid-svg-icons'
 import { faUniversalAccess } from '@fortawesome/free-solid-svg-icons'
 import { faPalette } from '@fortawesome/free-solid-svg-icons'
@@ -57,7 +57,7 @@ const SettingsItem = ({ icon, title, onPress }: SettingsItemProps) => {
         <Text style={{ flex: 1, marginLeft: 10, fontSize: 16, fontFamily: 'Montserrat-Regular' }}>{title}</Text>
       </View>
     </TouchableOpacity>
-  );
+  )
 }
 
 const Settings = () => {
@@ -76,18 +76,17 @@ const Settings = () => {
         <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: 15 }}>
           <View>
             <View style={styles.settingsPanel}>
-              <Text style={styles.settingsPanelTitle}>Preferences</Text>
-              <View style={styles.settingsPanelContent}>
-                <SettingsItem icon={faRoute} title='Routing Options' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faMap} title='Downloaded Maps' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faRuler} title='Measurement Units' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faExclamation} title='Suggestions' onPress={() => alert('Routing Options')} />
+              <Text style={styles.settingsPanelTitle}>Preferences</Text>              <View style={styles.settingsPanelContent}>                <SettingsItem icon={faRoute} title='Routing Options' onPress={() => router.push('/menu/settings-tabs/preferences/routing-options')} />
+                <SettingsItem icon={faMap} title='Downloaded Maps' onPress={() => router.push('/menu/settings-tabs/preferences/downloaded-maps')} />
+                <SettingsItem icon={faRuler} title='Measurement Units' onPress={() => router.push('/menu/settings-tabs/preferences/measurement-units')} />
+                <SettingsItem icon={faLightbulb} title='Suggestions' onPress={() => router.push('/menu/settings-tabs/preferences/suggestions')} />
               </View>
             </View>
-            <View style={styles.settingsPanel}>                <Text style={styles.settingsPanelTitle}>Appearances</Text>
-              <View style={styles.settingsPanelContent}>
-                <SettingsItem icon={faPalette} title='Theme' onPress={() => router.push('/menu/settings-tabs/appearance/theme')} />
-                <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => router.push('/menu/settings-tabs/appearance/map-style')} />
+            <View style={styles.settingsPanel}>                
+                <Text style={styles.settingsPanelTitle}>Appearances</Text>
+                    <View style={styles.settingsPanelContent}>
+                    <SettingsItem icon={faPalette} title='Theme' onPress={() => router.push('/menu/settings-tabs/appearance/theme')} />
+                    <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => router.push('/menu/settings-tabs/appearance/map-style')} />
               </View>
             </View>
             <View style={styles.settingsPanel}>              <Text style={styles.settingsPanelTitle}>Application</Text>
