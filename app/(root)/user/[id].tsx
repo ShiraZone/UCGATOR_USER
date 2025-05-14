@@ -166,8 +166,8 @@ const UserProfileScreen = () => {
             const token = await getToken();
 
             const endpoint = isFollowing ?
-                `${process.env.EXPO_PUBLIC_API_URL}/api/profile/unfollow/${userId}` :
-                `${process.env.EXPO_PUBLIC_API_URL}/api/profile/follow/${userId}`;
+                `${config.endpoint}/profile/unfollow/${userId}` :
+                `${config.endpoint}/profile/follow/${userId}`;
 
             const response = await axios.post(endpoint, {}, {
                 headers: {
@@ -191,12 +191,19 @@ const UserProfileScreen = () => {
                                 : prevProfile.profile.followersCount + 1
                         }
                     };
-                });
-
-                // Connect socket and emit event if following
+                });                // Connect socket and emit event if following
                 if (!isFollowing) {
-                    socketService.connect();
-                    socketService.authenticate(user?._id || '');
+                    // First connect the socket
+                    await socketService.connect();
+                    
+                    // Wait a moment for the connection to establish before authenticating
+                    setTimeout(() => {
+                        if (socketService.isSocketConnected() && user?._id) {
+                            socketService.authenticate(user._id);
+                        } else {
+                            console.log('Socket not connected yet, cannot authenticate');
+                        }
+                    }, 500);
                 }
             }
         } catch (error) {
@@ -385,7 +392,7 @@ const styles = StyleSheet.create({
     },
     profileInfoContainer: {
         borderRadius: 10,
-        margin: 10,
+        marginHorizontal: 10,
         padding: 15,
     },
     profileHeader: {

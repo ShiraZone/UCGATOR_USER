@@ -28,17 +28,25 @@ class SocketService {
             if (!token) {
                 console.log('No token available for socket connection');
                 return;
-            }
-
+            }            
+            
             // Check for internet connectivity
             const netInfo = await NetInfo.fetch();
             if (!netInfo.isConnected) {
                 console.log('No internet connection available');
                 return;
             }
-
+              // Make sure we have a socket URL to connect to
+            if (!config.socketUrl) {
+                console.error('Socket URL is undefined');
+                return;
+            }
+            
             // Initialize socket with auth and connection options
-            this.socket = io(config.endpoint, {
+            // Ensure we're connecting to the root namespace by appending '/' if needed
+            const socketUrl = config.socketUrl.endsWith('/') ? config.socketUrl : `${config.socketUrl}/`;
+            console.log('Connecting to socket URL:', socketUrl);
+            this.socket = io(socketUrl, {
                 auth: { token },
                 transports: ['websocket'],
                 reconnection: true,
@@ -68,15 +76,26 @@ class SocketService {
             if (this.userId) {
                 this.authenticate(this.userId);
             }
-        });
-
-        this.socket.on('disconnect', (reason) => {
+        });        this.socket.on('disconnect', (reason) => {
             console.log(`Socket disconnected: ${reason}`);
             this.isConnected = false;
-        });
-
-        this.socket.on('connect_error', (error) => {
+        });        
+          this.socket.on('connect_error', (error) => {
             console.error('Socket connection error:', error.message);
+            // Log additional information about the connection
+            console.log('Socket connection details:', {
+                socketId: this.socket?.id,
+                connected: this.socket?.connected,
+                disconnected: this.socket?.disconnected,
+                // Output the URL we're trying to connect to for debugging
+                url: config.socketUrl
+            });
+            
+            // If error is related to CORS, provide more helpful information
+            if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+                console.error('This appears to be a CORS issue. Make sure your server is configured to accept connections from this client origin.');
+            }
+            
             this.reconnectAttempts += 1;
 
             if (this.reconnectAttempts >= this.maxReconnectAttempts) {

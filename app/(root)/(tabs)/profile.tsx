@@ -89,7 +89,7 @@ const Profile = () => {
                 router.push('/(root)/menu/emergency');
                 break;
             case 'Share the App':
-                // Share functionality
+                router.push('/(root)/menu/share')
                 break;
             default:
                 console.log('Route not defined:', routeName);
