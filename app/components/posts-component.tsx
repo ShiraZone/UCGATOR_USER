@@ -6,6 +6,7 @@ import { faHeart as faHeartRegular } from '@fortawesome/free-regular-svg-icons'
 import axios from 'axios';
 import { config } from '../lib/config';
 import { getToken } from '../lib/secure-store';
+import notificationServiceInstance from '../services/notification.service';
 
 interface PostStyle {
     fontFamily: string;
@@ -97,8 +98,8 @@ const Posts = ({
             setToken(userToken);
         };
         loadToken();
-    }, []);
-
+    }, []);    
+    
     const handleLike = async (postId: string) => {
         if (!token) {
             Alert.alert('Error', 'Please log in to like posts');
@@ -121,6 +122,9 @@ const Posts = ({
                 if (onLikeUpdate) {
                     onLikeUpdate(postId, true, response.data.data.likeCount);
                 }
+                
+                // Refresh notifications count to show the red dot if needed
+                notificationServiceInstance.getUnreadCount();
             }
         } catch (error: any) {
             Alert.alert('Error', 'Failed to like the post. Please try again.');
@@ -236,8 +240,7 @@ const Posts = ({
                             </View>
                         </View>
                     </TouchableOpacity>
-                </View>
-
+                </View>                
                 {/* Media content */}
                 {mediaUrls.length > 0 && (
                     <View style={styles.mediaContainer}>

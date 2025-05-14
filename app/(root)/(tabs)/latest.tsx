@@ -1,7 +1,8 @@
 // REACT
 import React, {
   useState,
-  useEffect
+  useEffect,
+  useCallback
 } from 'react';
 // REACT NATIVE
 import {
@@ -29,7 +30,8 @@ import axios from 'axios';
 // API
 import { config } from '@/app/lib/config';
 import Posts from '@/app/components/posts-component';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import notificationServiceInstance from '@/app/services/notification.service';
 
 const { width } = Dimensions.get('window');
 
@@ -156,10 +158,19 @@ const Latest = () => {
       )
     );
   };
-
   useEffect(() => {
     loadPosts(1);
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      console.log('Latest screen focused');
+      notificationServiceInstance.getUnreadCount();
+      return () => {
+        // Cleanup if needed when screen is unfocused
+      };
+    }, [])
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: 'white' }}>

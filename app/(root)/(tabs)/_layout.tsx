@@ -34,11 +34,6 @@ const TabsLayout = () => {
         return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }} />;
     }
 
-    const handleProfileFocus = () => {
-        console.log("Profile tab focused");
-        notificationServiceInstance.getUnreadCount();
-    };
-
     return (
         <Tabs screenOptions={{
             tabBarShowLabel: false,
@@ -73,9 +68,6 @@ const TabsLayout = () => {
                         <TabIcon icon={faNewspaper} focused={focused} title='LATEST' />
                     )
                 }}
-                listeners={({ navigation }) => ({
-                    tabPress: () => handleProfileFocus(),
-                })}
             />
             <Tabs.Screen
                 name='profile'
