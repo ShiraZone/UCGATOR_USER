@@ -84,11 +84,10 @@ const Settings = () => {
                 <SettingsItem icon={faExclamation} title='Suggestions' onPress={() => alert('Routing Options')} />
               </View>
             </View>
-            <View style={styles.settingsPanel}>
-              <Text style={styles.settingsPanelTitle}>Appearances</Text>
+            <View style={styles.settingsPanel}>                <Text style={styles.settingsPanelTitle}>Appearances</Text>
               <View style={styles.settingsPanelContent}>
-                <SettingsItem icon={faPalette} title='Theme' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => alert('Routing Options')} />
+                <SettingsItem icon={faPalette} title='Theme' onPress={() => router.push('/menu/settings-tabs/appearance/theme')} />
+                <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => router.push('/menu/settings-tabs/appearance/map-style')} />
               </View>
             </View>
             <View style={styles.settingsPanel}>
