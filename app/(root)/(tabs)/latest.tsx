@@ -18,6 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   faPlusSquare
 } from '@fortawesome/free-solid-svg-icons';
+// COMPONENTS
+import NotificationIcon from '@/app/components/notification-icon';
 
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 // AUTH
@@ -108,7 +110,7 @@ const Latest = () => {
       // Update hasMore based on current page and total pages
       const hasMorePages = page < response.data.totalPages;
       setHasMore(hasMorePages);
-      
+
       // Only update currentPage if we successfully loaded the data
       if (data.length > 0) {
         setCurrentPage(page);
@@ -163,35 +165,26 @@ const Latest = () => {
     <View style={{ flex: 1, backgroundColor: 'white' }}>
       <StatusBar backgroundColor='white' barStyle={'dark-content'} />
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between' }}>
+        <View style={{ paddingHorizontal: 15, paddingVertical: 12, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Text style={{ fontFamily: 'Montserrat-Bold', fontSize: 24, color: COLORS.blue1 }}>UCGATOR</Text>
-          <View>
-            <TouchableOpacity onPress={() => router.push('/(root)/latest/new-post')}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.push('/(root)/menu/notifications')}>
+              <NotificationIcon color={COLORS.blue1} />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginLeft: 15 }} onPress={() => router.push('/(root)/latest/new-post')}>
               <FontAwesomeIcon icon={faPlusSquare} size={32} color={COLORS.blue1} />
             </TouchableOpacity>
           </View>
         </View>
-
         {error ? (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
-              onPress={handleRefresh}
-            >
+            <TouchableOpacity style={styles.retryButton} onPress={handleRefresh}>
               <Text style={styles.retryButtonText}>Retry</Text>
             </TouchableOpacity>
           </View>
         ) : (
-          <Posts
-            posts={posts}
-            loading={loading}
-            onRefresh={handleRefresh}
-            onLoadMore={handleLoadMore}
-            hasMore={hasMore}
-            likedPosts={likedPosts}
-            onLikeUpdate={handleLikeUpdate}
-          />
+          <Posts posts={posts} loading={loading} onRefresh={handleRefresh} onLoadMore={handleLoadMore} hasMore={hasMore} likedPosts={likedPosts} onLikeUpdate={handleLikeUpdate}/>
         )}
       </SafeAreaView>
     </View>

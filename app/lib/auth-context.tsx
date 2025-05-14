@@ -9,7 +9,7 @@ import { useRouter } from "expo-router";
 import { useLoading } from "./load-context";
 
 // storage
-import { showErrorToast, showSuccessToast }  from "../components/toast-config";
+import { showErrorToast, showSuccessToast } from "../components/toast-config";
 
 // (root)/lib/auth-context.tsx
 export interface User {
@@ -25,6 +25,8 @@ export interface User {
     profileType: string | null;
     gender: string | null;
     bio: string | null;
+    followers: number | 0;
+    following: number | 0;
     emergencyContact: emergencyContact[] | null;
 }
 
@@ -36,7 +38,7 @@ interface emergencyContact {
 
 interface AuthContextType {
     login: (email: string, password: string) => Promise<void>;
-    signUp: (email: string, password: string, linkUri: any) => Promise<void>;
+    signUp: (email: string, password: string, linkUri: string) => Promise<void>;
     logout: () => Promise<boolean>;
     getUserInfo: () => Promise<any>;
     user: User | null | undefined;
@@ -61,7 +63,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     const initializaAuthProvider = async () => {
         setLoading(true);
         const userToken = await getToken();
-        
+
         if (!userToken) {
             router.replace('/(root)/(auth)/get-started');
             setLoading(false);
@@ -72,7 +74,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         setLoading(true);
 
         try {
-            
+
             const userData = await getUserInfo();
 
             if (!userData.verified) {
@@ -120,11 +122,11 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 password
             });
 
-            const { _id, status, verified, token, sessionId, profile} = response.data.data;
+            const { _id, status, verified, token, sessionId, profile } = response.data.data;
 
             await saveToken(token);
             await saveUserSession(sessionId);
-            
+
             const updatedUser = {
                 // User
                 _id: _id,
@@ -139,9 +141,11 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 profileType: profile.profileType || null,
                 gender: profile.gender || null,
                 bio: profile.bio || null,
+                followers: profile.followers || 0,
+                following: profile.following || 0,
                 emergencyContact: profile.emergencyContact || null,
             };
-            
+
             setUser(updatedUser);
             setIsLoggedIn(true);
 
@@ -169,7 +173,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 return;
             }
 
-            router.replace('/');  
+            router.replace('/');
         } catch (error: any) {
             showErrorToast(error.response?.data?.error, 'Error');
             console.log(error.response);
@@ -178,7 +182,28 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         }
     }
 
-    const signUp = async (userEmail: string, password: string) => {
+    const sendMail = async (email: string): Promise<boolean> => {
+        setLoading(true);
+
+        try {
+            const response = await axios.post(`${config.endpoint}/otp/mail`, {
+                email
+            });
+
+            if (response.data.success) {
+                showSuccessToast('OTP sent successfully!', 'Success');
+            }
+            return true;
+        } catch (error: any) {
+            const errorMessage = error.response?.data?.error || 'Failed to send OTP. Please try again.';
+            showErrorToast(errorMessage, 'Error');
+            return false;
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const signUp = async (userEmail: string, password: string, linkUri: string) => {
         setLoading(true);
         try {
             const response = await axios.post(`${config.endpoint}/auth/user/sign-up`, {
@@ -187,8 +212,6 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             });
 
             if (!response.data.success) throw new Error('Register failed. Please try again later.');
-
-
 
             const { _id, email, status, verified, token, sessionId, profile } = response.data.data;
 
@@ -207,6 +230,8 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 profileType: profile.profileType || null,
                 gender: profile.gender || null,
                 bio: profile.bio || null,
+                followers: profile.followers || 0,
+                following: profile.following || 0,
                 emergencyContact: profile.emergencyContact || null,
             };
 
@@ -214,10 +239,15 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
 
             await saveToken(token);
             await saveUserSession(sessionId);
-            
+
             setIsLoggedIn(true);
 
-            router.replace('/(root)/(auth)/one-time-password');
+            const responseMail = await sendMail(userEmail);
+            if (!responseMail) {
+                return;
+            }
+
+            router.replace(linkUri as any);
         } catch (error: any) {
             showErrorToast(error.response?.data?.error, 'Error');
         } finally {
@@ -262,9 +292,9 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                     Authorization: `Bearer ${await getToken()}`
                 }
             });
-            
+
             const { _id, email, status, verified, profile } = response.data.data;
-            
+
             const updatedUser = {
                 // User
                 _id: _id,
@@ -280,6 +310,8 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 profileType: profile.profileType || null,
                 gender: profile.gender || null,
                 bio: profile.bio || null,
+                followers: profile.followers || 0,
+                following: profile.following || 0,
                 emergencyContact: profile.emergencyContact || null,
             };
 

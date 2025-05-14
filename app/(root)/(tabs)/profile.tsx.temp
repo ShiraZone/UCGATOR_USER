@@ -1,25 +1,24 @@
 import React from 'react';
 // components
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, StatusBar, Image } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ImageBackground, StatusBar, Image } from 'react-native';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 // utilities
 import COLORS from '@/app/constants/colors';
+import IMAGES from '@/app/constants/images';
 // hooks
 import { useAuth } from '@/app/lib/auth-context';
 // ICON
-import {
+import { 
     faBookmark,
-    faCircleUser,
+    faCircleUser, 
     faArrowRight,
-    faWarning,
-    faHeartPulse,
-    faQuestionCircle,
-    faGear,
-    faDoorOpen,
-    faShare,
-    faBell
-} from '@fortawesome/free-solid-svg-icons';
-
+    faWarning, 
+    faHeartPulse, 
+    faQuestionCircle, 
+    faGear, 
+    faDoorOpen, 
+    faShare } from '@fortawesome/free-solid-svg-icons';
+    
 import { useRouter } from 'expo-router';
 import NotificationIcon from '@/app/components/notification-icon';
 
@@ -30,7 +29,7 @@ interface SettingsItemProps {
     onPress: () => void,
 }
 
-const SettingsItem1 = ({ id, icon, title, onPress }: SettingsItemProps) => {
+const SettingsItem1 = ({ id, icon, title, onPress}: SettingsItemProps) => {
     return (
         <TouchableOpacity id={id.toString()} onPress={onPress} style={styles.settingsItem1}>
             <View style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}>
@@ -57,36 +56,38 @@ const Profile = () => {
     const { user, logout } = useAuth();
     const router = useRouter();
 
+    const navigateToUserProfile = () => {
+        if (user?._id) {
+            router.push({
+                pathname: '/(root)/user/[id]',
+                params: { id: user._id }
+            });
+        }
+    };
+
+    const navigateToNotifications = () => {
+        router.push('/(root)/menu/notifications');
+    };
+
     const handlePress = (routeName: string) => {
-        switch (routeName) {
+        switch(routeName) {
             case 'Profile':
-                // Navigate to the user's profile screen
-                if (user?._id) {
-                    router.push({
-                        pathname: '/(root)/user/[id]',
-                        params: { id: user._id }
-                    });
-                }
+                navigateToUserProfile();
                 break;
             case 'Settings':
-                // Navigate to settings
-                router.push('/(root)/menu/settings');
+                // Navigate to settings (create this file if needed)
                 break;
             case 'Help':
                 // Navigate to help/about
-                router.push('/(root)/menu/faq-section');
                 break;
             case 'Save':
                 // Navigate to saved items
-                router.push('/(root)/menu/saves');
                 break;
             case 'First Aid':
                 // Navigate to first aid
-                router.push('/(root)/menu/first-aid');
                 break;
             case 'Emergency':
                 // Navigate to emergency
-                router.push('/(root)/menu/emergency');
                 break;
             case 'Share the App':
                 // Share functionality
@@ -99,22 +100,30 @@ const Profile = () => {
     return (
         <ScrollView style={{ flex: 1, backgroundColor: 'white' }} showsVerticalScrollIndicator={false}>
             <StatusBar barStyle={'light-content'} backgroundColor={COLORS.pmy.blue1} />
-            <View style={{ margin: 10, backgroundColor: COLORS.pmy.blue1, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 25 }}>
-                <TouchableOpacity onPress={() => handlePress('Profile')} style={{ flexDirection: 'row', alignItems: 'center'}}>
+            <ImageBackground
+                source={IMAGES.profile_bg}
+                style={{ width: '100%', padding: 15, backgroundColor: COLORS.pmy.blue1 }}
+            >
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', width: '100%', marginBottom: 20 }}>
+                    <TouchableOpacity onPress={navigateToNotifications}>
+                        <NotificationIcon color={COLORS.pmy.white} />
+                    </TouchableOpacity>
+                </View>
+                <TouchableOpacity 
+                    style={{ width: '100%', paddingVertical: 12, paddingHorizontal: 8, flexDirection: 'row', alignItems: 'center', marginBottom: 50 }} 
+                    onPress={navigateToUserProfile}
+                >
                     {user?.avatar ? (
-                        <Image source={{ uri: user.avatar }} style={{ width: 75, height: 75, borderRadius: 50, marginRight: 10, borderWidth: 2, borderColor: 'white' }} resizeMode='contain' />
+                        <Image source={{ uri: user.avatar }} style={{ width: 65, height: 65, borderRadius: 32.5, marginRight: 8, borderWidth: 1.5, borderColor: COLORS.pmy.white }} resizeMode='contain' />
                     ) : (
-                        <FontAwesomeIcon icon={faCircleUser} size={200} color={COLORS.pmy.blue1} style={{ width: '100%', height: 200, backgroundColor: COLORS.pmy.blue1, borderRadius: 10 }} />
+                        <FontAwesomeIcon icon={faCircleUser} size={65} color={COLORS.pmy.white} style={{ marginRight: 8 }} />
                     )}
                     <View style={{ flexDirection: 'column', gap: 2 }}>
                         <Text style={{ fontSize: 20, fontFamily: 'Montserrat-Bold', textAlign: 'left', color: COLORS.pmy.white }}>{user?.firstName} {user?.lastName}</Text>
                         <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', color: COLORS.pmy.white }}>{user?.email}</Text>
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/(root)/menu/notifications')}>
-                    <NotificationIcon color={COLORS.pmy.white} size={22} />
-                </TouchableOpacity>
-            </View>
+            </ImageBackground>
             <View style={{ padding: 15 }}>
                 <View style={{ flexDirection: 'row', width: '100%' }}>
                     <SettingsItem2 id={1} title='Save List' icon={faBookmark} onPress={() => handlePress('Save')} />
@@ -148,7 +157,7 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         width: '48%', // Adjusted to take half the width of the view for two items per row
         marginHorizontal: '1%', // Added margin to create spacing between items
-        borderWidth: 1,
+        borderWidth: 1, 
         borderColor: COLORS.pmy.blue1
     }
-})
+});

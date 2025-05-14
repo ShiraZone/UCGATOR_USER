@@ -208,9 +208,15 @@ const Posts = ({
 
         return (
             <View style={styles.postContainer}>
-                {/* User info header */}
+                {/* User info header */}                
                 <View style={styles.postHeader}>
-                    <View style={styles.userInfo}>
+                    <TouchableOpacity 
+                        style={styles.userInfo}
+                        onPress={() => {
+                            const { router } = require('expo-router');
+                            router.push(`/user/${createdBy.id}`);
+                        }}
+                    >
                         <Image 
                             source={{ uri: createdBy.avatar }} 
                             style={styles.avatar} 
@@ -229,7 +235,7 @@ const Posts = ({
                                 )}
                             </View>
                         </View>
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {/* Media content */}

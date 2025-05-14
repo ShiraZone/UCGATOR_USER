@@ -181,11 +181,8 @@ const ProfileInfoWindow = () => {
                             </View>
 
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <TouchableOpacity style={{ width: '70%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} onPress={() => router.push('./edit-profile')} >
+                                <TouchableOpacity style={{ width: '100%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} onPress={() => router.push('./edit-profile')} >
                                     <Text style={{ color: COLORS.pmy.white, fontFamily: 'Montserrat-Bold', }}>Edit Profile</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={{ width: '25%', backgroundColor: COLORS.pmy.blue1, padding: 10, borderRadius: 5, alignItems: 'center', marginBottom: 15 }} >
-                                    <FontAwesomeIcon icon={faEllipsis} size={18} color={COLORS.pmy.white} />
                                 </TouchableOpacity>
                             </View>
 
