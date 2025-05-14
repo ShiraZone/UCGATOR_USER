@@ -266,20 +266,10 @@ const theme = () => {
                             Apply Theme
                         </Text>
                     </TouchableOpacity>
-                    
-                    <Text style={{
-                        textAlign: 'center',
-                        color: 'gray',
-                        fontSize: 12,
-                        fontFamily: 'Montserrat-Regular',
-                        marginBottom: 30,
-                    }}>
-                        Note: This is a placeholder UI and doesn't actually change the app theme.
-                    </Text>
                 </ScrollView>
             </SafeAreaView>
         </View>
-    );
+    )
 };
 
 export default theme;

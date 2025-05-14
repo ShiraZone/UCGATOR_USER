@@ -254,12 +254,11 @@ const map_style = () => {
                         fontFamily: 'Montserrat-Regular',
                         marginBottom: 30,
                     }}>
-                        Note: This is a placeholder UI and doesn't actually change the map style.
                     </Text>
                 </ScrollView>
             </SafeAreaView>
         </View>
-    );
+    )
 };
 
 export default map_style;

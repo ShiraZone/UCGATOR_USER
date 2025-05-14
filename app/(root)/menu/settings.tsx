@@ -90,11 +90,10 @@ const Settings = () => {
                 <SettingsItem icon={faLayerGroup} title='Map Style' onPress={() => router.push('/menu/settings-tabs/appearance/map-style')} />
               </View>
             </View>
-            <View style={styles.settingsPanel}>
-              <Text style={styles.settingsPanelTitle}>Application</Text>
+            <View style={styles.settingsPanel}>              <Text style={styles.settingsPanelTitle}>Application</Text>
               <View style={styles.settingsPanelContent}>
-                <SettingsItem icon={faLanguage} title='Language' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faUniversalAccess} title='Accessibility' onPress={() => alert('Routing Options')} />
+                <SettingsItem icon={faLanguage} title='Language' onPress={() => router.push('/menu/settings-tabs/application/language')} />
+                <SettingsItem icon={faUniversalAccess} title='Accessibility' onPress={() => router.push('/menu/settings-tabs/application/accessibility')} />
               </View>
             </View>
             <View style={styles.settingsPanel}>
