@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, FlatList } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Dimensions, FlatList, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { faArrowLeft, faDirections, faHeart } from '@fortawesome/free-solid-svg-icons';
@@ -10,6 +10,8 @@ import { getToken } from '@/app/lib/secure-store';
 import { config } from '@/app/lib/config';
 import { useEffect, useState, useRef } from 'react';
 import { StatusBar } from 'react-native';
+import { showErrorToast } from '@/app/components/toast-config';
+import { useLoading } from '@/app/lib/load-context';
 
 // Get screen dimensions for image gallery
 const { width: screenWidth } = Dimensions.get('window');
@@ -35,10 +37,9 @@ const LocationDetails = () => {
     const router = useRouter();
     const params = useLocalSearchParams<{ id: string }>();
     const [locationDetails, setLocationDetails] = useState<any>(null);
-    const [loading, setLoading] = useState<boolean>(true);
     const [activeSlide, setActiveSlide] = useState<number>(0);
-    const carouselRef = useRef<any>(null);
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
+    const [isLoading, setLoading] = useState<boolean>(true);
 
     // State for images from contributions
     const [images, setImages] = useState<Array<string>>([]);
@@ -51,6 +52,7 @@ const LocationDetails = () => {
 
     useEffect(() => {
         const fetchLocationDetails = async () => {
+            setLoading(true);
             if (params.id) {
                 try {
                     const token = await getToken();
@@ -66,8 +68,10 @@ const LocationDetails = () => {
                     });
 
                     if (response.data.success) {
-                        const pinData = response.data.data;
+                        const pinData = response.data.data.data;
+                        const isSaved = response.data.data.isSaved;
                         setLocationDetails(pinData);
+                        setIsFavorite(isSaved); // Initialize isFavorite to match isSaved
 
                         // Extract all image URLs from contributions
                         const contributionImages: string[] = [];
@@ -85,7 +89,7 @@ const LocationDetails = () => {
                         console.error('Failed to load location details.');
                     }
                 } catch (error: any) {
-                    console.error(error.response?.data?.message || error.message);
+                    console.error(error.response?.data?.error || error.message);
                 } finally {
                     setLoading(false);
                 }
@@ -120,7 +124,7 @@ const LocationDetails = () => {
                 <Image source={{ uri: item }} style={styles.carouselImage} />
                 <TouchableOpacity
                     style={styles.heartIconButton}
-                    onPress={toggleFavorite}
+                    onPress={handleToggleSave}
                 >
                     <FontAwesomeIcon
                         icon={faHeart}
@@ -132,11 +136,72 @@ const LocationDetails = () => {
         );
     };
 
-    // Add a function to toggle favorite status
-    const toggleFavorite = () => {
-        setIsFavorite(prev => !prev);
-        // In a real app, you would also make an API call to update the favorite status
-    };
+    const handleRemovePin = async () => {
+        const token = await getToken();
+        if (!token) {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.delete(`${config.endpoint}/saves/pin/specific/${params.id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            })
+            if (!response.data.success) {
+                console.error('Failed to remove pin.');
+                return;
+            }
+
+            // Update both state variables to false when removing pin
+            setIsFavorite(false);
+        } catch (error: any) {
+            console.error(error.response?.data?.error || error.message);
+            showErrorToast(error.response?.data?.error, 'Error');
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    const handleToggleSave = () => {
+        if (isFavorite) { // Use the visual state that we're keeping in sync with the server
+            handleRemovePin();
+        } else {
+            handleSavePin();
+        }
+    }
+
+    const handleSavePin = async () => {
+        const token = await getToken();
+        if (!token) {
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.post(`${config.endpoint}/saves/pin`, {
+                poiId: params.id,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            if (!response.data.success) {
+                console.error('Failed to save pin.');
+                return;
+            }
+
+            // Update both state variables to true when saving pin
+            setIsFavorite(true);
+        } catch (error: any) {
+            console.error(error.response?.data?.error || error.message);
+            showErrorToast(error.response?.data?.error, 'Error');
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
@@ -150,9 +215,10 @@ const LocationDetails = () => {
 
 
             <ScrollView style={styles.content} contentContainerStyle={styles.contentContainer}>
-                {loading ? (
+                {isLoading ? (
                     <View style={styles.loadingContainer}>
-                        <Text style={styles.loadingText}>Loading details...</Text>
+                        <ActivityIndicator size="large" color={COLORS.pmy.blue1} />
+                        <Text style={styles.loadingText}>Loading location details...</Text>
                     </View>
                 ) : locationDetails ? (
                     <>
@@ -220,33 +286,33 @@ const LocationDetails = () => {
                                 <Text style={styles.infoValue}>{locationDetails.pinType || "Not specified"}</Text>
                             </View>
                         </View>
-                        
+
                         <View style={{ marginHorizontal: 20, marginVertical: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
-                            <TouchableOpacity 
-                                style={[styles.navigationButton, { flex: 1, marginRight: 10 }]} 
+                            <TouchableOpacity
+                                style={[styles.navigationButton, { flex: 1, marginRight: 10 }]}
                                 onPress={handleStartNavigation}
                             >
-                                <FontAwesomeIcon 
-                                    icon={faDirections} 
-                                    size={20} 
-                                    color="#FFFFFF" 
-                                    style={styles.buttonIcon} 
+                                <FontAwesomeIcon
+                                    icon={faDirections}
+                                    size={20}
+                                    color="#FFFFFF"
+                                    style={styles.buttonIcon}
                                 />
                                 <Text style={styles.buttonText}>Navigate</Text>
                             </TouchableOpacity>
-                            
-                            <TouchableOpacity 
-                                style={[styles.favoriteButton, { flex: 1, backgroundColor: isFavorite ? '#FF4757' : COLORS.pmy.blue1 }]} 
-                                onPress={toggleFavorite}
+
+                            <TouchableOpacity
+                                style={[styles.favoriteButton, { flex: 1, backgroundColor: isFavorite ? '#FF4757' : COLORS.pmy.blue1 }]}
+                                onPress={handleToggleSave}
                             >
-                                <FontAwesomeIcon 
-                                    icon={faHeart} 
-                                    size={20} 
-                                    color="#FFFFFF" 
-                                    style={styles.buttonIcon} 
+                                <FontAwesomeIcon
+                                    icon={faHeart}
+                                    size={20}
+                                    color="#FFFFFF"
+                                    style={styles.buttonIcon}
                                 />
                                 <Text style={styles.buttonText}>
-                                    {isFavorite ? 'Remove' : 'Favorite'}
+                                    {isFavorite ? 'Saved' : 'Save'}
                                 </Text>
                             </TouchableOpacity>
                         </View>
@@ -327,8 +393,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 3,
         elevation: 3,
-        borderWidth: 1, 
-        borderColor: COLORS.pmy.blue1 
+        borderWidth: 1,
+        borderColor: COLORS.pmy.blue1
     },
     sectionTitle: {
         fontSize: 18,

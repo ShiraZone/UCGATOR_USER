@@ -37,7 +37,6 @@ const EditProfile = () => {
     const [middleName, setMiddleName] = useState(user?.middleName || '');
     const [lastName, setLastName] = useState(user?.lastName || '');
 
-    const [profileType, setProfileType] = useState(user?.profileType?.toLowerCase() || '');
     const [selectedProfileType, setSelectedProfileType] = useState(user?.profileType?.toLowerCase() || '');
     const [isProfileTypeChanged, setIsProfileTypeChanged] = useState(false);
 

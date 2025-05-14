@@ -66,7 +66,7 @@ const Explore = () => {
 
       if (!response.ok) {
         throw new Error('Weather data not available');
-      }      const data = await response.json();
+      } const data = await response.json();
       setWeather(data);
       setLastUpdated(new Date());
       setError(null); // Clear any previous errors
@@ -78,7 +78,7 @@ const Explore = () => {
       setRefreshing(false); // End refreshing state
     }
   };
-  
+
   // Handle pull-to-refresh
   const onRefresh = () => {
     setRefreshing(true);
@@ -115,8 +115,8 @@ const Explore = () => {
               <FontAwesomeIcon icon={faSquareCaretRight} size={32} color={COLORS.blue1} />
             </TouchableOpacity>
           </View>
-        </View>        
-        <ScrollView 
+        </View>
+        <ScrollView
           showsHorizontalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -138,10 +138,16 @@ const Explore = () => {
                 <Text style={styles.errorText}>{error}</Text>
               ) : weather ? (
                 <>
-                  <View style={styles.weatherLeftContent}> 
+                  <View style={styles.weatherLeftContent}>
                     <Text style={styles.weatherDate}>{formatDate(weather.location.localtime)}</Text>
                     <Text style={styles.weatherCondition}>{weather.current.condition.text}</Text>
                     <Text style={styles.weatherTemp}>{Math.round(weather.current.temp_c)}</Text>
+                    {lastUpdated && (
+                      <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>
+                        Last updated: {lastUpdated.toLocaleTimeString()}
+                      </Text>
+                    )}
+                    <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>Note: UCLM Location</Text>
                   </View>
                   <View style={styles.weatherRightContent}>
                     <Image
@@ -152,15 +158,6 @@ const Explore = () => {
                 </>
               ) : null}
             </View>
-            <View style={{ paddingHorizontal: 15, flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>This data is only to the UCLM location.</Text>              
-              {lastUpdated && (
-                <Text style={{ fontFamily: 'Montserrat-Light', fontSize: 12, color: '#777' }}>
-                  Last updated: {lastUpdated.toLocaleTimeString()}
-                </Text>
-              )}
-            </View>
-
             <View style={{ paddingHorizontal: 15, marginVertical: 10 }}>
               {/* Frquent Activity*/}
               <View style={{ marginBottom: 12 }}>
@@ -218,33 +215,27 @@ const Explore = () => {
                   <Text style={{ fontFamily: 'Montserrat-Regular', letterSpacing: 1.5, fontSize: 14, color: COLORS.blue1 }}>From your navigation history.</Text>
                 </View>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 10, marginBottom: 5 }}>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
-                      </View>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10, }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
                     </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://lh3.googleusercontent.com/p/AF1QipNVZXePaunX1mFKoOKXa0Nr0iy8BhHNh8lkEWR-=w600-k' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
-                      </View>
+                  </View>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10, }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>4 days ago</Text>
                     </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
-                      </View>
+                  </View>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10, }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>1 day ago</Text>
                     </View>
-                  </TouchableOpacity>
+                  </View>
                 </ScrollView>
               </View>
               {/* FREQUENTLY NAVIGATED */}
@@ -253,34 +244,28 @@ const Explore = () => {
                   <Text style={{ fontFamily: 'Montserrat-Bold', letterSpacing: 2, fontSize: 22, color: COLORS.blue1 }}>Frequently Visited</Text>
                   <Text style={{ fontFamily: 'Montserrat-Regular', letterSpacing: 1.5, fontSize: 14, color: COLORS.blue1 }}>From global data.</Text>
                 </View>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingVertical: 10 }}>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
-                      </View>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 10, marginBottom: 5 }}>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10, }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Burp Corner</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>151 Visits</Text>
                     </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>800 Visits</Text>
-                      </View>
+                  </View>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10 }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>EDP Section</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>1.4k Visits</Text>
                     </View>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={{ marginRight: 20, marginBottom: 10 }}>
-                    <View style={{ backgroundColor: 'white', borderRadius: 15, padding: 10, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, }}>
-                      <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderRadius: 15 }} />
-                      <View>
-                        <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
-                        <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>5 days ago</Text>
-                      </View>
+                  </View>
+                  <View style={{ marginRight: 15, marginBottom: 10, backgroundColor: 'white', borderRadius: 15, shadowOpacity: 0.1, shadowRadius: 3, elevation: 3, borderWidth: 1, borderColor: COLORS.blue1 }}>
+                    <Image source={{ uri: 'https://bing.com/th?id=OSGI.EF9B16C8B542C18EAEE2E36F00538387&h=1000&w=1920&c=1&rs=1' }} style={{ width: 150, height: 150, borderTopLeftRadius: 15, borderTopRightRadius: 15}} />
+                    <View style={{ padding: 10, }}>
+                      <Text style={{ fontSize: 18, fontFamily: 'Montserrat-Bold', color: COLORS.blue1, marginVertical: 5 }}>Cashier</Text>
+                      <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', marginVertical: 5 }}>825 Visits</Text>
                     </View>
-                  </TouchableOpacity>
+                  </View>
                 </ScrollView>
               </View>
             </View>

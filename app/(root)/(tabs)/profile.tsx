@@ -57,11 +57,8 @@ const Profile = () => {
 
     const handlePress = (title: string) => {
         switch (title) {
-            case 'Favorites':
-                router.push('/(root)/menu/favorites');
-                break;
-            case 'Notification':
-                router.push('/(root)/menu/notification');
+            case 'Save':
+                router.push('/(root)/menu/saves');
                 break;
             case 'First Aid':
                 router.push('/(root)/menu/first-aid');
@@ -105,7 +102,7 @@ const Profile = () => {
             </ImageBackground>
             <View style={{ padding: 15 }}>
                 <View style={{ flexDirection: 'row', width: '100%' }}>
-                    <SettingsItem2 id={1} title='Bookmarks' icon={faBookmark} onPress={() => handlePress('Favorites')} />
+                    <SettingsItem2 id={1} title='Save List' icon={faBookmark} onPress={() => handlePress('Save')} />
                     <SettingsItem2 id={2} title='First Aid' icon={faHeartPulse} onPress={() => handlePress('First Aid')} />
                 </View>
                 <View style={{ flexDirection: 'row', width: '100%' }}>
