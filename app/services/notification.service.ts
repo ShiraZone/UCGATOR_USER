@@ -1,6 +1,7 @@
 import socketServiceInstance from './socket.service';
 import * as SecureStore from '../lib/secure-store';
 import { config } from '../lib/config';
+import axios from 'axios';
 
 /**
  * NotificationService - Handles notification-related functionality
@@ -12,18 +13,19 @@ class NotificationService {
 
     /**
      * Initialize the notification service and set up socket listeners
-     */
+     */    
     initialize = async (): Promise<void> => {
         try {
             // Make sure socket is connected
-            if (!socketServiceInstance.isSocketConnected()) {
-                await socketServiceInstance.connect();
-            }
+            await socketServiceInstance.connect();
 
             // Set up notification listener
             socketServiceInstance.onNotification(this.handleNewNotification);
 
-            console.log('Notification service initialized');
+            // Fetch initial unread count on initialization
+            const count = await this.getUnreadCount();
+            console.log('Initial unread notification count:', count);
+            console.log('Notification service initialized successfully');
         } catch (error) {
             console.error('Error initializing notification service:', error);
         }
@@ -36,27 +38,23 @@ class NotificationService {
     getUnreadCount = async (): Promise<number> => {
         try {
             const token = await SecureStore.getToken();
-            
+
             if (!token) {
                 console.error('No authentication token available');
                 return this.unreadCount;
             }
-              const response = await fetch(`${config.endpoint}/notifications/unread-count`, {
-                method: 'GET',
+            
+            const response = await axios.get(`${config.endpoint}/notifications/unread-count`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
                 }
             });
-            
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    this.unreadCount = data.data.count;
-                    return this.unreadCount;
-                }
+
+            if (response.data.success) {
+                this.unreadCount = response.data.count;
+                return this.unreadCount;
             }
-            
+
             return this.unreadCount;
         } catch (error) {
             console.error('Error fetching unread count:', error);
@@ -73,12 +71,19 @@ class NotificationService {
 
         // Add to local notifications cache
         this.notifications.unshift(notification);
-        
+
         // Update unread count
         this.unreadCount++;
+        console.log('Updated unread count:', this.unreadCount);
 
-        // Notify all registered callbacks
-        this.notificationCallbacks.forEach(callback => callback(notification));
+        // Notify all registered callbacks with the notification object
+        this.notificationCallbacks.forEach(callback => {
+            try {
+                callback(notification);
+            } catch (error) {
+                console.error('Error in notification callback:', error);
+            }
+        });
     };
 
     /**
@@ -110,31 +115,29 @@ class NotificationService {
                 return;
             }
 
-      // Update on the server
-      const response = await fetch(`${config.endpoint}/notifications/${notificationId}/read`, {
-                method: 'PUT',
+            // Update on the server
+            const response = await axios.put(`${config.endpoint}/notifications/${notificationId}/read`, {}, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
                 }
             });
 
-            if (!response.ok) {
+            if (response.data.success) {
+                // Update locally
+                this.notifications = this.notifications.map(notification => {
+                    if (notification._id === notificationId) {
+                        return { ...notification, isRead: true };
+                    }
+                    return notification;
+                });
+
+                // Notify callbacks about the update
+                this.notificationCallbacks.forEach(callback =>
+                    callback(null, { type: 'READ', notificationId })
+                );
+            } else {
                 throw new Error('Failed to mark notification as read');
             }
-
-            // Update locally
-            this.notifications = this.notifications.map(notification => {
-                if (notification._id === notificationId) {
-                    return { ...notification, isRead: true };
-                }
-                return notification;
-            });
-
-            // Notify callbacks about the update
-            this.notificationCallbacks.forEach(callback =>
-                callback(null, { type: 'READ', notificationId })
-            );
 
         } catch (error) {
             console.error('Error marking notification as read:', error);
@@ -153,29 +156,28 @@ class NotificationService {
                 return;
             }
 
-      // Update on the server
-      const response = await fetch(`${config.endpoint}/notifications/read-all`, {
-                method: 'PUT',
+            // Update on the server
+            const response = await axios.put(`${config.endpoint}/notifications/read-all`, {}, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            if (!response.ok) {
+            if (response.data.success) {
+                // Update locally
+                this.notifications = this.notifications.map(notification => ({
+                    ...notification,
+                    isRead: true
+                }));
+
+                // Notify callbacks about the update
+                this.notificationCallbacks.forEach(callback =>
+                    callback(null, { type: 'READ_ALL' })
+                );
+            } else {
                 throw new Error('Failed to mark all notifications as read');
             }
-
-            // Update locally
-            this.notifications = this.notifications.map(notification => ({
-                ...notification,
-                isRead: true
-            }));
-
-            // Notify callbacks about the update
-            this.notificationCallbacks.forEach(callback =>
-                callback(null, { type: 'READ_ALL' })
-            );
 
         } catch (error) {
             console.error('Error marking all notifications as read:', error);
