@@ -42,7 +42,6 @@ interface Notification {
 
 const NotificationsScreen = () => {
     const router = useRouter();
-    const { user } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -126,7 +125,7 @@ const NotificationsScreen = () => {
     const markAllAsRead = async () => {
         try {
             const token = await getToken();
-            await axios.put(`${process.env.EXPO_PUBLIC_API_URL}/notification/read-all`, {}, {
+            await axios.put(`${config.endpoint}/notifications/read-all`, {}, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -198,11 +197,13 @@ const NotificationsScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, }}>
-                <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
-                    <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
-                </TouchableOpacity>
-                <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Notifications</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', padding: 15, justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                    <TouchableOpacity style={{ backgroundColor: COLORS.pmy.blue2, padding: 5, borderRadius: 8, width: 'auto' }} onPress={() => router.back()}>
+                        <FontAwesomeIcon icon={faArrowLeft} size={22} color={COLORS.pmy.white} />
+                    </TouchableOpacity>
+                    <Text style={{ fontSize: 22, textAlign: 'center', fontFamily: 'Montserrat-ExtraBold', color: COLORS.pmy.blue1, paddingLeft: 5 }}>Notifications</Text>
+                </View>
                 {unreadCount > 0 && (
                     <TouchableOpacity onPress={markAllAsRead} style={styles.markAllReadButton}>
                         <FontAwesomeIcon icon={faCheck} size={16} color={COLORS.pmy.white} />

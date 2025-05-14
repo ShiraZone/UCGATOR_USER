@@ -5,6 +5,7 @@ import COLORS from '@/app/constants/colors'
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome'
 import { faNewspaper, faMap, faCompass, faUser } from '@fortawesome/free-solid-svg-icons'
 import { useFonts } from 'expo-font'
+import notificationServiceInstance from '@/app/services/notification.service'
 
 interface TabIconProps {
     title: string;
@@ -12,7 +13,7 @@ interface TabIconProps {
     icon: any;
 }
 
-const TabIcon = ({ title, icon, focused}: TabIconProps) => {
+const TabIcon = ({ title, icon, focused }: TabIconProps) => {
     return (
         <View style={[styles.tabButton, focused && styles.selectedTab]}>
             <FontAwesomeIcon icon={icon} size={20} color={focused ? COLORS.pmy.blue1 : COLORS.white.white1} />
@@ -44,7 +45,7 @@ const TabsLayout = () => {
                     title: "Map",
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
-                        <TabIcon icon={faMap} focused={focused} title="MAP"/>
+                        <TabIcon icon={faMap} focused={focused} title="MAP" />
                     ),
                 }}
             />
@@ -54,7 +55,7 @@ const TabsLayout = () => {
                     title: 'Explore',
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
-                        <TabIcon icon={faCompass} focused={focused} title='EXPLORE'/>
+                        <TabIcon icon={faCompass} focused={focused} title='EXPLORE' />
                     )
                 }}
             />
@@ -64,7 +65,7 @@ const TabsLayout = () => {
                     title: 'Latest',
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
-                        <TabIcon icon={faNewspaper} focused={focused} title='LATEST'/>
+                        <TabIcon icon={faNewspaper} focused={focused} title='LATEST' />
                     )
                 }}
             />
@@ -74,7 +75,7 @@ const TabsLayout = () => {
                     title: 'Profile',
                     headerShown: false,
                     tabBarIcon: ({ focused }) => (
-                        <TabIcon icon={faUser} focused={focused} title='PROFILE'/>
+                        <TabIcon icon={faUser} focused={focused} title='PROFILE' />
                     )
                 }}
             />
@@ -85,9 +86,6 @@ const TabsLayout = () => {
 export default TabsLayout
 
 const styles = StyleSheet.create({
-    // KNOWN ISSUE:
-    // POSSIBLE:
-    // MAP WILL NOT BE VISIBLE IN HERE
     tabBar: {
         backgroundColor: COLORS.pmy.blue1,
         height: 60,

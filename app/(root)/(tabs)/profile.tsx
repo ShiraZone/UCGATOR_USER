@@ -57,6 +57,8 @@ const Profile = () => {
     const { user, logout } = useAuth();
     const router = useRouter();
 
+    const { firstName, lastName, email } = user!;
+
     const handlePress = (routeName: string) => {
         switch (routeName) {
             case 'Profile':
@@ -100,19 +102,19 @@ const Profile = () => {
         <ScrollView style={{ flex: 1, backgroundColor: 'white' }} showsVerticalScrollIndicator={false}>
             <StatusBar barStyle={'light-content'} backgroundColor={COLORS.pmy.blue1} />
             <View style={{ margin: 10, backgroundColor: COLORS.pmy.blue1, borderRadius: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 15, paddingVertical: 25 }}>
-                <TouchableOpacity onPress={() => handlePress('Profile')} style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <TouchableOpacity onPress={() => handlePress('Profile')} style={{ flexDirection: 'row', alignItems: 'center' }}>
                     {user?.avatar ? (
-                        <Image source={{ uri: user.avatar }} style={{ width: 75, height: 75, borderRadius: 50, marginRight: 10, borderWidth: 2, borderColor: 'white' }} resizeMode='contain' />
+                        <Image source={{ uri: user?.avatar }} style={{ width: 75, height: 75, borderRadius: 50, marginRight: 10, borderWidth: 2, borderColor: 'white' }} resizeMode='contain' />
                     ) : (
-                        <FontAwesomeIcon icon={faCircleUser} size={200} color={COLORS.pmy.blue1} style={{ width: '100%', height: 200, backgroundColor: COLORS.pmy.blue1, borderRadius: 10 }} />
+                        <FontAwesomeIcon icon={faCircleUser} size={75} color={COLORS.pmy.blue1} style={{ backgroundColor: 'white', borderRadius: 50, marginRight: 10, borderWidth: 2, }} />
                     )}
                     <View style={{ flexDirection: 'column', gap: 2 }}>
-                        <Text style={{ fontSize: 20, fontFamily: 'Montserrat-Bold', textAlign: 'left', color: COLORS.pmy.white }}>{user?.firstName} {user?.lastName}</Text>
+                        <Text style={{ fontSize: 20, fontFamily: 'Montserrat-Bold', textAlign: 'left', color: 'white' }}>{firstName} {lastName}</Text>
                         <Text style={{ fontSize: 14, fontFamily: 'Montserrat-Light', color: COLORS.pmy.white }}>{user?.email}</Text>
                     </View>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/(root)/menu/notifications')}>
-                    <NotificationIcon color={COLORS.pmy.white} size={22} />
+                    <NotificationIcon color={COLORS.pmy.white} size={24} />
                 </TouchableOpacity>
             </View>
             <View style={{ padding: 15 }}>
