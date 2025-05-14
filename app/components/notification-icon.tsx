@@ -14,7 +14,7 @@ import { faBell } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/app/lib/auth-context';
 import axios from 'axios';
 import { getToken } from '@/app/lib/secure-store';
-import socketService from '@/app/services/socket.service';
+import notificationServiceInstance from '@/app/services/notification.service';
 import COLORS from '@/app/constants/colors';
 
 interface NotificationIconProps {
@@ -36,42 +36,32 @@ const NotificationIcon = ({ color = COLORS.pmy.white, size = 24 }: NotificationI
     const router = useRouter();
     const { user, isLoggedIn } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
-    const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);
-
-    // Initialize socket and fetch notifications when component mounts
+    const [appState, setAppState] = useState<AppStateStatus>(AppState.currentState);    // Initialize notifications and fetch data when component mounts
     useEffect(() => {
-        if (!isLoggedIn || !user?._id) return;
-
-        const fetchUnreadCount = async () => {
+        if (!isLoggedIn || !user?._id) return;        const fetchUnreadCount = async () => {
             try {
-                const token = await getToken();
-                const response = await axios.get(`${process.env.EXPO_PUBLIC_API_URL}/notifications/unread-count`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                if (response.data.success) {
-                    setUnreadCount(response.data.data.count);
-                }
+                const count = await notificationServiceInstance.getUnreadCount();
+                setUnreadCount(count);
             } catch (error) {
                 console.error('Error fetching notification count:', error);
             }
         };
 
-        // Connect to socket
-        socketService.connect();
-        socketService.authenticate(user._id);
+        // Handle new notifications via the notification service
+        const handleNotification = (notification: NotificationEvent) => {
+            if (notification) {
+                setUnreadCount(prev => prev + 1);
 
-        socketService.on('notification', (notification: NotificationEvent) => {
-            setUnreadCount(prev => prev + 1);
-
-            // Show a local notification if app is in background
-            if (appState !== 'active' && Platform.OS !== 'web') {
-                // You would implement local notifications here
-                // using expo-notifications or react-native-push-notification
+                // Show a local notification if app is in background
+                if (appState !== 'active' && Platform.OS !== 'web') {
+                    // You would implement local notifications here
+                    // using expo-notifications or react-native-push-notification
+                }
             }
-        });
+        };
+
+        // Register the component with the notification service
+        notificationServiceInstance.registerNotificationCallback(handleNotification);
 
         // Fetch initial unread count
         fetchUnreadCount();
@@ -88,7 +78,7 @@ const NotificationIcon = ({ color = COLORS.pmy.white, size = 24 }: NotificationI
 
         return () => {
             // Cleanup
-            socketService.off('notification');
+            notificationServiceInstance.unregisterNotificationCallback(handleNotification);
             subscription.remove();
         };
     }, [user?._id, isLoggedIn]);

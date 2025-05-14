@@ -3,6 +3,7 @@ import { createContext, ReactNode, useContext, useEffect, useState } from "react
 import { deleteToken, deleteUserSession, getToken, saveToken, saveUserSession } from "./secure-store";
 import { config } from "./config";
 import axios from "axios";
+import socketServiceInstance from "../services/socket.service";
 
 // router
 import { useRouter } from "expo-router";
@@ -71,11 +72,19 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             return;
         }
 
-        setLoading(true);
-
+        setLoading(true);        
         try {
-
             const userData = await getUserInfo();
+            
+            // If user data is valid, set up the socket connection
+            if (userData && userData._id) {
+                setUser(userData);
+                setIsLoggedIn(true);
+                
+                // Connect socket and authenticate user
+                await socketServiceInstance.connect();
+                socketServiceInstance.authenticate(userData._id);
+            }
 
             if (!userData.verified) {
                 console.log(`User ${userData._id} is currently not verified. Redirecting to OTP page.`);
@@ -144,10 +153,13 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
                 followers: profile.followers || 0,
                 following: profile.following || 0,
                 emergencyContact: profile.emergencyContact || null,
-            };
-
+            };            
             setUser(updatedUser);
             setIsLoggedIn(true);
+            
+            // Connect socket and authenticate user
+            await socketServiceInstance.connect();
+            socketServiceInstance.authenticate(_id);
 
             // Wait for the next render cycle to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 0));
@@ -259,7 +271,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
     // requires null paramters
     // set loadings to true when this function is called
     // await deleteion from secure storage
-    // replace screen back to get started
+    // replace screen back to get started    
     const logout = async () => {
         setLoading(true) // set loading to ture
         try {
@@ -267,6 +279,9 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
             await deleteToken();
             await deleteUserSession();
             setIsLoggedIn(false);
+            
+            // Disconnect socket
+            socketServiceInstance.disconnect();
 
             showSuccessToast('Logout successful', 'Success');
             setUser(null);
@@ -276,7 +291,7 @@ export const AuthProvider = ({ children }: AuthContextProps) => {
         } catch (error) {
             return false;
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
     }
 

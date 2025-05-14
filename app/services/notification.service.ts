@@ -1,5 +1,6 @@
 import socketServiceInstance from './socket.service';
 import * as SecureStore from '../lib/secure-store';
+import { config } from '../lib/config';
 
 /**
  * NotificationService - Handles notification-related functionality
@@ -7,6 +8,7 @@ import * as SecureStore from '../lib/secure-store';
 class NotificationService {
     private notifications: any[] = [];
     private notificationCallbacks: Set<Function> = new Set();
+    private unreadCount: number = 0;
 
     /**
      * Initialize the notification service and set up socket listeners
@@ -28,6 +30,41 @@ class NotificationService {
     };
 
     /**
+     * Get the current unread notification count
+     * @returns The number of unread notifications
+     */
+    getUnreadCount = async (): Promise<number> => {
+        try {
+            const token = await SecureStore.getToken();
+            
+            if (!token) {
+                console.error('No authentication token available');
+                return this.unreadCount;
+            }
+              const response = await fetch(`${config.endpoint}/notifications/unread-count`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    this.unreadCount = data.data.count;
+                    return this.unreadCount;
+                }
+            }
+            
+            return this.unreadCount;
+        } catch (error) {
+            console.error('Error fetching unread count:', error);
+            return this.unreadCount;
+        }
+    };
+
+    /**
      * Handle incoming notifications from the socket
      * @param notification - The notification object received
      */
@@ -36,6 +73,9 @@ class NotificationService {
 
         // Add to local notifications cache
         this.notifications.unshift(notification);
+        
+        // Update unread count
+        this.unreadCount++;
 
         // Notify all registered callbacks
         this.notificationCallbacks.forEach(callback => callback(notification));
@@ -70,8 +110,8 @@ class NotificationService {
                 return;
             }
 
-            // Update on the server
-            const response = await fetch(`${process.env.API_URL}/api/notifications/${notificationId}/read`, {
+      // Update on the server
+      const response = await fetch(`${config.endpoint}/notifications/${notificationId}/read`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -113,8 +153,8 @@ class NotificationService {
                 return;
             }
 
-            // Update on the server
-            const response = await fetch(`${process.env.API_URL}/api/notifications/read-all`, {
+      // Update on the server
+      const response = await fetch(`${config.endpoint}/notifications/read-all`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -8,6 +8,7 @@ import LoadingIndicator from "./components/LoadingIndicator";
 import { StopPointsProvider } from "./context/StopPointsContext";
 import Toast from "react-native-toast-message";
 import { toastWrapper } from "./components/toast-config";
+import notificationServiceInstance from "./services/notification.service";
 
 export default function RootLayout() {
 
@@ -30,6 +31,14 @@ export default function RootLayout() {
     }
 
     testConnection();
+    
+    // Initialize notification service
+    notificationServiceInstance.initialize();
+    
+    // Cleanup when the app is closed
+    return () => {
+      notificationServiceInstance.cleanup();
+    };
   }, [fontsLoaded]);
 
   if (!fontsLoaded) return null;
