@@ -98,9 +98,8 @@ const Settings = () => {
             </View>
             <View style={styles.settingsPanel}>
               <Text style={styles.settingsPanelTitle}>Notification</Text>
-              <View style={styles.settingsPanelContent}>
-                <SettingsItem icon={faBell} title='Push Notification' onPress={() => alert('Routing Options')} />
-                <SettingsItem icon={faAt} title='Email Notification' onPress={() => alert('Routing Options')} />
+              <View style={styles.settingsPanelContent}>                <SettingsItem icon={faBell} title='Push Notification' onPress={() => router.push('/menu/settings-tabs/notifications/push-notifications')} />
+                <SettingsItem icon={faAt} title='Email Notification' onPress={() => router.push('/menu/settings-tabs/notifications/email-notifications')} />
               </View>
             </View>
             <View style={styles.settingsPanel}>
