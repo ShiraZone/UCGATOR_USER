@@ -10,7 +10,7 @@ import { withTiming, useSharedValue, useAnimatedStyle } from 'react-native-reani
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
 import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
 import { StyleSheet, View, Text, Image, Modal, StatusBar, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
-import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faMicrophone, faLocationArrow, faExpand, faCompress, faChevronUp, faChevronDown, faSearch, faTimes, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // CONSTANTS
@@ -35,10 +35,12 @@ export default function Index(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-
   const [isFloorMenuVisible, setFloorMenuVisible] = useState<boolean>(false);
+  const [isBuildingMenuVisible, setBuildingMenuVisible] = useState<boolean>(false);
   const [selectedFloor, setSelectedFloor] = useState<string>("");
   const [currentFloor, setCurrentFloor] = useState(1);
+  const [buildings, setBuildings] = useState<any[]>([]);
+  const [currentBuildingId, setCurrentBuildingId] = useState<string>("");
 
   const { setLoading } = useLoading();
   const router = useRouter();
@@ -69,8 +71,7 @@ export default function Index(): JSX.Element {
       { rotate: `${rotation.value}rad` },
     ],
   }));
-
-  const [buildingName, setBuildingName] = useState<string>();
+  const [buildingName, setBuildingName] = useState<string>("");
   const [floorData, setFloorData] = useState<any[]>([]);
 
   // Load Montserrat fonts
@@ -198,6 +199,8 @@ export default function Index(): JSX.Element {
           Authorization: `Bearer ${await getToken()}`
         }
       });
+
+      console.log('Fallback building response:', allBuildingsResponse.data);
       
       if (allBuildingsResponse.data.success && 
           allBuildingsResponse.data.buildings && 
@@ -229,14 +232,15 @@ export default function Index(): JSX.Element {
       if (!response.data.success) {
         console.error('Failed to load building data.');
         return;
-      }
-
+      }      
       const buildings = response.data.buildings;
+      setBuildings(buildings);
 
       if (buildings && buildings.length > 0) {
         const currentBuilding = buildings[0];
         const { buildingID, buildingName, floors } = currentBuilding;
         setBuildingName(buildingName);
+        setCurrentBuildingId(buildingID);
         setFloorData(floors);      // Only set initial floor if no floor is currently selected
       if (!selectedFloor && floors && floors.length > 0) {
         setSelectedFloor(floors[0].floorName);
@@ -353,7 +357,6 @@ export default function Index(): JSX.Element {
     .onUpdate((event) => {
       rotation.value = event.rotation;
     });
-
   const gesture = Gesture.Simultaneous(pinchGesture, panGesture, rotateGesture);
   // Handle Floor Change & Reset Zoom/Pan
   const handleFloorChange = async (floorNumber: number) => {
@@ -372,6 +375,33 @@ export default function Index(): JSX.Element {
       } else {
         await loadFloorData(selectedFloorData.floorID);
       }
+    }  };
+
+  // Handle Building Change
+  const handleBuildingChange = async (building: any) => {
+    setBuildingMenuVisible(false);
+    
+    if (building.buildingID === currentBuildingId) {
+      return; // Already on this building
+    }
+    
+    setBuildingName(building.buildingName);
+    setCurrentBuildingId(building.buildingID);
+    setFloorData(building.floors);
+    
+    // Reset map view
+    scale.value = withTiming(1);
+    translateX.value = withTiming(0);
+    translateY.value = withTiming(0);
+    rotation.value = withTiming(0);
+    offsetX.value = 0;
+    offsetY.value = 0;
+    
+    // Set initial floor of the new building
+    if (building.floors && building.floors.length > 0) {
+      setSelectedFloor(building.floors[0].floorName);
+      setCurrentFloor(building.floors[0].floorNumber);
+      await loadFloorData(building.floors[0].floorID, searchQuery);
     }
   };
 
@@ -518,9 +548,13 @@ export default function Index(): JSX.Element {
                 <FontAwesomeIcon icon={faMicrophone} size={20} color={COLORS.pmy.white} style={styles.searchIcon} />
               )
             )}
+          </TouchableOpacity>          
+          {/* Building Name and Selector */}
+          <TouchableOpacity style={styles.buildingSelector} onPress={() => setBuildingMenuVisible(!isBuildingMenuVisible)}>
+            <FontAwesomeIcon icon={faBuilding} size={16} color={COLORS.pmy.blue1} style={{ marginRight: 5 }} />
+            <Text style={styles.buildingTitle}>{buildingName}</Text>
+            <FontAwesomeIcon icon={isBuildingMenuVisible ? faChevronUp : faChevronDown} size={12} color={COLORS.pmy.blue1} style={{ marginLeft: 5 }} />
           </TouchableOpacity>
-          {/* Building Name */}
-          <Text style={styles.buildingTitle}>{buildingName}</Text>
           {/* Map Area with Gesture Handlers */}
           <GestureHandlerRootView style={styles.mapContainer}>
             <GestureDetector gesture={gesture}>
@@ -564,7 +598,7 @@ export default function Index(): JSX.Element {
               <Text style={styles.floorText}>{selectedFloor}</Text>
               <FontAwesomeIcon icon={isFloorMenuVisible ? faChevronUp : faChevronDown} color={COLORS.pmy.white} />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity>          
           {/* Floor Dropdown */}
           {isFloorMenuVisible && (
             <View style={styles.dropdownContainer}>
@@ -582,6 +616,25 @@ export default function Index(): JSX.Element {
                   >
                     <Text style={[styles.floorOptionText, selectedFloor === floor.floorName && styles.selectedFloorOptionText]}>
                       {floor.floorName}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          {/* Building Dropdown */}
+          {isBuildingMenuVisible && (
+            <View style={styles.buildingDropdownContainer}>
+              <View style={styles.dropdownContent}>
+                {buildings.map((building) => (
+                  <TouchableOpacity
+                    key={building.buildingID}
+                    style={[styles.floorOption, currentBuildingId === building.buildingID && styles.selectedFloorOption]}
+                    onPress={() => handleBuildingChange(building)}
+                  >
+                    <Text style={[styles.floorOptionText, currentBuildingId === building.buildingID && styles.selectedFloorOptionText]}>
+                      {building.buildingName}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -631,14 +684,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlignVertical: 'center',
     paddingTop: 1.5,
-  },
-  buildingTitle: {
+  },  
+  buildingSelector: {
     position: 'absolute',
     top: 70,
     left: 10,
-    fontSize: 20,
-    color: '#2B4F6E',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
     zIndex: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  buildingTitle: {
+    fontSize: 16,
+    color: '#2B4F6E',
     fontFamily: 'Montserrat-Bold',
   },
   mapContainer: {
@@ -687,12 +756,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
-  },
-  dropdownContainer: {
+  },  dropdownContainer: {
     position: 'absolute',
     right: 10,
     bottom: 120,
     width: '40%',
+    zIndex: 10,
+  },
+  buildingDropdownContainer: {
+    position: 'absolute',
+    left: 10,
+    top: 110,
+    width: '60%',
     zIndex: 10,
   },
   dropdownContent: {
